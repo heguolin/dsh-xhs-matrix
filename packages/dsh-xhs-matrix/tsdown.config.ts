@@ -1,7 +1,8 @@
 /**
  * dsh-xhs-matrix 双半构建配置（对齐 core repo 的 tsdown.client.ts 参考实现）：
  * - tsc -p tsconfig.build.json 只产出声明（lib/types/**），本配置不再产出 d.ts。
- * - Node 半：src/index.ts → lib/index.js（ESM，宿主提供 @deepseek-ai/* / node:* / schemastery）。
+ * - Node 半：src/index.ts → lib/index.js、src/invariant.ts → lib/invariant.js
+ *   （ESM，宿主提供 @deepseek-ai/* / node:* / schemastery）。
  * - Client 半：src/client/index.ts → lib/client.js（CJS），包成 dsh web shell 要求的
  *   window.__ModuleLoader__.load({ id, factory: (require) => {...} }) 闭包格式；
  *   externals 通过注入的 require 从 loader 模块表解析。
@@ -67,7 +68,7 @@ const cssModulesInline = {
 /** Node 半：宿主在运行时提供 @deepseek-ai/*、node:* 与 schemastery，均保持 external。 */
 const nodeConfig = {
   name: PLUGIN_ID,
-  entry: ['src/index.ts'],
+  entry: { index: 'src/index.ts', invariant: 'src/invariant.ts' },
   outDir: 'lib',
   format: ['esm'],
   platform: 'node',
