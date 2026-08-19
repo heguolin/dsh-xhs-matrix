@@ -11,6 +11,10 @@ export function AccountsTab({ api }: { api: XhsApi }) {
   const [name, setName] = useState('')
   const [personaId, setPersonaId] = useState('')
   const [error, setError] = useState('')
+  // 行内编辑状态：editingId 为正在编辑的账号 id。
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editPersonaId, setEditPersonaId] = useState('')
 
   const refresh = useCallback(async () => {
     try {
@@ -54,6 +58,24 @@ export function AccountsTab({ api }: { api: XhsApi }) {
     }
   }
 
+  const startEdit = (account: AccountRow): void => {
+    setEditingId(account.id)
+    setEditName(account.name)
+    setEditPersonaId(account.personaId)
+  }
+
+  const saveEdit = async (account: AccountRow): Promise<void> => {
+    try {
+      await api.updateAccount(account.id, { name: editName, personaId: editPersonaId, enabled: account.enabled })
+      setEditingId(null)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  const cancelEdit = (): void => setEditingId(null)
+
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
@@ -70,12 +92,39 @@ export function AccountsTab({ api }: { api: XhsApi }) {
       </div>
       <button className={css.button} onClick={() => void create()}>添加账号</button>
       {accounts.map(account => (
-        <div key={account.id} className={css.row}>
-          <span>{account.name}</span>
-          <span className={css.muted}>{personas.find(p => p.id === account.personaId)?.name ?? '未分配'}</span>
-          <span className={css.muted}>{account.enabled ? '启用' : '停用'}</span>
-          <button className={css.button} onClick={() => void toggle(account)}>{account.enabled ? '停用' : '启用'}</button>
-          <button className={`${css.button} ${css.danger}`} onClick={() => void remove(account.id)}>删除</button>
+        <div key={account.id} className={css.row} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
+          {editingId === account.id ? (
+            <>
+              <div className={css.field}>
+                <label>账号名</label>
+                <input className={css.input} value={editName} onChange={e => setEditName(e.target.value)} />
+              </div>
+              <div className={css.field}>
+                <label>人设</label>
+                <select className={css.input} value={editPersonaId} onChange={e => setEditPersonaId(e.target.value)}>
+                  <option value="">（未分配）</option>
+                  {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <button className={css.button} onClick={() => void saveEdit(account)}>保存</button>
+                <button className={css.button} onClick={cancelEdit}>取消</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span>{account.name}</span>
+                <span className={css.muted}>{personas.find(p => p.id === account.personaId)?.name ?? '未分配'}</span>
+                <span className={css.muted}>{account.enabled ? '启用' : '停用'}</span>
+              </div>
+              <div>
+                <button className={css.button} onClick={() => startEdit(account)}>编辑</button>
+                <button className={css.button} onClick={() => void toggle(account)}>{account.enabled ? '停用' : '启用'}</button>
+                <button className={`${css.button} ${css.danger}`} onClick={() => void remove(account.id)}>删除</button>
+              </div>
+            </>
+          )}
         </div>
       ))}
     </div>
