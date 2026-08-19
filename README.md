@@ -32,6 +32,14 @@ dsh plugin --profile web add "link:$(pwd)/packages/dsh-xhs-matrix"
 dsh plugin --profile web add dsh-xhs-matrix
 ```
 
+### 或直接从 GitHub 安装（无需 npm 发布）
+
+```sh
+dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-xhs-matrix"
+```
+
+（pnpm 会克隆仓库、取 `packages/dsh-xhs-matrix` 子目录、自动构建后安装；安装时需联网访问 GitHub。）
+
 或经 Web GUI 的插件清单安装。
 
 安装后重启 `dsh web`：插件行 `xhs-matrix` 插入 web profile，Host 半在宿主进程运行，浏览器半在 Web GUI 加载。
