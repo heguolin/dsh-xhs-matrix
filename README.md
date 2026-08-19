@@ -38,7 +38,7 @@ dsh plugin --profile web add dsh-xhs-matrix
 dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-xhs-matrix"
 ```
 
-（pnpm 会克隆仓库、取 `packages/dsh-xhs-matrix` 子目录、自动构建后安装；安装时需联网访问 GitHub。）
+（pnpm 会克隆仓库并取 `packages/dsh-xhs-matrix` 子目录安装；构建产物已预提交，无需运行构建脚本；安装时需联网访问 GitHub。）
 
 或经 Web GUI 的插件清单安装。
 
