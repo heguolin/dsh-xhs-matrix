@@ -15,6 +15,16 @@ describe('composeBrief', () => {
     expect(brief).toContain('封面提示词')
   })
 
+  it('显式声明风格并附带爆款技巧框架（钩子/伏笔）', () => {
+    const brief = composeBrief(account, persona, topic, [])
+    expect(brief).toContain('【风格】')
+    expect(brief).toContain('严格按「干货风」人设的风格撰写')
+    expect(brief).toContain('钩子式开头')
+    expect(brief).toContain('悬念伏笔')
+    expect(brief).toContain('清单')
+    expect(brief).toContain('引导互动')
+  })
+
   it('逐条列出黑名单约束', () => {
     const negatives: NegativeTopic[] = [
       { id: 'n1', keyword: '美妆技巧', reason: '上次没流量', createdAt: '2026-08-18T00:00:00.000Z' },
