@@ -37,13 +37,21 @@ export function AccountsTab({ api }: { api: XhsApi }) {
   }
 
   const toggle = async (account: AccountRow): Promise<void> => {
-    await api.updateAccount(account.id, { name: account.name, personaId: account.personaId, enabled: !account.enabled })
-    await refresh()
+    try {
+      await api.updateAccount(account.id, { name: account.name, personaId: account.personaId, enabled: !account.enabled })
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const remove = async (id: string): Promise<void> => {
-    await api.deleteAccount(id)
-    await refresh()
+    try {
+      await api.deleteAccount(id)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   return (

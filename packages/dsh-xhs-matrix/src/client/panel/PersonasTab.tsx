@@ -37,8 +37,12 @@ export function PersonasTab({ api }: { api: XhsApi }) {
   }
 
   const remove = async (id: string): Promise<void> => {
-    await api.deletePersona(id)
-    await refresh()
+    try {
+      await api.deletePersona(id)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   return (

@@ -27,16 +27,24 @@ export function NegativesTab({ api }: { api: XhsApi }) {
   useEffect(() => { void refresh() }, [refresh])
 
   const add = async (): Promise<void> => {
-    await api.addNegative({ keyword, reason, accountId: accountId === '' ? undefined : accountId })
-    setKeyword('')
-    setReason('')
-    setAccountId('')
-    await refresh()
+    try {
+      await api.addNegative({ keyword, reason, accountId: accountId === '' ? undefined : accountId })
+      setKeyword('')
+      setReason('')
+      setAccountId('')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const remove = async (id: string): Promise<void> => {
-    await api.deleteNegative(id)
-    await refresh()
+    try {
+      await api.deleteNegative(id)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   return (

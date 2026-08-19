@@ -25,22 +25,34 @@ export function TopicsTab({ api }: { api: XhsApi }) {
 
   const add = async (): Promise<void> => {
     if (title.trim() === '') return
-    await api.addTopic(title)
-    setTitle('')
-    await refresh()
+    try {
+      await api.addTopic(title)
+      setTitle('')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const doImport = async (): Promise<void> => {
     const titles = bulk.split('\n').map(t => t.trim()).filter(t => t !== '')
     if (titles.length === 0) return
-    await api.importTopics(titles)
-    setBulk('')
-    await refresh()
+    try {
+      await api.importTopics(titles)
+      setBulk('')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const retire = async (id: string): Promise<void> => {
-    await api.retireTopic(id)
-    await refresh()
+    try {
+      await api.retireTopic(id)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const visible = filter === '' ? topics : topics.filter(t => t.status === filter)

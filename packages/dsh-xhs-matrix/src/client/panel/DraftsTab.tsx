@@ -30,13 +30,21 @@ export function DraftsTab({ api }: { api: XhsApi }) {
     const metrics = reads.trim() === ''
       ? undefined
       : { reads: Number(reads) || 0, likes: 0, comments: 0, collected: new Date().toISOString() }
-    await api.setDraftStatus(draft.id, 'published', metrics)
-    await refresh()
+    try {
+      await api.setDraftStatus(draft.id, 'published', metrics)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const drop = async (draft: DraftRow): Promise<void> => {
-    await api.setDraftStatus(draft.id, 'dropped')
-    await refresh()
+    try {
+      await api.setDraftStatus(draft.id, 'dropped')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
   }
 
   return (
