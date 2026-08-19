@@ -191,6 +191,20 @@ export function makeRoutes(deps: RoutesDeps): WebRoute[] {
       if (method !== 'POST') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
       const body = await readJsonBody(req)
       if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
+      // 落库前校验载荷与选题存在性：缺失字段或引用不存在的选题都拒绝，避免垃圾草稿持久化后再抛错。
+      const requiredDraftFields = ['accountId', 'topicId', 'date', 'copy', 'coverPrompt'] as const
+      for (const field of requiredDraftFields) {
+        const value = body[field]
+        if (typeof value !== 'string' || value.trim() === '') {
+          writeJson(res, 400, { error: `草稿字段 ${field} 必填` })
+          return
+        }
+      }
+      const topicId = body.topicId as string
+      if (!store.listTopics().some(topic => topic.id === topicId)) {
+        writeJson(res, 400, { error: '选题不存在' })
+        return
+      }
       try {
         const draft = store.saveDraft(body as unknown as DraftPayload)
         store.markTopicUsed(draft.topicId, draft.id)
@@ -210,6 +224,15 @@ export function makeRoutes(deps: RoutesDeps): WebRoute[] {
       if (draftId === '' || (status !== 'generated' && status !== 'published' && status !== 'dropped')) {
         writeJson(res, 400, { error: 'draftId 与合法 status 必填' })
         return
+      }
+      if (body.metrics !== undefined) {
+        const m = body.metrics as Record<string, unknown> | null
+        if (typeof m !== 'object' || m === null
+          || typeof m.reads !== 'number' || typeof m.likes !== 'number'
+          || typeof m.comments !== 'number' || typeof m.collected !== 'string') {
+          writeJson(res, 400, { error: 'metrics 需含数值 reads/likes/comments 与字符串 collected' })
+          return
+        }
       }
       try {
         const draft = store.setDraftStatus(draftId, status, metrics)

@@ -86,4 +86,33 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(statusRes.status).toBe(200)
     expect(store.listDrafts()[0].metrics?.reads).toBe(50)
   })
+
+  it('草稿缺失必填字段返回 400 且不落库', async () => {
+    const res = await json('/api/dsh-xhs-matrix/drafts', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId: 'acc-a', topicId: 't1', date: '2026-08-18' }),
+    })
+    expect(res.status).toBe(400)
+    expect((res.body as { error: string }).error).toContain('必填')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('草稿引用不存在的选题返回 400 且不落库', async () => {
+    const res = await json('/api/dsh-xhs-matrix/drafts', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId: 'acc-a', topicId: 'no-such-topic', date: '2026-08-18', copy: 'c', coverPrompt: 'p' }),
+    })
+    expect(res.status).toBe(400)
+    expect((res.body as { error: string }).error).toContain('选题不存在')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('草稿状态回填的 metrics 形状非法返回 400', async () => {
+    const res = await json('/api/dsh-xhs-matrix/drafts/status', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ draftId: 'any', status: 'published', metrics: { reads: '50', likes: 3, comments: 1, collected: '2026-08-20T10:00:00.000Z' } }),
+    })
+    expect(res.status).toBe(400)
+    expect((res.body as { error: string }).error).toContain('metrics')
+  })
 })
