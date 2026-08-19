@@ -129,11 +129,27 @@ export function makeTools(deps: ToolsDeps) {
       render: (_args, value) => render(value),
     },
     async execute(args: { accountId: string; topicId: string; copy: string; coverPrompt: string; force?: boolean }, _exec: unknown) {
+      // 落库前校验：缺失字段或引用不存在的选题/账号都拒绝，避免垃圾草稿持久化（与 routes 侧一致）。
+      const requiredFields = ['accountId', 'topicId', 'copy', 'coverPrompt'] as const
+      for (const field of requiredFields) {
+        const value = args[field]
+        if (typeof value !== 'string' || value.trim() === '') {
+          return { ok: false, message: `参数 ${field} 必填`, draftId: '' }
+        }
+      }
+      if (!store.listTopics().some(t => t.id === args.topicId)) {
+        return { ok: false, message: `选题不存在：${args.topicId}`, draftId: '' }
+      }
+      if (!store.listAccounts().some(a => a.id === args.accountId)) {
+        return { ok: false, message: `账号不存在：${args.accountId}`, draftId: '' }
+      }
       const date = today()
       const existing = store.findDraft(args.accountId, date, args.topicId)
       if (existing !== undefined && args.force !== true) {
         return { ok: false, message: `该账号当日已存在同选题草稿（${existing.id}），如确需覆盖请传 force: true。`, draftId: existing.id }
       }
+      // force 为真覆盖：先删旧草稿，再落新草稿，保证同账号当日同选题仅存一份。
+      if (existing !== undefined) store.deleteDraft(existing.id)
       const draft = store.saveDraft({ accountId: args.accountId, topicId: args.topicId, date, copy: args.copy, coverPrompt: args.coverPrompt })
       store.markTopicUsed(args.topicId, draft.id)
       return { ok: true, message: `草稿已保存：${draft.id}（${date}）`, draftId: draft.id }

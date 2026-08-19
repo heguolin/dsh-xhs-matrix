@@ -221,6 +221,10 @@ export class MatrixStore {
     this.save()
     return draft
   }
+  deleteDraft(id: string): void {
+    this.data.drafts = this.data.drafts.filter(d => d.id !== id)
+    this.save()
+  }
   setDraftStatus(id: string, status: DraftStatus, metrics?: DraftMetrics): Draft {
     const draft = this.data.drafts.find(d => d.id === id)
     if (draft === undefined) throw new MatrixStoreError(`草稿不存在：${id}`)

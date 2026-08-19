@@ -55,16 +55,65 @@ describe('xhs 工具族', () => {
   it('xhs_draft_save：同账号当日同选题去重', async () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
-    store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
     const [topic] = store.addTopics(['通勤穿搭'])
     const [saveTool] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' }).slice(1, 2)
-    const first = await saveTool.execute({ topicId: topic.id, accountId: 'acc-a', copy: 'c1', coverPrompt: 'p1' }, execStub) as { ok: boolean; message: string }
+    const first = await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: 'c1', coverPrompt: 'p1' }, execStub) as { ok: boolean; message: string }
     expect(first.ok).toBe(true)
-    const second = await saveTool.execute({ topicId: topic.id, accountId: 'acc-a', copy: 'c2', coverPrompt: 'p2' }, execStub) as { ok: boolean; message: string }
+    const second = await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: 'c2', coverPrompt: 'p2' }, execStub) as { ok: boolean; message: string }
     expect(second.ok).toBe(false)
     expect(second.message).toContain('已存在')
-    const forced = await saveTool.execute({ topicId: topic.id, accountId: 'acc-a', copy: 'c3', coverPrompt: 'p3', force: true }, execStub) as { ok: boolean; message: string }
+    const forced = await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: 'c3', coverPrompt: 'p3', force: true }, execStub) as { ok: boolean; message: string }
     expect(forced.ok).toBe(true)
+  })
+
+  it('xhs_draft_save：bogus topicId 拒绝且不落库', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const [saveTool] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' }).slice(1, 2)
+    const result = await saveTool.execute({ topicId: 'bogus-topic', accountId: account.id, copy: 'c', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('选题不存在')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('xhs_draft_save：bogus accountId 拒绝且不落库', async () => {
+    const store = newStore()
+    const [topic] = store.addTopics(['通勤穿搭'])
+    const [saveTool] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' }).slice(1, 2)
+    const result = await saveTool.execute({ topicId: topic.id, accountId: 'bogus-account', copy: 'c', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('账号不存在')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('xhs_draft_save：缺 copy 拒绝且不落库', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const [topic] = store.addTopics(['通勤穿搭'])
+    const [saveTool] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' }).slice(1, 2)
+    const result = await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: '  ', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('参数 copy 必填')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('xhs_draft_save：force 真覆盖（同账号当日同选题仅存一份且为后者）', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const [topic] = store.addTopics(['通勤穿搭'])
+    const [saveTool] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' }).slice(1, 2)
+    await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: 'c1', coverPrompt: 'p1', force: true }, execStub)
+    await saveTool.execute({ topicId: topic.id, accountId: account.id, copy: 'c2', coverPrompt: 'p2', force: true }, execStub)
+    const now = new Date()
+    const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const drafts = store.listDrafts().filter(d => d.accountId === account.id && d.date === local && d.topicId === topic.id)
+    expect(store.listDrafts()).toHaveLength(1)
+    expect(drafts).toHaveLength(1)
+    expect(drafts[0].copy).toBe('c2')
   })
 
   it('xhs_topic_add：批量导入', async () => {

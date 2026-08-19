@@ -1,5 +1,24 @@
+/* --- center-column takeover (global rules, attribute-scoped) ---------------- */
+
+[data-pane='conversation'],
+[class*='centerCol'] {
+  position: relative;
+}
+
+/* 面板容器默认隐藏；仅当本面板激活且无兄弟面板（任务看板/SSH）激活时显示。 */
+[data-dsh-xhsmatrix-view] {
+  position: absolute;
+  inset: 0;
+  display: none;
+  z-index: 60;
+  background: var(--dsh-bg, #fff);
+}
+
+html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view] {
+  display: block;
+}
+
 .view { position: absolute; inset: 0; overflow: auto; padding: 16px; background: var(--dsh-bg, #fff); }
-.hidden { display: none; }
 .header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(128,128,128,0.3); margin-bottom: 12px; }
 .tab { padding: 6px 12px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; }
