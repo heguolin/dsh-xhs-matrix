@@ -1,0 +1,6 @@
+# dsh-xhs-matrix bundle patch：向 web profile 插入双面插件行。
+# Host 半（exports "."）在宿主进程运行（存储、/api/dsh-xhs-matrix 路由、agent 工具），
+# 浏览器半（exports "./client"）经 package.json 的 dsh.client 声明在 Web GUI 加载。
+- insert:
+    - id: xhs-matrix
+      name: 'dsh-xhs-matrix'

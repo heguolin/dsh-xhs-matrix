@@ -1,0 +1,9 @@
+# dsh-xhs-matrix 独立 pnpm workspace 根。
+# 仓库嵌套在 deepseek-harness 开发副本内，此文件让 pnpm 从本仓库根向上
+# 就近解析（最近的工作区根优先），避免被 harness 的 workspace 吞并。
+# allowBuilds 放行 esbuild postinstall（pnpm 11 strictDepBuilds 默认拦截）。
+packages:
+  - packages/dsh-xhs-matrix
+
+allowBuilds:
+  esbuild: true
