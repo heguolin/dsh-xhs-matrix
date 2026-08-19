@@ -5,7 +5,7 @@
 
 ## 发布前（push/发布 npm 前）
 
-- README 本地安装命令含本机绝对路径（`/home/administrator/tmp/deepseek-harness/...`），应改为通用写法（如 `$REPO_ROOT` 或 `~/`）。
+- ~~README 本地安装命令含本机绝对路径~~（已改为 `link:$(pwd)/packages/dsh-xhs-matrix` 通用写法，随推送提交）。
 - 确认 npm scope 与包名（当前 `dsh-xhs-matrix` 无 scope，发布时按需加 `@you/dsh-xhs-matrix`）。
 
 ## 建议尽快（低成本、体验/一致性）
