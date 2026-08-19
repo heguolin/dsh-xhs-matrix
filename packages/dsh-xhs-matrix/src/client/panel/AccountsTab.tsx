@@ -89,6 +89,7 @@ export function AccountsTab({ api }: { api: XhsApi }) {
           <option value="">（未分配）</option>
           {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
+        {personas.length === 0 && <span className={css.muted}>还没有人设，请先到「人设」Tab 创建（人设名 + 提示词）。</span>}
       </div>
       <button className={css.button} onClick={() => void create()}>添加账号</button>
       {accounts.map(account => (
