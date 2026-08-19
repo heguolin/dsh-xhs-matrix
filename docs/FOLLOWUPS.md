@@ -14,7 +14,7 @@
 - `xhs_topics` 的 `message` 与 `topics` 数组内容重复，结构化数组可改为 `{id,status,title}` 对象。
 - `DraftsTab` 录入指标仅 reads 且 `Number(reads) || 0` 有损，建议补 likes/comments 输入。
 - `DraftsTab` 显示原始 accountId/topicId，可改为解析名称。
-- `PersonasTab`/`AccountsTab` 注释「增删改」与实际不符（无编辑表单），补编辑 UI 或改注释。
+- `PersonasTab`/`AccountsTab` 注释「增删改」与实际不符：`AccountsTab` 已补行内编辑（改名称+选人设，2cdbb41）；`PersonasTab` 仍无编辑 UI（改人设名称/prompt 需删了重建），建议补。
 - `store.ts` 与 `invariant.ts` 两处版本诊断措辞不同源，改一处时同步另一处。
 - `/drafts/status` 路由接受 `'generated'` 状态而工具/UI 只允许 published/dropped，收紧一致。
 
