@@ -1,34 +1,276 @@
-/* --- center-column takeover (global rules, attribute-scoped) ---------------- */
+/* ==========================================================================
+   dsh-xhs-matrix 面板样式（小红书品牌风）
+   - 令牌定义在面板容器 [data-dsh-xhsmatrix-view] 上，供其子树继承。
+   - 注意：本构建管线（lightningcss cssModules）不解析 CSS modules 的
+     composes:，所有基础样式必须显式展开；所有按钮必须显式 color。
+   - 侧边栏入口在面板容器之外，用全局属性选择器单独定义。
+   ========================================================================== */
 
-[data-pane='conversation'],
-[class*='centerCol'] {
-  position: relative;
-}
-
-/* 面板容器默认隐藏；仅当本面板激活且无兄弟面板（任务看板/SSH）激活时显示。 */
+/* --- 设计令牌 --- */
 [data-dsh-xhsmatrix-view] {
+  --xhs-red: #FF2442;
+  --xhs-red-deep: #E01E39;
+  --xhs-red-soft: rgba(255, 36, 66, 0.06);
+  --xhs-bg: #FFFDFD;
+  --xhs-card: #FFFFFF;
+  --xhs-text: #2B2B2B;
+  --xhs-text-sub: #8A8A8A;
+  --xhs-text-weak: #B5AFAF;
+  --xhs-border: #F0E6E6;
+  --xhs-green: #2BA471;
+  --xhs-green-soft: rgba(43, 164, 113, 0.1);
+  --xhs-shadow: 0 2px 12px rgba(255, 36, 66, 0.08);
   position: absolute;
   inset: 0;
   display: none;
   z-index: 60;
-  background: var(--dsh-bg, #fff);
+  background: var(--xhs-bg);
 }
 
 html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view] {
   display: block;
 }
 
-.view { position: absolute; inset: 0; overflow: auto; padding: 16px; background: var(--dsh-bg, #fff); }
-.header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(128,128,128,0.3); margin-bottom: 12px; }
-.tab { padding: 6px 12px; border: none; background: none; cursor: pointer; color: inherit; border-bottom: 2px solid transparent; }
-.tabActive { padding: 6px 12px; border: none; background: none; cursor: pointer; color: inherit; border-bottom: 2px solid currentColor; font-weight: 600; }
-.row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(128,128,128,0.15); }
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-.input { padding: 6px 8px; border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background: transparent; color: inherit; }
-/* 注意：本构建管线（lightningcss cssModules）不解析 CSS modules 的 composes:，
-   故 textarea/tabActive 的基础样式必须显式展开，不能 composes: input/tab。 */
-.textarea { padding: 6px 8px; border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background: transparent; color: inherit; min-height: 80px; resize: vertical; }
-.button { padding: 6px 12px; border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
-.danger { color: #d33; }
-.muted { opacity: 0.6; font-size: 12px; }
+[data-pane='conversation'],
+[class*='centerCol'] {
+  position: relative;
+}
+
+/* --- 侧边栏入口（面板容器外，独立全局规则） --- */
+[data-dsh-xhsmatrix-entry] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-dsh-xhsmatrix-entry]:hover {
+  background: rgba(255, 36, 66, 0.06);
+  color: #FF2442;
+}
+
+[data-dsh-xhsmatrix-entry][data-active] {
+  background: rgba(255, 36, 66, 0.08);
+  color: #FF2442;
+  font-weight: 600;
+}
+
+/* --- 布局 --- */
+.view {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 20px;
+  background: var(--xhs-bg);
+  color: var(--xhs-text);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.headerDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--xhs-red);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* --- Tabs（胶囊式） --- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--xhs-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: var(--xhs-red-soft);
+  color: var(--xhs-red);
+}
+
+.tabActive {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--xhs-red);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* --- 表单 --- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: 12px;
+  color: var(--xhs-text-sub);
+}
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid var(--xhs-border);
+  border-radius: 8px;
+  background: var(--xhs-card);
+  color: var(--xhs-text);
+  font-size: 13px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--xhs-red);
+  box-shadow: 0 0 0 3px var(--xhs-red-soft);
+}
+
+.textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--xhs-border);
+  border-radius: 8px;
+  background: var(--xhs-card);
+  color: var(--xhs-text);
+  font-size: 13px;
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--xhs-red);
+  box-shadow: 0 0 0 3px var(--xhs-red-soft);
+}
+
+/* --- 按钮 --- */
+.button {
+  padding: 8px 16px;
+  border: 1px solid var(--xhs-border);
+  border-radius: 8px;
+  background: var(--xhs-card);
+  color: var(--xhs-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.button:hover {
+  border-color: var(--xhs-red);
+  color: var(--xhs-red);
+}
+
+.primary {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--xhs-red);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.primary:hover {
+  background: var(--xhs-red-deep);
+}
+
+.danger {
+  color: var(--xhs-red);
+}
+
+.danger:hover {
+  border-color: var(--xhs-red);
+  background: var(--xhs-red-soft);
+}
+
+/* --- 列表卡片 --- */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: var(--xhs-card);
+  border: 1px solid var(--xhs-border);
+  border-radius: 12px;
+  transition: box-shadow 0.15s;
+}
+
+.card:hover {
+  box-shadow: var(--xhs-shadow);
+}
+
+/* --- 徽章 --- */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--xhs-red-soft);
+  color: var(--xhs-red);
+}
+
+.badgeGreen {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--xhs-green-soft);
+  color: var(--xhs-green);
+}
+
+.badgeGray {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #F5F1F1;
+  color: var(--xhs-text-sub);
+}
+
+/* --- 辅助 --- */
+.empty {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--xhs-red-soft);
+  color: var(--xhs-red);
+  font-size: 12px;
+}
+
+.muted {
+  font-size: 12px;
+  color: var(--xhs-text-sub);
+}

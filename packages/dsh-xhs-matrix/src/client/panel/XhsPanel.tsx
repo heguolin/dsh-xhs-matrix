@@ -29,7 +29,7 @@ export function XhsPanel(props: XhsPanelProps) {
   const [tab, setTab] = useState<TabId>('accounts')
   return (
     <div className={css.view}>
-      <div className={css.header}><h2>小红书矩阵</h2></div>
+      <div className={css.header}><span className={css.headerDot} /><h2>小红书矩阵</h2></div>
       <div className={css.tabs}>
         {TABS.map(t => (
           <button key={t.id} className={tab === t.id ? css.tabActive : css.tab} onClick={() => setTab(t.id)}>{t.label}</button>

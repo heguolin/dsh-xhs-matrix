@@ -59,12 +59,14 @@ export function NegativesTab({ api }: { api: XhsApi }) {
           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </div>
-      <button className={css.button} onClick={() => void add()}>添加黑名单</button>
+      <button className={css.primary} onClick={() => void add()}>添加黑名单</button>
       {negatives.map(negative => (
-        <div key={negative.id} className={css.row}>
-          <span>{negative.keyword}</span>
-          <span className={css.muted}>{negative.accountId === undefined ? '全局' : accounts.find(a => a.id === negative.accountId)?.name ?? negative.accountId}</span>
-          <span className={css.muted}>{negative.reason}</span>
+        <div key={negative.id} className={css.card}>
+          <span style={{ fontWeight: 600 }}>{negative.keyword}</span>
+          <span className={css.muted} style={{ flex: 1 }}>{negative.reason}</span>
+          {negative.accountId === undefined
+            ? <span className={css.badgeGray}>全局</span>
+            : <span className={css.badge}>{accounts.find(a => a.id === negative.accountId)?.name ?? negative.accountId}</span>}
           <button className={`${css.button} ${css.danger}`} onClick={() => void remove(negative.id)}>删除</button>
         </div>
       ))}

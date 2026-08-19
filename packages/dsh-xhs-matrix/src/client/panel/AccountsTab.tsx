@@ -89,11 +89,11 @@ export function AccountsTab({ api }: { api: XhsApi }) {
           <option value="">（未分配）</option>
           {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        {personas.length === 0 && <span className={css.muted}>还没有人设，请先到「人设」Tab 创建（人设名 + 提示词）。</span>}
+        {personas.length === 0 && <span className={css.empty}>还没有人设，请先到「人设」Tab 创建（人设名 + 提示词）。</span>}
       </div>
-      <button className={css.button} onClick={() => void create()}>添加账号</button>
+      <button className={css.primary} onClick={() => void create()}>添加账号</button>
       {accounts.map(account => (
-        <div key={account.id} className={css.row} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
+        <div key={account.id} className={css.card} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
           {editingId === account.id ? (
             <>
               <div className={css.field}>
@@ -108,16 +108,22 @@ export function AccountsTab({ api }: { api: XhsApi }) {
                 </select>
               </div>
               <div>
-                <button className={css.button} onClick={() => void saveEdit(account)}>保存</button>
+                <button className={css.primary} onClick={() => void saveEdit(account)}>保存</button>
                 <button className={css.button} onClick={cancelEdit}>取消</button>
               </div>
             </>
           ) : (
             <>
               <div>
-                <span>{account.name}</span>
-                <span className={css.muted}>{personas.find(p => p.id === account.personaId)?.name ?? '未分配'}</span>
-                <span className={css.muted}>{account.enabled ? '启用' : '停用'}</span>
+                <span style={{ fontWeight: 600 }}>{account.name}</span>
+                <span className={css.muted} style={{ marginLeft: 10 }}>
+                  {account.personaId === ''
+                    ? <span className={css.badgeGray}>未分配</span>
+                    : <span className={css.badge}>{personas.find(p => p.id === account.personaId)?.name ?? '未知人设'}</span>}
+                </span>
+                <span className={css.muted} style={{ marginLeft: 10 }}>
+                  {account.enabled ? <span className={css.badgeGreen}>启用</span> : <span className={css.badgeGray}>停用</span>}
+                </span>
               </div>
               <div>
                 <button className={css.button} onClick={() => startEdit(account)}>编辑</button>

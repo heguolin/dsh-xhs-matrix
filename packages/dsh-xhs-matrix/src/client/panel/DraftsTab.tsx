@@ -52,17 +52,20 @@ export function DraftsTab({ api }: { api: XhsApi }) {
       {error !== '' && <div className={css.danger}>{error}</div>}
       {drafts.length === 0 && <div className={css.muted}>暂无草稿。在对话中问「今天要发什么」生成。 </div>}
       {drafts.map(draft => (
-        <div key={draft.id} className={css.row} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
+        <div key={draft.id} className={css.card} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
           <div>
-            <span>{draft.date}</span>
-            <span className={css.muted}> 账号 {draft.accountId} / 选题 {draft.topicId}</span>
-            <span className={css.muted}> {draft.status}{draft.metrics !== undefined ? ` · 阅读 ${draft.metrics.reads}` : ''}</span>
+            <span style={{ fontWeight: 600 }}>{draft.date}</span>
+            <span className={css.muted} style={{ marginLeft: 10 }}>账号 {draft.accountId} / 选题 {draft.topicId}</span>
+            {draft.status === 'generated' ? <span className={css.badgeGray} style={{ marginLeft: 10 }}>已生成</span>
+              : draft.status === 'published' ? <span className={css.badgeGreen} style={{ marginLeft: 10 }}>已发布</span>
+              : <span className={css.badgeGray} style={{ marginLeft: 10 }}>已弃用</span>}
+            {draft.metrics !== undefined && <span className={css.badge} style={{ marginLeft: 10 }}>阅读 {draft.metrics.reads}</span>}
           </div>
           <div className={css.muted}>{draft.copy.slice(0, 80)}{draft.copy.length > 80 ? '…' : ''}</div>
           <div>
             {draft.status === 'generated' && (
               <>
-                <button className={css.button} onClick={() => void publish(draft)}>标记已发布</button>
+                <button className={css.primary} onClick={() => void publish(draft)}>标记已发布</button>
                 <button className={`${css.button} ${css.danger}`} onClick={() => void drop(draft)}>标记弃用</button>
               </>
             )}

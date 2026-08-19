@@ -51,12 +51,12 @@ export function PersonasTab({ api }: { api: XhsApi }) {
       <div className={css.field}><label>人设名</label><input className={css.input} value={name} onChange={e => setName(e.target.value)} placeholder="干货风" /></div>
       <div className={css.field}><label>人设提示词</label><textarea className={css.textarea} value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="专业、数据支撑、不废话" /></div>
       <div className={css.field}><label>口癖标签（逗号分隔）</label><input className={css.input} value={toneTags} onChange={e => setToneTags(e.target.value)} placeholder="口语化, 结尾提问" /></div>
-      <button className={css.button} onClick={() => void create()}>添加人设</button>
+      <button className={css.primary} onClick={() => void create()}>添加人设</button>
       {personas.map(persona => (
-        <div key={persona.id} className={css.row}>
-          <span>{persona.name}</span>
-          <span className={css.muted}>{persona.prompt}</span>
-          <span className={css.muted}>{(persona.toneTags ?? []).join('、')}</span>
+        <div key={persona.id} className={css.card}>
+          <span style={{ fontWeight: 600 }}>{persona.name}</span>
+          <span className={css.muted} style={{ flex: 1 }}>{persona.prompt}</span>
+          <span className={css.badge}>{(persona.toneTags ?? []).join('、') || '—'}</span>
           <button className={`${css.button} ${css.danger}`} onClick={() => void remove(persona.id)}>删除</button>
         </div>
       ))}

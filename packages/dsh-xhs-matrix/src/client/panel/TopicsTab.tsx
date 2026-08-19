@@ -61,7 +61,7 @@ export function TopicsTab({ api }: { api: XhsApi }) {
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
       <div className={css.field}><label>单个选题</label><input className={css.input} value={title} onChange={e => setTitle(e.target.value)} placeholder="通勤穿搭" /></div>
-      <button className={css.button} onClick={() => void add()}>添加选题</button>
+      <button className={css.primary} onClick={() => void add()}>添加选题</button>
       <div className={css.field}><label>批量导入（每行一个）</label><textarea className={css.textarea} value={bulk} onChange={e => setBulk(e.target.value)} placeholder={'通勤穿搭\n秋季护肤'} /></div>
       <button className={css.button} onClick={() => void doImport()}>批量导入</button>
       <div className={css.field}>
@@ -74,9 +74,11 @@ export function TopicsTab({ api }: { api: XhsApi }) {
         </select>
       </div>
       {visible.map(topic => (
-        <div key={topic.id} className={css.row}>
-          <span>{topic.title}</span>
-          <span className={css.muted}>{topic.status}</span>
+        <div key={topic.id} className={css.card}>
+          <span style={{ fontWeight: 600 }}>{topic.title}</span>
+          {topic.status === 'open' ? <span className={css.badgeGreen}>可用</span>
+            : topic.status === 'used' ? <span className={css.badgeGray}>已用</span>
+            : <span className={css.badgeGray}>弃用</span>}
           {topic.status === 'open' && <button className={css.button} onClick={() => void retire(topic.id)}>弃用</button>}
         </div>
       ))}
