@@ -22,7 +22,8 @@
 ### 本地开发（link 模式）
 
 ```sh
-dsh plugin --profile web add link:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix
+# 在仓库根目录执行：链接本地包到 web profile
+dsh plugin --profile web add "link:$(pwd)/packages/dsh-xhs-matrix"
 ```
 
 ### 发布后（npm 安装）
