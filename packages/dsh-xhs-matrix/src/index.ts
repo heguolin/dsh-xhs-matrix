@@ -1,2 +1,91 @@
-/** dsh-xhs-matrix 占位入口：后续任务将在此实现账号人设、选题池、黑名单、草稿与决策流。 */
-export {}
+/** dsh-xhs-matrix — Host 半。装配存储、/api/dsh-xhs-matrix 路由族、agent 工具与系统提示词。 */
+
+import type { Context } from '@deepseek-ai/cordis'
+import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+import type {} from '@deepseek-ai/dsh-host-webserver'
+import type {} from '@deepseek-ai/dsh-system-prompt'
+import type {} from '@deepseek-ai/dsh-tools'
+import z from 'schemastery'
+import { makeRoutes } from './routes.ts'
+import { MatrixStore } from './store.ts'
+
+/** 稳定插件名。 */
+export const name = 'xhs-matrix'
+
+/** 需要的服务。 */
+export const inject = ['webServer', 'tools', 'systemPrompt']
+
+/** 设置命名空间。 */
+export const XHS_SETTINGS_NAMESPACE = settingsNamespace('dsh-xhs-matrix')
+
+/** 插件配置。 */
+export interface Config {
+  selectionStrategy?: 'fifo' | 'random'
+  locale?: string
+  announceToAgent?: boolean
+  enabled?: boolean
+}
+
+export const Config: z<Config> = z.object({
+  selectionStrategy: z.union(['fifo', 'random']).default('fifo'),
+  locale: z.string().default('zh-CN'),
+  announceToAgent: z.boolean().default(true),
+  enabled: z.boolean().default(true),
+})
+
+const DEFAULT_SELECTION = 'fifo'
+
+/** 模型可见公告。 */
+export const XHS_GUIDANCE = '本机已安装 dsh-xhs-matrix 插件（小红书矩阵内容管理）：侧边栏「矩阵」入口管理账号、人设、选题、黑名单与草稿。能力：xhs_today 按账号人设生成创作简报（选题 + 黑名单约束）供你撰写文案；xhs_draft_save 持久化草稿（同账号当日同选题去重）；xhs_topic_add / xhs_negative_add 管理选题池与黑名单；xhs_accounts 查询账号与人设；xhs_draft_status 回填发布状态与阅读量指标（触发 xhs/feedback 事件）。用户提到「今天要发什么 / 小红书 / 矩阵 / 选题」时即指本插件。'
+
+/**
+ * 挂载存储、路由、工具与公告。
+ * @param ctx - host 上下文（webServer/tools/systemPrompt）。
+ * @param config - 插件配置。
+ */
+export function apply(ctx: Context, config?: Config): void {
+  let current: () => Config = () => config ?? {}
+  const resolve = (): Config => ({
+    selectionStrategy: current().selectionStrategy ?? DEFAULT_SELECTION,
+    locale: current().locale ?? 'zh-CN',
+    announceToAgent: current().announceToAgent ?? true,
+    enabled: current().enabled ?? true,
+  })
+
+  const store = new MatrixStore()
+  store.load()
+
+  let disposeRoutes: (() => void) | undefined
+  let disposeTools: (() => void) | undefined
+  let disposeSection: (() => void) | undefined
+
+  const sync = (): void => {
+    if (disposeSection !== undefined) { disposeSection(); disposeSection = undefined }
+    if (disposeRoutes !== undefined) { disposeRoutes(); disposeRoutes = undefined }
+    if (disposeTools !== undefined) { disposeTools(); disposeTools = undefined }
+    const value = resolve()
+    if (!value.enabled) return
+    if (value.announceToAgent) {
+      disposeSection = ctx.systemPrompt.section({
+        name: 'plugin:dsh-xhs-matrix',
+        order: 150,
+        text: XHS_GUIDANCE,
+      })
+    }
+    disposeRoutes = ctx.effect(
+      () => {
+        const disposers = makeRoutes({ store }).map(route => ctx.webServer.register(route))
+        return () => { for (const dispose of disposers) dispose() }
+      },
+      'dsh-xhs-matrix: routes',
+    )
+    // 工具在 Task 6 补入：disposeTools = ctx.effect(... ctx.tools.register(...) ...)
+  }
+
+  installSettingsSection(ctx, XHS_SETTINGS_NAMESPACE, Config, config ?? {}, {
+    setSource: (source) => { current = source; sync() },
+    onChange: sync,
+  })
+
+  sync()
+}
