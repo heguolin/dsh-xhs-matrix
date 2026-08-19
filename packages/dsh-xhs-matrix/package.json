@@ -58,6 +58,10 @@
     "src", "cordis.patch.yml", "README.md"
   ],
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heguolin/dsh-xhs-matrix.git"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsdown",
     "bundle": "tsdown",
