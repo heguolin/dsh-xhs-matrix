@@ -3,10 +3,10 @@
 > 来源：10 个任务的逐任务审查 + 整支终审（2026-08-18）汇总的 deferred minors 与 follow-up 建议。
 > MVP 全部验收通过后，按优先级处理；其中「发布前」项应在推送到公开仓库/发布 npm 前完成。
 
-## 发布前（push/发布 npm 前）
+## 分发方式（已定）
 
-- ~~README 本地安装命令含本机绝对路径~~（已改为 `link:$(pwd)/packages/dsh-xhs-matrix` 通用写法，随推送提交）。
-- 确认 npm scope 与包名（当前 `dsh-xhs-matrix` 无 scope，发布时按需加 `@you/dsh-xhs-matrix`）。
+- 通过 GitHub 直装分发：`dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-xhs-matrix"`（已实测可用；lib/ 预构建产物已提交，改源码后需 `pnpm build` 并提交 lib/）。
+- ~~npm 发布~~：当前无 npm 发布渠道，README 已删除 npm 安装段；如未来恢复，需先修 token 权限（403）并确认包名/scope。
 
 ## 建议尽快（低成本、体验/一致性）
 

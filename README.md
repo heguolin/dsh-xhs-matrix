@@ -26,13 +26,7 @@
 dsh plugin --profile web add "link:$(pwd)/packages/dsh-xhs-matrix"
 ```
 
-### 发布后（npm 安装）
-
-```sh
-dsh plugin --profile web add dsh-xhs-matrix
-```
-
-### 或直接从 GitHub 安装（无需 npm 发布）
+### 直接从 GitHub 安装（推荐）
 
 ```sh
 dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-xhs-matrix"
