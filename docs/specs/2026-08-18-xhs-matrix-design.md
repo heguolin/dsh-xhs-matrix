@@ -240,6 +240,6 @@ Config = {
 
 ## 15. 落地位置与仓库布局
 
-- 独立工作区：`/home/administrator/tmp/dsh-xhs-matrix`（与核心仓库开发副本平级，位于开发隔离区）
+- 独立工作区：`/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix`（与核心仓库开发副本平级，位于开发隔离区）
 - 单包结构，后续单独提交 GitHub、npm 发布、npx 安装
 - 文档语言：中文（README、spec 等）

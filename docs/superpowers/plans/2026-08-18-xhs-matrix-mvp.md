@@ -209,11 +209,11 @@ lib/
 *.tsbuildinfo
 ```
 
-`README.md`（中文，内容为插件简介 + 安装 + 使用，安装段写：本地开发 `dsh plugin --profile web add link:/home/administrator/tmp/dsh-xhs-matrix/packages/dsh-xhs-matrix`；发布后 `dsh plugin --profile web add dsh-xhs-matrix` 或经 GUI 插件清单安装）。
+`README.md`（中文，内容为插件简介 + 安装 + 使用，安装段写：本地开发 `dsh plugin --profile web add link:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix`；发布后 `dsh plugin --profile web add dsh-xhs-matrix` 或经 GUI 插件清单安装）。
 
 - [ ] **Step 7: 安装依赖并验证构建管道**
 
-Run: `cd /home/administrator/tmp/dsh-xhs-matrix/packages/dsh-xhs-matrix && pnpm install`
+Run: `cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix && pnpm install`
 Expected: 安装成功（node_modules 就位）。
 
 Run: `pnpm build`
@@ -225,7 +225,7 @@ Expected: `No test files found` 或空通过（vitest 正常启动）。
 - [ ] **Step 8: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix README.md
 git commit -m "chore: dsh-xhs-matrix 包脚手架（构建/测试/组合清单）"
 ```
@@ -558,7 +558,7 @@ Expected: PASS。
 - [ ] **Step 9: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/types.ts packages/dsh-xhs-matrix/src/decision.ts packages/dsh-xhs-matrix/src/composer.ts packages/dsh-xhs-matrix/tests/decision.test.ts packages/dsh-xhs-matrix/tests/composer.test.ts
 git commit -m "feat: 领域类型与纯函数决策（过滤/选择/简报拼接）"
 ```
@@ -930,7 +930,7 @@ Expected: PASS。
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/store.ts packages/dsh-xhs-matrix/tests/store.test.ts
 git commit -m "feat: 私有 JSON 存储层（原子写 + 格式版本 + 全 CRUD）"
 ```
@@ -1032,7 +1032,7 @@ Expected: PASS。
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/events.ts packages/dsh-xhs-matrix/src/protocol.ts packages/dsh-xhs-matrix/tests/events.test.ts
 git commit -m "feat: xhs/feedback 事件与 API 路径常量"
 ```
@@ -1533,7 +1533,7 @@ Expected: PASS。
 - [ ] **Step 7: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/loopback.ts packages/dsh-xhs-matrix/src/routes.ts packages/dsh-xhs-matrix/src/index.ts packages/dsh-xhs-matrix/tests/routes.test.ts
 git commit -m "feat: Host 装配、loopback 围栏与 /api/dsh-xhs-matrix 路由族"
 ```
@@ -1995,7 +1995,7 @@ Expected: PASS + 类型检查通过。
 - [ ] **Step 6: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/tools.ts packages/dsh-xhs-matrix/src/index.ts packages/dsh-xhs-matrix/tests/tools.test.ts
 git commit -m "feat: 7 个模型工具（今日决策流 + 草稿/选题/黑名单/账号 + 反馈事件）"
 ```
@@ -2251,7 +2251,7 @@ Expected: PASS（注：`store.ts` 的 payload 类型 `AccountPayload` 等为类�
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/client/api.ts packages/dsh-xhs-matrix/src/client/controller.ts packages/dsh-xhs-matrix/tests/client-api.test.ts
 git commit -m "feat: Client 数据通道（fetch API 客户端）与面板控制器"
 ```
@@ -2624,7 +2624,7 @@ Expected: PASS（注：如 jsdom 全局与 vitest 冲突，将该测试 environm
 - [ ] **Step 6: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/client
 git commit -m "feat: Client DOM 挂载（侧边栏入口 + 中栏面板 + 词典）"
 ```
@@ -3084,7 +3084,7 @@ Expected: 类型检查通过；tsdown 产出 `lib/client.js`。
 - [ ] **Step 8: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/client/panel
 git commit -m "feat: 五 Tab 配置面板（账号/人设/选题/黑名单/草稿）"
 ```
@@ -3142,8 +3142,8 @@ Expected: PASS。
 
 安装（本地链接开发）：
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix/packages/dsh-xhs-matrix && pnpm build
-dsh plugin --profile web add link:/home/administrator/tmp/dsh-xhs-matrix/packages/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix && pnpm build
+dsh plugin --profile web add link:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix
 ```
 （或：发布 npm 后 `dsh plugin --profile web add dsh-xhs-matrix`；也可在 GUI 的插件清单界面安装。）
 
@@ -3171,7 +3171,7 @@ Expected: 全绿。
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /home/administrator/tmp/dsh-xhs-matrix
+cd /home/administrator/tmp/deepseek-harness/dsh-xhs-matrix
 git add packages/dsh-xhs-matrix/src/invariant.ts packages/dsh-xhs-matrix/tests/invariant.test.ts README.md
 git commit -m "feat: invariant、README 与端到端验收"
 ```
