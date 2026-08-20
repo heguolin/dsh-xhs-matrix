@@ -27,7 +27,20 @@ export class ApifyTrendProvider implements TrendProvider {
     const headers = { Authorization: `Bearer ${this.config.apiToken}`, 'content-type': 'application/json' }
     try {
       const runResponse = await this.fetcher(`https://api.apify.com/v2/acts/${encodeURIComponent(this.config.actorId)}/runs?token=${encodeURIComponent(this.config.apiToken)}`, {
-        method: 'POST', headers, body: JSON.stringify({ query: request.query, maxItems: limit }), signal: AbortSignal.timeout(this.config.requestTimeoutMs),
+        method: 'POST', headers,
+        // 输入字段做多键兼容：不同 Actor 对搜索词字段命名不一
+        // （query / searchKeyword / keyword / search），一并携带以提高命中；
+        // 小红书类 Actor 常见 operation 为 note search。
+        body: JSON.stringify({
+          query: request.query,
+          searchKeyword: request.query,
+          keyword: request.query,
+          search: request.query,
+          operation: 'note search',
+          maxItems: limit,
+          maxResults: limit,
+        }),
+        signal: AbortSignal.timeout(this.config.requestTimeoutMs),
       })
       if (!runResponse.ok) return { samples: [], status: 'failed', error: `Apify Run HTTP ${runResponse.status}` }
       const run = await runResponse.json() as { data?: { id?: string; defaultDatasetId?: string; status?: string } }

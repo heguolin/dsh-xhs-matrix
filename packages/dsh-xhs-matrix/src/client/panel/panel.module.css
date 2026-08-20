@@ -938,6 +938,11 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   margin-top: 5px;
 }
 
+.scoreLow {
+  background: var(--xhs-warn-soft);
+  color: var(--xhs-warn);
+}
+
 /* ==========================================================================
    人设配置（结构化两栏）
    ========================================================================== */

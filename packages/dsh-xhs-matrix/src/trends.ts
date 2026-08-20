@@ -43,7 +43,9 @@ export function normalizeApifyItem(item: unknown, actorId?: string): NormalizedT
 
 /** 按当前账号人设、历史样本和公开互动信号排序，并返回解释。 */
 export function rankTrends(account: Account, persona: Persona, notes: PublishedNote[], trends: NormalizedTrend[]): RankedTrend[] {
-  const terms = [persona.positioning, persona.expertise, persona.contentDirections, persona.topicCriteria, persona.hookStyles?.join(' ')].filter((item): item is string => Boolean(item)).join(' ').toLowerCase()
+  // 人设名也纳入相关性词表：账号只填了名称/prompt 时仍可按人设方向匹配。
+  const terms = [persona.name, persona.positioning, persona.expertise, persona.contentDirections, persona.topicCriteria, persona.hookStyles?.join(' ')]
+    .filter((item): item is string => Boolean(item)).join(' ').toLowerCase()
   return trends.map(trend => {
     const haystack = `${trend.title} ${trend.summary ?? ''} ${(trend.keywords ?? []).join(' ')}`.toLowerCase()
     const reasons: string[] = []

@@ -19,12 +19,14 @@ interface AccountSummary {
   highWeightCount: number
   reads: number
   draftCount: number
+  trendCount: number
 }
 
 /**
  * 运营总览（设计稿 content/hybrid-layout.html + 设计文档 §8.2）：
- * 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现、草稿摘要与
- * 今日趋势选题；点击任意账号卡片进入该账号的独立工作区。
+ * 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现与草稿摘要；
+ * 趋势选题按账号隔离，每个账号卡片显示自己的外部趋势样本数，
+ * 具体候选进入该账号的「趋势选题」工作区查看。
  */
 export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAccountUpdated }: {
   api: XhsApi
@@ -34,7 +36,6 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
   onAccountUpdated: () => void
 }) {
   const [summaries, setSummaries] = useState<AccountSummary[]>([])
-  const [trends, setTrends] = useState<Array<{ id: string; title: string; accountId: string }>>([])
   const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [error, setError] = useState('')
   const [manualTopic, setManualTopic] = useState('')
@@ -43,14 +44,15 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
   const [bindPick, setBindPick] = useState('')
 
   const refresh = useCallback(async () => {
-    if (accounts.length === 0) { setSummaries([]); setTrends([]); return }
+    if (accounts.length === 0) { setSummaries([]); return }
     try {
       const [personaList, draftList] = await Promise.all([api.listPersonas(), api.listDrafts()])
       setPersonas(personaList)
       const rows = await Promise.all(accounts.map(async account => {
-        const [noteList, metricList] = await Promise.all([
+        const [noteList, metricList, trendList] = await Promise.all([
           api.listNotes(account.id),
           api.listMetrics(account.id),
+          api.listTrends(account.id),
         ])
         // 每篇笔记最新指标快照（按 collectedAt 取最近一次）
         const latestByNote = new Map<string, { reads: number; collectedAt: string }>()
@@ -66,14 +68,10 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           highWeightCount: noteList.filter(n => n.weight >= 3).length,
           reads,
           draftCount: draftList.filter(d => d.accountId === account.id && d.status === 'generated').length,
+          trendCount: trendList.length,
         }
       }))
       setSummaries(rows)
-      // 汇总全部账号的最新趋势标题作为“今日趋势选题”chips。
-      const allTrends = await Promise.all(accounts.map(account =>
-        api.listTrends(account.id).then(list => list.map(t => ({ ...t, accountId: account.id }))),
-      ))
-      setTrends(allTrends.flat())
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -173,33 +171,25 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                   <button className={css.primary} onClick={() => onOpenStudio(row.account.id)}>进入创作台</button>
                 </div>
               </div>
-              {/* 账号指标摘要 */}
+              {/* 账号指标摘要（趋势样本数按账号隔离显示） */}
               <div className={css.metrics} style={{ marginTop: 10 }}>
                 <div className={css.metric}>已发布<b>{row.noteCount}</b></div>
                 <div className={css.metric}>最近浏览<b>{row.reads.toLocaleString()}</b></div>
                 <div className={css.metric}>高权重样本<b>{row.highWeightCount}</b></div>
               </div>
-              {row.account.connection?.lastError !== undefined && <div className={css.muted} style={{ marginTop: 6 }}>连接：{row.account.connection.lastError}</div>}
+              <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>外部趋势样本：{row.trendCount} 个</span>
+                <button className={css.ghostBtn} style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => onOpenAccount(row.account.id, 'topics')}>
+                  {row.trendCount > 0 ? '查看该账号选题' : '去采集选题'}
+                </button>
+              </div>
+              {row.account.connection?.lastError !== undefined && <div className={css.muted} style={{ marginTop: 4 }}>连接：{row.account.connection.lastError}</div>}
               {row.account.collectionStatus?.lastError !== undefined && <div className={css.muted} style={{ marginTop: 4 }}>采集：{row.account.collectionStatus.lastError}</div>}
             </div>
           ))}
 
-          {/* 下方：今日趋势选题（全部账号） + 手动添加 */}
+          {/* 下方：手动添加选题（选题池为全局，按账号创作时过滤） */}
           <div className={css.below}>
-            <section className={css.panel}>
-              <div className={css.panelTitle}>
-                <span>今日趋势选题</span>
-                <span className={css.muted}>{trends.length} 个外部样本</span>
-              </div>
-              <div className={css.chips}>
-                {trends.length === 0 && <span className={css.muted}>暂无趋势样本。进入各账号「趋势选题」页从 Apify 采集。</span>}
-                {trends.slice(0, 12).map(trend => (
-                  <span key={trend.id} className={css.chip} title={trend.title}>
-                    {trend.title.length > 14 ? `${trend.title.slice(0, 14)}…` : trend.title}
-                  </span>
-                ))}
-              </div>
-            </section>
             <section className={css.panel}>
               <div className={css.panelTitle}><span>手动添加选题</span></div>
               <div style={{ display: 'flex', gap: 8 }}>

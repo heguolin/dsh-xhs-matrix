@@ -29,6 +29,7 @@ function normalizeApifyItem(item, actorId) {
 /** 按当前账号人设、历史样本和公开互动信号排序，并返回解释。 */
 function rankTrends(account, persona, notes, trends) {
 	const terms = [
+		persona.name,
 		persona.positioning,
 		persona.expertise,
 		persona.contentDirections,
@@ -93,7 +94,12 @@ var ApifyTrendProvider = class {
 				headers,
 				body: JSON.stringify({
 					query: request.query,
-					maxItems: limit
+					searchKeyword: request.query,
+					keyword: request.query,
+					search: request.query,
+					operation: "note search",
+					maxItems: limit,
+					maxResults: limit
 				}),
 				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
 			});

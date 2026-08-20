@@ -167,9 +167,13 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
             <div key={`${candidate.title}-${index}`} className={css.topicItem}>
               <span className={css.topicTitle}>{candidate.title}</span>
               <div className={css.topicReason}>
-                匹配：{candidate.reasons.length > 0 ? candidate.reasons.join(' · ') : '人设相关'}
+                {candidate.reasons.length > 0
+                  ? `匹配：${candidate.reasons.join(' · ')}`
+                  : <span style={{ color: 'var(--xhs-warn)' }}>未匹配当前人设方向（推荐分 {candidate.score}，建议检查采集关键词）</span>}
               </div>
-              <span className={css.score}>推荐分 {candidate.score} · 来源：Apify</span>
+              <span className={candidate.score > 0 ? css.score : `${css.score} ${css.scoreLow}`}>
+                推荐分 {candidate.score} · 来源：Apify
+              </span>
             </div>
           ))}
         </section>
