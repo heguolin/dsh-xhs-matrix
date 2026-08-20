@@ -175,7 +175,7 @@ export interface StoreFile {
 
 /** 矩阵插件运行时设置。 */
 export interface MatrixSettings {
-  /** Apify 外部趋势数据源配置。 */
+  /** Apify 爆款采集配置。 */
   apify: {
     actorId: string
     apiToken: string

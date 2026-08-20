@@ -68,7 +68,7 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
 
       // ------------------------------------------------------------ 采集入库
       if (method !== 'POST') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
-      if (provider === undefined) { writeJson(res, 400, { error: '未配置趋势数据源' }); return }
+      if (provider === undefined) { writeJson(res, 400, { error: '未配置爆款数据源' }); return }
       const body = await readJsonBody(req)
       if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
       const targetAccountId = typeof body.accountId === 'string' && body.accountId.trim() !== '' ? body.accountId : ''

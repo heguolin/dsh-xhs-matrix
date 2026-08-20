@@ -1022,7 +1022,7 @@ function makeViralRoutes(store, provider) {
 			return;
 		}
 		if (provider === void 0) {
-			writeJson(res, 400, { error: "未配置趋势数据源" });
+			writeJson(res, 400, { error: "未配置爆款数据源" });
 			return;
 		}
 		const body = await readJsonBody(req);
@@ -1182,9 +1182,9 @@ var StudioService = class {
 		const system = [
 			built.context,
 			"",
-			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、外部趋势、选题分析、文案创作与草稿编辑。",
+			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
 			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
-			"参考外部趋势时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
+			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
 			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。"
 		].join("\n");
 		const response = await this.llm.complete({

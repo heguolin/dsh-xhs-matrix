@@ -530,14 +530,6 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   flex-wrap: wrap;
 }
 
-.chip {
-  font-size: 12px;
-  background: var(--xhs-red-soft);
-  color: var(--xhs-red-text);
-  padding: 5px 10px;
-  border-radius: 99px;
-}
-
 .contextline {
   display: flex;
   align-items: center;

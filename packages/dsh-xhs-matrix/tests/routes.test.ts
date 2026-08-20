@@ -225,7 +225,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(store.listViralItems(accountId, 'accepted')).toHaveLength(1)
   })
 
-  it('未配置趋势数据源返回 400', async () => {
+  it('未配置爆款数据源返回 400', async () => {
     const { server: noProviderServer, base: noProviderBase } = await startServer(store)
     try {
       const res = await json(noProviderBase + '/api/dsh-xhs-matrix/viral', {
@@ -233,7 +233,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
         body: JSON.stringify({ accountId: 'a1', query: 'AI 工具' }),
       })
       expect(res.status).toBe(400)
-      expect((res.body as { error: string }).error).toContain('趋势数据源')
+      expect((res.body as { error: string }).error).toContain('爆款数据源')
     } finally {
       noProviderServer.close()
     }

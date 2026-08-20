@@ -167,7 +167,7 @@ export function XhsPanel(props: XhsPanelProps) {
                   : PAGE_TITLES[currentPage]}
             </h3>
             <div className={css.topbarSub}>
-              {currentPage === 'studio' && current !== undefined ? '人设、知识库、Apify 趋势已隔离加载 · 仅矩阵内容' : '小红书矩阵内容管理'}
+              {currentPage === 'studio' && current !== undefined ? '人设、知识库、爆款池已隔离加载 · 仅矩阵内容' : '小红书矩阵内容管理'}
             </div>
           </div>
           <div className={css.topbarRight}>

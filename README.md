@@ -76,7 +76,7 @@ dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-
 
 - 数据文件：`~/.dsh/dsh-xhs-matrix.json`（单文件 JSON，原子写 + 格式版本，当前 `version 3`）。
 - 存储内容：账号、人设、草稿、已发布笔记、指标快照、爆款池条目、创作台会话与设置（含 Apify 采集配置）。**数据仅保存在本地文件，不含任何凭证**（不保存 Cookie 或登录态）。
-- Apify 采集配置（Actor ID / API Token / 数量 / 超时 / 轮询上限）在「矩阵 → 爆款池」页内配置，只保存在本地数据文件，不进入浏览器；外部样本只保留分析所需字段。
+- Apify 采集配置（Actor ID / API Token / 单次最大候选数）在「矩阵 → 爆款池」页内配置，超时与轮询上限使用默认值；Token 仅保存于本地数据文件，配置时会回显到输入框以方便修改；外部样本只保留分析所需字段。
 - 后台真实数据需要账号授权；未配置合规授权 API 前，通过 CSV/JSON 手动导入兜底，并明确标记数据来源。
 - 版本契约：存储文件必须携带格式版本；version 1/2 自动迁移到 version 3（v1/v2 的选题池与负向经验丢弃，v2 趋势样本转为爆款池待审核条目，草稿移除冗余 `topicId`）。
 
@@ -90,7 +90,7 @@ dsh plugin --profile web add "github:heguolin/dsh-xhs-matrix#path:/packages/dsh-
 | `announceToAgent` | `true` | 是否向模型注入插件公告 |
 | `enabled` | `true` | 插件总开关 |
 
-Apify 采集配置（Actor ID / API Token / 单次采集数量 / 请求超时 / 轮询上限）不属于插件 Config，在「矩阵 → 爆款池」页内配置。
+Apify 采集配置（Actor ID / API Token / 单次最大候选数）在「矩阵 → 爆款池」页内配置，超时与轮询上限使用默认值，不属于插件 Config。
 
 ## 开发
 
