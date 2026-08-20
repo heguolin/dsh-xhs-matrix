@@ -10,13 +10,16 @@ export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountI
   const [notice, setNotice] = useState('')
 
   const run = async (): Promise<void> => {
-    const titleLines = titles.split('\n').map(line => line.trim()).filter(line => line !== '')
-    if (titleLines.length === 0) { setError('请输入至少一个标题'); return }
+    // 保留原始行号：仅统计 trim 后非空的标题行。
+    const titleRows = titles.split('\n')
+      .map((line, index) => ({ line: line.trim(), index }))
+      .filter(row => row.line !== '')
+    if (titleRows.length === 0) { setError('请输入至少一个标题'); return }
     const copyLines = copies.split('\n')
-    // 标题与正文按行对应，任一标题行缺正文则整批拒绝并提示具体行号。
-    const missing = titleLines.map((_, index) => index).find(index => copyLines[index]?.trim() === '')
-    if (missing !== undefined) { setError(`第 ${missing + 1} 行缺少正文，标题与正文都必填且按行对应`); return }
-    const records = titleLines.map((title, index) => ({ title, copy: copyLines[index] ?? '' }))
+    // 标题与正文按原始行号对应，任一标题行缺正文（越界视为空）则整批拒绝并提示原始行号。
+    const missing = titleRows.find(row => (copyLines[row.index] ?? '').trim() === '')
+    if (missing !== undefined) { setError(`第 ${missing.index + 1} 行缺少正文，标题与正文都必填且按行对应`); return }
+    const records = titleRows.map(row => ({ title: row.line, copy: copyLines[row.index] ?? '' }))
     try {
       const count = await api.importPublishedNotes(accountId, 'json', JSON.stringify(records))
       setNotice(`已导入 ${count} 条已发布笔记。`)

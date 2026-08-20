@@ -69,4 +69,38 @@ describe('ImportDialog 导入', () => {
     root.unmount()
     host.remove()
   })
+
+  it('正文行数少于标题行数时按原始行号拦截（第 2 行缺少正文）', async () => {
+    const { host, root, apiMock } = await renderDialog()
+
+    // 标题 2 行、正文仅 1 行：第 2 个标题越界，必须拦截而非提交空 copy。
+    typeText(host, '标题', '标题一\n标题二')
+    typeText(host, '正文', '正文一')
+    const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.includes('导入'))
+    run!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(host.textContent).toContain('第 2 行缺少正文')
+    expect(apiMock.importPublishedNotes).not.toHaveBeenCalled()
+
+    root.unmount()
+    host.remove()
+  })
+
+  it('标题中间留空行时按原始行号提示（第 3 行缺少正文）', async () => {
+    const { host, root, apiMock } = await renderDialog()
+
+    // 标题第 2 行为空行：过滤后仅剩 2 个标题，但行号必须基于原始行（第 3 行）提示。
+    typeText(host, '标题', '标题一\n\n标题二')
+    typeText(host, '正文', '正文一')
+    const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.includes('导入'))
+    run!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(host.textContent).toContain('第 3 行缺少正文')
+    expect(apiMock.importPublishedNotes).not.toHaveBeenCalled()
+
+    root.unmount()
+    host.remove()
+  })
 })
