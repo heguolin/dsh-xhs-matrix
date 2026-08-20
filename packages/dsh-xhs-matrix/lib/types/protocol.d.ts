@@ -2,8 +2,13 @@
 export declare const XHS_API_BASE: "/api/dsh-xhs-matrix";
 export declare const XHS_API: {
     readonly accounts: string;
+    readonly accountImport: string;
     readonly personas: string;
+    readonly notes: string;
+    readonly trends: string;
+    readonly metrics: string;
+    readonly studio: string;
+    readonly studioMessages: string;
     readonly topics: string;
-    readonly negatives: string;
     readonly drafts: string;
 };

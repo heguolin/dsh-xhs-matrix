@@ -10,9 +10,14 @@ window.__ModuleLoader__.load({
 		//#region src/protocol.ts
 		const XHS_API = {
 			accounts: "/api/dsh-xhs-matrix/accounts",
+			accountImport: "/api/dsh-xhs-matrix/accounts/import",
 			personas: "/api/dsh-xhs-matrix/personas",
+			notes: "/api/dsh-xhs-matrix/notes",
+			trends: "/api/dsh-xhs-matrix/trends",
+			metrics: "/api/dsh-xhs-matrix/metrics",
+			studio: "/api/dsh-xhs-matrix/studio",
+			studioMessages: "/api/dsh-xhs-matrix/studio/messages",
 			topics: "/api/dsh-xhs-matrix/topics",
-			negatives: "/api/dsh-xhs-matrix/negatives",
 			drafts: "/api/dsh-xhs-matrix/drafts"
 		};
 		//#endregion
@@ -63,6 +68,17 @@ window.__ModuleLoader__.load({
 			async deleteAccount(id) {
 				await readJson(await fetch(XHS_API.accounts + query({ account: id }), { method: "DELETE" }));
 			}
+			async importPublishedNotes(accountId, format, content) {
+				return (await readJson(await fetch(XHS_API.accountImport, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						accountId,
+						format,
+						content
+					})
+				}))).imported;
+			}
 			async listPersonas() {
 				return (await readJson(await fetch(XHS_API.personas))).personas;
 			}
@@ -103,18 +119,62 @@ window.__ModuleLoader__.load({
 			async retireTopic(id) {
 				await readJson(await fetch(XHS_API.topics + query({ topic: id }), { method: "PATCH" }));
 			}
-			async listNegatives() {
-				return (await readJson(await fetch(XHS_API.negatives))).negatives;
+			async listNotes(accountId) {
+				return (await readJson(await fetch(XHS_API.notes + query({ account: accountId })))).notes;
 			}
-			async addNegative(payload) {
-				await readJson(await fetch(XHS_API.negatives, {
-					method: "POST",
+			async setNoteWeight(accountId, noteId, weight) {
+				await readJson(await fetch(XHS_API.notes + query({
+					account: accountId,
+					note: noteId
+				}), {
+					method: "PATCH",
 					headers: { "content-type": "application/json" },
-					body: JSON.stringify(payload)
+					body: JSON.stringify({ weight })
 				}));
 			}
-			async deleteNegative(id) {
-				await readJson(await fetch(XHS_API.negatives + query({ negative: id }), { method: "DELETE" }));
+			async listTrends(accountId) {
+				return (await readJson(await fetch(XHS_API.trends + query({ account: accountId })))).trends;
+			}
+			async collectTrends(accountId, searchQuery, maxItems) {
+				return (await readJson(await fetch(XHS_API.trends + query({ account: accountId }), {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						query: searchQuery,
+						maxItems
+					})
+				}))).trends;
+			}
+			async listMetrics(accountId, noteId) {
+				return (await readJson(await fetch(XHS_API.metrics + query({
+					account: accountId,
+					note: noteId
+				})))).metrics;
+			}
+			async listStudioMessages(accountId) {
+				return (await readJson(await fetch(XHS_API.studioMessages + query({ account: accountId })))).messages;
+			}
+			async studioSend(accountId, input, mode) {
+				return await readJson(await fetch(XHS_API.studioMessages + query({ account: accountId }), {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						input,
+						mode
+					})
+				}));
+			}
+			async studioSaveDraft(accountId, topicId, copy, coverPrompt) {
+				return (await readJson(await fetch(XHS_API.studio + "/draft", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						accountId,
+						topicId,
+						copy,
+						coverPrompt
+					})
+				}))).draft;
 			}
 			async listDrafts() {
 				return (await readJson(await fetch(XHS_API.drafts))).drafts;
@@ -128,6 +188,13 @@ window.__ModuleLoader__.load({
 						status,
 						metrics
 					})
+				}));
+			}
+			async updateDraft(draftId, payload) {
+				await readJson(await fetch(XHS_API.drafts + query({ draft: draftId }), {
+					method: "PATCH",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
 				}));
 			}
 		};
@@ -186,7 +253,6 @@ window.__ModuleLoader__.load({
 			"tab.accounts": "账号",
 			"tab.personas": "人设",
 			"tab.topics": "选题",
-			"tab.negatives": "黑名单",
 			"tab.drafts": "草稿"
 		};
 		/** 英文字典（键对齐）。 */
@@ -197,12 +263,11 @@ window.__ModuleLoader__.load({
 			"tab.accounts": "Accounts",
 			"tab.personas": "Personas",
 			"tab.topics": "Topics",
-			"tab.negatives": "Negatives",
 			"tab.drafts": "Drafts"
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-soft:#ff24420f;--xhs-bg:#fffdfd;--xhs-card:#fff;--xhs-text:#2b2b2b;--xhs-text-sub:#8a8a8a;--xhs-text-weak:#b5afaf;--xhs-border:#f0e6e6;--xhs-green:#2ba471;--xhs-green-soft:#2ba4711a;--xhs-shadow:0 2px 12px #ff244214;z-index:60;background:var(--xhs-bg);display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:block}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);padding:20px;position:absolute;inset:0;overflow:auto}.hv-J7W_header{align-items:center;gap:8px;margin-bottom:16px;display:flex}.hv-J7W_headerDot{background:var(--xhs-red);border-radius:50%;width:8px;height:8px}.hv-J7W_header h2{margin:0;font-size:18px;font-weight:700}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:16px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 16px;font-size:13px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:13px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_danger{color:var(--xhs-red)}.hv-J7W_danger:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;transition:box-shadow .15s;display:flex}.hv-J7W_card:hover{box-shadow:var(--xhs-shadow)}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_empty{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:8px;padding:10px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-soft:#ff24420f;--xhs-bg:#fffdfd;--xhs-card:#fff;--xhs-text:#2b2b2b;--xhs-text-sub:#8a8a8a;--xhs-text-weak:#b5afaf;--xhs-border:#f0e6e6;--xhs-green:#2ba471;--xhs-green-soft:#2ba4711a;--xhs-shadow:0 2px 12px #ff244214;z-index:60;background:var(--xhs-bg);display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:block}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);padding:20px;position:absolute;inset:0;overflow:auto}.hv-J7W_header{align-items:center;gap:8px;margin-bottom:16px;display:flex}.hv-J7W_headerDot{background:var(--xhs-red);border-radius:50%;width:8px;height:8px}.hv-J7W_header h2{margin:0;font-size:18px;font-weight:700}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:16px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 16px;font-size:13px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:13px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_danger{color:var(--xhs-red)}.hv-J7W_danger:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;transition:box-shadow .15s;display:flex}.hv-J7W_card:hover{box-shadow:var(--xhs-shadow)}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeDanger{color:#d62739;background:#ffe9ec;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeWarn{color:#b36a00;background:#fff4e0;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:8px;padding:10px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}";
 		const tagId = "dsh-xhs-matrix/panel.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -212,24 +277,27 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"danger": "hv-J7W_danger",
-			"badge": "hv-J7W_badge",
-			"tabActive": "hv-J7W_tabActive",
-			"field": "hv-J7W_field",
+			"badgeGreen": "hv-J7W_badgeGreen",
 			"header": "hv-J7W_header",
-			"badgeGray": "hv-J7W_badgeGray",
+			"field": "hv-J7W_field",
+			"tab": "hv-J7W_tab",
+			"tabActive": "hv-J7W_tabActive",
 			"textarea": "hv-J7W_textarea",
-			"headerDot": "hv-J7W_headerDot",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"primary": "hv-J7W_primary",
+			"success": "hv-J7W_success",
+			"muted": "hv-J7W_muted",
+			"input": "hv-J7W_input",
 			"button": "hv-J7W_button",
 			"empty": "hv-J7W_empty",
-			"muted": "hv-J7W_muted",
+			"tabs": "hv-J7W_tabs",
+			"danger": "hv-J7W_danger",
+			"badgeGray": "hv-J7W_badgeGray",
+			"headerDot": "hv-J7W_headerDot",
+			"badgeDanger": "hv-J7W_badgeDanger",
 			"view": "hv-J7W_view",
-			"tab": "hv-J7W_tab",
-			"primary": "hv-J7W_primary",
-			"input": "hv-J7W_input",
 			"card": "hv-J7W_card",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"tabs": "hv-J7W_tabs"
+			"badge": "hv-J7W_badge"
 		};
 		//#endregion
 		//#region src/client/panel/AccountsTab.tsx
@@ -437,12 +505,120 @@ window.__ModuleLoader__.load({
 			] });
 		}
 		//#endregion
+		//#region src/client/panel/DraftEditor.tsx
+		/** 草稿编辑器：标题/正文/标签/封面提示词可直接修改，显式保存。 */
+		function DraftEditor({ api, accountId, draft, onSaved }) {
+			const [copy, setCopy] = (0, react.useState)(draft.copy);
+			const [coverPrompt, setCoverPrompt] = (0, react.useState)(draft.coverPrompt);
+			const [tags, setTags] = (0, react.useState)(draft.tags ?? "");
+			const [error, setError] = (0, react.useState)("");
+			const [notice, setNotice] = (0, react.useState)("");
+			const save = async () => {
+				try {
+					await api.updateDraft(draft.id, {
+						copy,
+						coverPrompt,
+						tags
+					});
+					setNotice("草稿已保存（仍为草稿状态，不会自动发布）。");
+					onSaved();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			const rewriteTitle = async () => {
+				copy.split("\n")[0];
+				const rest = copy.split("\n").slice(1).join("\n");
+				try {
+					const title = (await api.studioSend(accountId, `请只重写下面文案的第一行标题，使其更吸引人，不要改动正文，直接输出新标题：\n${copy}`, "creative")).message.content.trim().split("\n")[0] ?? "";
+					if (title !== "") setCopy(`${title}\n${rest}`);
+					else setNotice("未获得新标题，请手动修改。");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			const optimizeOpening = async () => {
+				const lines = copy.split("\n");
+				const rest = lines.slice(1).join("\n");
+				try {
+					const opening = (await api.studioSend(accountId, `请只重写下面文案的第二行（正文开头），使其更有钩子，不要改动其他部分，直接输出新开头：\n${copy}`, "creative")).message.content.trim().split("\n")[0] ?? "";
+					if (opening !== "") setCopy(`${lines[0] ?? ""}\n${opening}${rest !== "" ? `\n${rest}` : ""}`);
+					else setNotice("未获得新开头，请手动修改。");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.danger,
+					children: error
+				}),
+				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.success,
+					children: notice
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题（第一行）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						className: panel_module_css_default.input,
+						value: copy.split("\n")[0] ?? "",
+						onChange: (e) => setCopy(`${e.target.value}\n${copy.split("\n").slice(1).join("\n")}`)
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						className: panel_module_css_default.textarea,
+						rows: 10,
+						value: copy,
+						onChange: (e) => setCopy(e.target.value)
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "话题标签" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						className: panel_module_css_default.input,
+						value: tags,
+						onChange: (e) => setTags(e.target.value),
+						placeholder: "#效率工具 #职场成长"
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "封面提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						className: panel_module_css_default.textarea,
+						rows: 3,
+						value: coverPrompt,
+						onChange: (e) => setCoverPrompt(e.target.value)
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.button,
+					onClick: () => void rewriteTitle(),
+					children: "重写标题"
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.button,
+					style: { marginLeft: 8 },
+					onClick: () => void optimizeOpening(),
+					children: "优化开头"
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.primary,
+					style: { marginLeft: 8 },
+					onClick: () => void save(),
+					children: "保存草稿"
+				})
+			] });
+		}
+		//#endregion
 		//#region src/client/panel/DraftsTab.tsx
-		/** 草稿 Tab：查看（点击展开完整文案）、标记 published/dropped、录入指标。 */
+		/** 草稿 Tab：展开编辑（DraftEditor）、标记 published/dropped、录入指标、来源依据。 */
 		function DraftsTab({ api }) {
 			const [drafts, setDrafts] = (0, react.useState)([]);
 			const [error, setError] = (0, react.useState)("");
 			const [expandedId, setExpandedId] = (0, react.useState)(null);
+			const [editingId, setEditingId] = (0, react.useState)(null);
 			const refresh = (0, react.useCallback)(async () => {
 				try {
 					setDrafts(await api.listDrafts());
@@ -460,7 +636,6 @@ window.__ModuleLoader__.load({
 			const copyDraft = async (draft) => {
 				try {
 					await navigator.clipboard.writeText(`【标题】${draft.copy}\n【封面提示词】${draft.coverPrompt}`);
-					setError("");
 				} catch {
 					setError("复制失败：请手动复制");
 				}
@@ -496,10 +671,11 @@ window.__ModuleLoader__.load({
 				}),
 				drafts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.muted,
-					children: "暂无草稿。在对话中问「今天要发什么」生成。 "
+					children: "暂无草稿。在「创作台」中生成，或在对话中问「今天要发什么」。"
 				}),
 				drafts.map((draft) => {
 					const expanded = expandedId === draft.id;
+					const editing = editingId === draft.id;
 					return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default.card,
 						style: {
@@ -566,9 +742,17 @@ window.__ModuleLoader__.load({
 									children: [draft.copy.slice(0, 80), draft.copy.length > 80 ? "…" : ""]
 								})
 							}),
-							expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								style: { width: "100%" },
-								children: [
+								children: editing ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftEditor, {
+									api,
+									accountId: draft.accountId,
+									draft,
+									onSaved: () => {
+										setEditingId(null);
+										refresh();
+									}
+								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: panel_module_css_default.field,
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "封面提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -594,14 +778,27 @@ window.__ModuleLoader__.load({
 											]
 										})]
 									}),
+									draft.evidence !== void 0 && draft.evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.field,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "生成依据" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.muted,
+											children: [draft.evidence.reasons.join("；"), draft.evidence.persona !== void 0 && draft.evidence.persona !== "" ? `（人设：${draft.evidence.persona}）` : ""]
+										})]
+									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 										className: panel_module_css_default.button,
 										onClick: () => void copyDraft(draft),
 										children: "复制文案"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.button,
+										style: { marginLeft: 8 },
+										onClick: () => setEditingId(draft.id),
+										children: "编辑"
 									})
-								]
+								] })
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: draft.status === "generated" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							draft.status === "generated" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								className: panel_module_css_default.primary,
 								onClick: () => void publish(draft),
 								children: "标记已发布"
@@ -609,53 +806,42 @@ window.__ModuleLoader__.load({
 								className: `${panel_module_css_default.button} ${panel_module_css_default.danger}`,
 								onClick: () => void drop(draft),
 								children: "标记弃用"
-							})] }) })
+							})] })
 						]
 					}, draft.id);
 				})
 			] });
 		}
 		//#endregion
-		//#region src/client/panel/NegativesTab.tsx
-		/** 黑名单 Tab：账号级/全局条目增删。 */
-		function NegativesTab({ api }) {
-			const [negatives, setNegatives] = (0, react.useState)([]);
-			const [accounts, setAccounts] = (0, react.useState)([]);
-			const [keyword, setKeyword] = (0, react.useState)("");
-			const [reason, setReason] = (0, react.useState)("");
-			const [accountId, setAccountId] = (0, react.useState)("");
+		//#region src/client/panel/KnowledgeTab.tsx
+		const WEIGHTS = [
+			0,
+			1,
+			2,
+			3,
+			4,
+			5
+		];
+		/** 已发布知识库：指标摘要 + 0-5 权重。 */
+		function KnowledgeTab({ api, accountId }) {
+			const [notes, setNotes] = (0, react.useState)([]);
 			const [error, setError] = (0, react.useState)("");
+			const [notice, setNotice] = (0, react.useState)("");
 			const refresh = (0, react.useCallback)(async () => {
 				try {
-					const [negs, accs] = await Promise.all([api.listNegatives(), api.listAccounts()]);
-					setNegatives(negs);
-					setAccounts(accs);
+					setNotes(await api.listNotes(accountId));
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api]);
+			}, [api, accountId]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
-			const add = async () => {
+			const setWeight = async (noteId, weight) => {
 				try {
-					await api.addNegative({
-						keyword,
-						reason,
-						accountId: accountId === "" ? void 0 : accountId
-					});
-					setKeyword("");
-					setReason("");
-					setAccountId("");
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
-			const remove = async (id) => {
-				try {
-					await api.deleteNegative(id);
+					await api.setNoteWeight(accountId, noteId, weight);
+					setNotice(`已设置权重 ${weight}，将影响下一次推荐。`);
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -666,70 +852,152 @@ window.__ModuleLoader__.load({
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "关键词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: keyword,
-						onChange: (e) => setKeyword(e.target.value),
-						placeholder: "美妆技巧"
-					})]
+				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.success,
+					children: notice
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "原因" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: reason,
-						onChange: (e) => setReason(e.target.value),
-						placeholder: "上次没流量"
-					})]
+				notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "该账号还没有已发布笔记。使用「导入」或从创作台保存后回填。"
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "作用范围" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-						className: panel_module_css_default.input,
-						value: accountId,
-						onChange: (e) => setAccountId(e.target.value),
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-							value: "",
-							children: "全局"
-						}), accounts.map((a) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-							value: a.id,
-							children: a.name
-						}, a.id))]
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void add(),
-					children: "添加黑名单"
-				}),
-				negatives.map((negative) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				notes.map((note) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default.card,
+					style: {
+						alignItems: "flex-start",
+						flexDirection: "column"
+					},
 					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							style: { fontWeight: 600 },
-							children: negative.keyword
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: { width: "100%" },
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									style: { fontWeight: 600 },
+									children: note.title
+								}),
+								note.topic !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									style: { marginLeft: 10 },
+									children: note.topic
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									style: { marginLeft: 10 },
+									children: note.publishedAt.slice(0, 10)
+								})
+							]
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default.muted,
-							style: { flex: 1 },
-							children: negative.reason
+							style: {
+								whiteSpace: "pre-wrap",
+								fontSize: 12
+							},
+							children: [note.copy.slice(0, 120), note.copy.length > 120 ? "…" : ""]
 						}),
-						negative.accountId === void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badgeGray,
-							children: "全局"
-						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badge,
-							children: accounts.find((a) => a.id === negative.accountId)?.name ?? negative.accountId
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							className: `${panel_module_css_default.button} ${note.weight === weight ? panel_module_css_default.tabActive : ""}`,
+							onClick: () => void setWeight(note.id, weight),
+							children: weight
+						}, weight)) })
+					]
+				}, note.id))
+			] });
+		}
+		//#endregion
+		//#region src/client/panel/StatusBadge.tsx
+		/** 账号/采集/数据来源状态徽标。 */
+		function StatusBadge({ status, source }) {
+			const labels = {
+				unbound: "未绑定",
+				bound: "已绑定",
+				authorized: "已授权",
+				"awaiting-import": "待导入",
+				failed: "失败",
+				expired: "已失效",
+				idle: "空闲",
+				success: "成功",
+				running: "采集中",
+				manual: "手动",
+				import: "导入",
+				apify: "Apify"
+			};
+			const text = labels[status] ?? labels[source ?? ""] ?? status;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				className: `${status === "failed" ? panel_module_css_default.badgeDanger : status === "running" ? panel_module_css_default.badgeWarn : panel_module_css_default.badgeGreen} ${panel_module_css_default.badge}`,
+				children: text
+			});
+		}
+		//#endregion
+		//#region src/client/panel/OverviewTab.tsx
+		/** 运营总览：多账号状态、指标摘要、高权重笔记和草稿数。 */
+		function OverviewTab({ api, onOpenStudio }) {
+			const [accounts, setAccounts] = (0, react.useState)([]);
+			const [error, setError] = (0, react.useState)("");
+			const refresh = (0, react.useCallback)(async () => {
+				try {
+					setAccounts(await api.listAccounts());
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			}, [api]);
+			(0, react.useEffect)(() => {
+				refresh();
+			}, [refresh]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.danger,
+					children: error
+				}),
+				accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "还没有账号。先在「账号」Tab 创建并绑定真实小红书账号。"
+				}),
+				accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.card,
+					style: {
+						alignItems: "flex-start",
+						flexDirection: "column"
+					},
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								width: "100%",
+								display: "flex",
+								alignItems: "center",
+								gap: 10
+							},
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									style: { fontWeight: 600 },
+									children: account.name
+								}),
+								account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.connection.status }),
+								account.collectionStatus !== void 0 && account.collectionStatus.lastStatus !== "idle" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.collectionStatus.lastStatus }),
+								account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: `${panel_module_css_default.badge} ${panel_module_css_default.badgeGreen}`,
+									children: "启用"
+								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: `${panel_module_css_default.badge} ${panel_module_css_default.badgeGray}`,
+									children: "停用"
+								})
+							]
+						}),
+						account.connection?.profileUrl !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.muted,
+							children: account.connection.profileUrl
+						}),
+						account.collectionStatus?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.danger,
+							children: account.collectionStatus.lastError
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: `${panel_module_css_default.button} ${panel_module_css_default.danger}`,
-							onClick: () => void remove(negative.id),
-							children: "删除"
+							className: panel_module_css_default.primary,
+							onClick: () => onOpenStudio(account.id),
+							children: "打开创作台"
 						})
 					]
-				}, negative.id))
+				}, account.id))
 			] });
 		}
 		//#endregion
@@ -836,6 +1104,143 @@ window.__ModuleLoader__.load({
 						})
 					]
 				}, persona.id))
+			] });
+		}
+		//#endregion
+		//#region src/client/panel/StudioTab.tsx
+		/** 矩阵专属创作台：账号级对话、模式切换、证据展示、保存草稿。 */
+		function StudioTab({ api, accountId, onOpenDraft }) {
+			const [messages, setMessages] = (0, react.useState)([]);
+			const [input, setInput] = (0, react.useState)("");
+			const [mode, setMode] = (0, react.useState)("creative");
+			const [error, setError] = (0, react.useState)("");
+			const [sending, setSending] = (0, react.useState)(false);
+			const [evidence, setEvidence] = (0, react.useState)(void 0);
+			const refresh = (0, react.useCallback)(async () => {
+				try {
+					setMessages(await api.listStudioMessages(accountId));
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			}, [api, accountId]);
+			(0, react.useEffect)(() => {
+				refresh();
+			}, [refresh]);
+			const send = async () => {
+				if (input.trim() === "") return;
+				setSending(true);
+				try {
+					const result = await api.studioSend(accountId, input.trim(), mode);
+					setEvidence(result.evidence);
+					setInput("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setSending(false);
+				}
+			};
+			const saveLastAsDraft = async () => {
+				const last = [...messages].reverse().find((m) => m.role === "assistant");
+				if (last === void 0) {
+					setError("还没有生成结果可保存");
+					return;
+				}
+				const topicId = window.prompt("请输入或粘贴一个选题标题，将先加入选题池再保存草稿：", "");
+				if (topicId === null || topicId.trim() === "") return;
+				try {
+					await api.addTopic(topicId.trim());
+					const created = (await api.listTopics()).filter((t) => t.title === topicId.trim()).at(-1);
+					if (created === void 0) {
+						setError("选题创建失败");
+						return;
+					}
+					await api.studioSaveDraft(accountId, created.id, last.content, "");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+				accountId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "请先在「账号」Tab 创建账号，再从「总览」打开创作台。"
+				}),
+				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.danger,
+					children: error
+				}),
+				messages.length === 0 && accountId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.muted,
+					children: "这是当前账号的专属创作台。输入指令后，仅注入该账号的人设、知识库与外部趋势。"
+				}),
+				messages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.card,
+					style: {
+						alignItems: "flex-start",
+						flexDirection: "column"
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: message.role === "user" ? panel_module_css_default.badge : panel_module_css_default.badgeGreen,
+						children: message.role === "user" ? "我" : "创作助手"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: {
+							whiteSpace: "pre-wrap",
+							fontSize: 13,
+							width: "100%"
+						},
+						children: message.content
+					})]
+				}, message.id)),
+				evidence !== void 0 && evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "本次生成依据" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.muted,
+						children: [evidence.reasons.join("；"), evidence.persona !== void 0 && evidence.persona !== "" ? `（人设：${evidence.persona}）` : ""]
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.tabs,
+					style: { marginTop: 12 },
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						className: mode === "creative" ? panel_module_css_default.tabActive : panel_module_css_default.tab,
+						onClick: () => setMode("creative"),
+						children: "创作模式"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						className: mode === "full" ? panel_module_css_default.tabActive : panel_module_css_default.tab,
+						onClick: () => setMode("full"),
+						children: "完整知识库"
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.field,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						className: panel_module_css_default.textarea,
+						rows: 3,
+						value: input,
+						onChange: (e) => setInput(e.target.value),
+						placeholder: "输入创作指令：写一篇、分析选题、改开头……"
+					})
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.primary,
+					onClick: () => void send(),
+					disabled: sending,
+					children: sending ? "生成中…" : "发送"
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.button,
+					style: { marginLeft: 8 },
+					onClick: () => void saveLastAsDraft(),
+					children: "保存最近结果为草稿"
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.button,
+					style: { marginLeft: 8 },
+					onClick: () => onOpenDraft(),
+					children: "打开草稿箱"
+				})
 			] });
 		}
 		//#endregion
@@ -977,6 +1382,10 @@ window.__ModuleLoader__.load({
 		//#region src/client/panel/XhsPanel.tsx
 		const TABS = [
 			{
+				id: "overview",
+				label: "总览"
+			},
+			{
 				id: "accounts",
 				label: "账号"
 			},
@@ -985,22 +1394,31 @@ window.__ModuleLoader__.load({
 				label: "人设"
 			},
 			{
+				id: "knowledge",
+				label: "知识库"
+			},
+			{
 				id: "topics",
 				label: "选题"
 			},
 			{
-				id: "negatives",
-				label: "黑名单"
-			},
-			{
 				id: "drafts",
 				label: "草稿"
+			},
+			{
+				id: "studio",
+				label: "创作台"
 			}
 		];
-		/** 五 Tab 配置面板容器。 */
+		/** 混合布局面板容器：运营总览 + 账号管理 + 知识库 + 创作台。 */
 		function XhsPanel(props) {
 			const { api } = props;
-			const [tab, setTab] = (0, react.useState)("accounts");
+			const [tab, setTab] = (0, react.useState)("overview");
+			const [accountId, setAccountId] = (0, react.useState)("");
+			const openStudio = (id) => {
+				setAccountId(id);
+				setTab("studio");
+			};
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default.view,
 				children: [
@@ -1016,11 +1434,23 @@ window.__ModuleLoader__.load({
 							children: t.label
 						}, t.id))
 					}),
+					tab === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(OverviewTab, {
+						api,
+						onOpenStudio: openStudio
+					}),
 					tab === "accounts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsTab, { api }),
 					tab === "personas" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonasTab, { api }),
+					tab === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
+						api,
+						accountId
+					}),
 					tab === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, { api }),
-					tab === "negatives" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(NegativesTab, { api }),
-					tab === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, { api })
+					tab === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, { api }),
+					tab === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
+						api,
+						accountId,
+						onOpenDraft: () => setTab("drafts")
+					})
 				]
 			});
 		}

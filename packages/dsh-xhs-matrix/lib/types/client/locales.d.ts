@@ -8,7 +8,6 @@ export declare const zh: {
     readonly 'tab.accounts': "账号";
     readonly 'tab.personas': "人设";
     readonly 'tab.topics': "选题";
-    readonly 'tab.negatives': "黑名单";
     readonly 'tab.drafts': "草稿";
 };
 /** 英文字典（键对齐）。 */

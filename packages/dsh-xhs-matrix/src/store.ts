@@ -4,11 +4,13 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type {
-  Account, Draft, DraftMetrics, DraftStatus, NegativeTopic, Persona, StoreFile, Topic,
+  Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MetricSnapshot, NoteWeight,
+  Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample,
 } from './types.ts'
+import { migrateStoreFile } from './migration.ts'
 
 /** 存储文件格式版本。 */
-export const MATRIX_STORE_VERSION = 1
+export const MATRIX_STORE_VERSION = 2
 
 /** 存储文件默认位置。 */
 export function matrixStorePath(): string {
@@ -25,12 +27,76 @@ export class MatrixStoreError extends Error {
 
 /** 写接口的载荷形状（不含 id/createdAt）。 */
 export interface AccountPayload { name: string; personaId: string; enabled: boolean }
-export interface PersonaPayload { name: string; prompt: string; toneTags?: string[] }
-export interface NegativePayload { accountId?: string; keyword: string; reason: string }
+export interface PersonaPayload {
+  name: string
+  prompt: string
+  toneTags?: string[]
+  positioning?: string
+  audience?: string
+  expertise?: string
+  contentDirections?: string
+  hookStyles?: string[]
+  bodyStructure?: string
+  endingStyle?: string
+  forbiddenExpressions?: string
+  topicCriteria?: string
+  defaultHashtags?: string[]
+}
 export interface DraftPayload { accountId: string; topicId: string; date: string; copy: string; coverPrompt: string }
 
+export interface PublishedNotePayload {
+  accountId: string
+  title: string
+  copy: string
+  topic?: string
+  contentType?: string
+  sourceUrl?: string
+  publishedAt: string
+  source: import('./types.ts').DataSource
+  weight: NoteWeight
+  updatedAt?: string
+}
+
+export interface MetricSnapshotPayload {
+  noteId: string
+  accountId: string
+  reads: number
+  likes: number
+  favorites: number
+  comments: number
+  shares?: number
+  source: import('./types.ts').DataSource
+  status: 'success' | 'failed'
+  error?: string
+}
+
+export interface TrendSamplePayload {
+  accountId: string
+  title: string
+  summary?: string
+  sourceUrl?: string
+  source: 'apify' | 'manual'
+  actorId?: string
+  publishedAt?: string
+  reads?: number
+  likes?: number
+  favorites?: number
+  comments?: number
+  keywords?: string[]
+  contentType?: string
+  status: 'success' | 'failed'
+  error?: string
+}
+
+export interface StudioMessagePayload {
+  accountId: string
+  role: 'user' | 'assistant'
+  content: string
+  evidenceIds?: string[]
+}
+
 function empty(): StoreFile {
-  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], topics: [], negatives: [], drafts: [] }
+  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], topics: [], drafts: [], publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [] }
 }
 
 function nextId(): string {
@@ -59,17 +125,21 @@ export class MatrixStore {
     return undefined
   }
 
-  static validateNegativePayload(payload: unknown): string | undefined {
-    const p = payload as Partial<NegativePayload> | null
-    if (typeof p !== 'object' || p === null) return 'body 必须是 JSON 对象'
-    if (typeof p.keyword !== 'string' || p.keyword.trim() === '') return '黑名单关键词必填'
-    if (typeof p.reason !== 'string' || p.reason.trim() === '') return '黑名单原因必填'
-    if (p.accountId !== undefined && typeof p.accountId !== 'string') return 'accountId 必须是字符串'
-    return undefined
-  }
-
   private readonly filePath: string
   private data: StoreFile
+
+  private requireAccount(accountId: string): Account {
+    const account = this.data.accounts.find(item => item.id === accountId)
+    if (account === undefined) throw new MatrixStoreError(`账号不存在：${accountId}`)
+    return account
+  }
+
+  private requirePublishedNote(accountId: string, noteId: string): PublishedNote {
+    this.requireAccount(accountId)
+    const note = this.data.publishedNotes.find(item => item.id === noteId && item.accountId === accountId)
+    if (note === undefined) throw new MatrixStoreError(`已发布笔记不存在或不属于该账号：${noteId}`)
+    return note
+  }
 
   constructor(filePath: string = matrixStorePath()) {
     this.filePath = resolve(filePath)
@@ -94,16 +164,33 @@ export class MatrixStore {
     if (typeof file !== 'object' || file === null || typeof file.version !== 'number') {
       throw new MatrixStoreError(`存储文件形状非法：${this.filePath}`)
     }
+    if (file.version === 1) {
+      this.data = migrateStoreFile(file as Parameters<typeof migrateStoreFile>[0])
+      this.save()
+      return this.data
+    }
     if (file.version !== MATRIX_STORE_VERSION) {
       throw new MatrixStoreError(`存储文件 version 不匹配：期望 ${MATRIX_STORE_VERSION}，实际 ${file.version}`)
     }
+    const now = new Date().toISOString()
+    const accounts = Array.isArray(file.accounts) ? file.accounts as Account[] : []
+    const publishedNotes = Array.isArray(file.publishedNotes) ? file.publishedNotes as PublishedNote[] : []
+    const studioMessages = Array.isArray(file.studioMessages) ? file.studioMessages as StudioMessage[] : []
     this.data = {
       version: MATRIX_STORE_VERSION,
-      accounts: Array.isArray(file.accounts) ? file.accounts as Account[] : [],
+      accounts: accounts.map(account => ({
+        ...account,
+        connection: account.connection ?? { status: 'unbound' },
+        collection: account.collection ?? { enabled: false, intervalMinutes: 1440, maxItems: 100 },
+        collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' },
+      })),
       personas: Array.isArray(file.personas) ? file.personas as Persona[] : [],
       topics: Array.isArray(file.topics) ? file.topics as Topic[] : [],
-      negatives: Array.isArray(file.negatives) ? file.negatives as NegativeTopic[] : [],
       drafts: Array.isArray(file.drafts) ? file.drafts as Draft[] : [],
+      publishedNotes: publishedNotes.map(note => ({ ...note, updatedAt: note.updatedAt ?? note.createdAt ?? now })),
+      metricSnapshots: Array.isArray(file.metricSnapshots) ? file.metricSnapshots as MetricSnapshot[] : [],
+      trendSamples: Array.isArray(file.trendSamples) ? file.trendSamples as TrendSample[] : [],
+      studioMessages: studioMessages.map(message => ({ ...message, read: message.read ?? false })),
     }
     return this.data
   }
@@ -130,7 +217,14 @@ export class MatrixStore {
       this.save()
       return existing
     }
-    const account: Account = { id: nextId(), ...payload, createdAt: new Date().toISOString() }
+    const account: Account = {
+      id: nextId(),
+      ...payload,
+      createdAt: new Date().toISOString(),
+      connection: { status: 'unbound' },
+      collection: { enabled: false, intervalMinutes: 1440, maxItems: 100 },
+      collectionStatus: { running: false, lastStatus: 'idle' },
+    }
     this.data.accounts.push(account)
     this.save()
     return account
@@ -138,6 +232,26 @@ export class MatrixStore {
   deleteAccount(id: string): void {
     this.data.accounts = this.data.accounts.filter(a => a.id !== id)
     this.save()
+  }
+  updateAccountConnection(id: string, connection: Account['connection']): Account {
+    const account = this.requireAccount(id)
+    account.connection = connection
+    this.save()
+    return account
+  }
+  updateCollectionConfig(id: string, collection: CollectionConfig): Account {
+    const account = this.requireAccount(id)
+    if (!Number.isInteger(collection.intervalMinutes) || collection.intervalMinutes < 1) throw new MatrixStoreError('intervalMinutes 必须是正整数')
+    if (!Number.isInteger(collection.maxItems) || collection.maxItems < 1) throw new MatrixStoreError('maxItems 必须是正整数')
+    account.collection = collection
+    this.save()
+    return account
+  }
+  updateCollectionStatus(id: string, status: CollectionStatus): Account {
+    const account = this.requireAccount(id)
+    account.collectionStatus = status
+    this.save()
+    return account
   }
 
   // ---------------------------------------------------------------- 人设
@@ -151,10 +265,36 @@ export class MatrixStore {
       existing.name = payload.name
       existing.prompt = payload.prompt
       existing.toneTags = payload.toneTags
+      existing.positioning = payload.positioning
+      existing.audience = payload.audience
+      existing.expertise = payload.expertise
+      existing.contentDirections = payload.contentDirections
+      existing.hookStyles = payload.hookStyles
+      existing.bodyStructure = payload.bodyStructure
+      existing.endingStyle = payload.endingStyle
+      existing.forbiddenExpressions = payload.forbiddenExpressions
+      existing.topicCriteria = payload.topicCriteria
+      existing.defaultHashtags = payload.defaultHashtags
       this.save()
       return existing
     }
-    const persona: Persona = { id: nextId(), name: payload.name, prompt: payload.prompt, toneTags: payload.toneTags, createdAt: new Date().toISOString() }
+    const persona: Persona = {
+      id: nextId(),
+      name: payload.name,
+      prompt: payload.prompt,
+      toneTags: payload.toneTags,
+      positioning: payload.positioning,
+      audience: payload.audience,
+      expertise: payload.expertise,
+      contentDirections: payload.contentDirections,
+      hookStyles: payload.hookStyles,
+      bodyStructure: payload.bodyStructure,
+      endingStyle: payload.endingStyle,
+      forbiddenExpressions: payload.forbiddenExpressions,
+      topicCriteria: payload.topicCriteria,
+      defaultHashtags: payload.defaultHashtags,
+      createdAt: new Date().toISOString(),
+    }
     this.data.personas.push(persona)
     this.save()
     return persona
@@ -195,21 +335,6 @@ export class MatrixStore {
     this.save()
   }
 
-  // ---------------------------------------------------------------- 黑名单
-  listNegatives(): NegativeTopic[] { return this.data.negatives }
-  addNegative(payload: NegativePayload): NegativeTopic {
-    const error = MatrixStore.validateNegativePayload(payload)
-    if (error !== undefined) throw new MatrixStoreError(error)
-    const negative: NegativeTopic = { id: nextId(), accountId: payload.accountId, keyword: payload.keyword, reason: payload.reason, createdAt: new Date().toISOString() }
-    this.data.negatives.push(negative)
-    this.save()
-    return negative
-  }
-  deleteNegative(id: string): void {
-    this.data.negatives = this.data.negatives.filter(n => n.id !== id)
-    this.save()
-  }
-
   // ---------------------------------------------------------------- 草稿
   listDrafts(): Draft[] { return this.data.drafts }
   findDraft(accountId: string, date: string, topicId: string): Draft | undefined {
@@ -232,5 +357,98 @@ export class MatrixStore {
     if (metrics !== undefined) draft.metrics = metrics
     this.save()
     return draft
+  }
+  updateDraft(id: string, payload: { copy?: string; coverPrompt?: string; tags?: string }): Draft {
+    const draft = this.data.drafts.find(d => d.id === id)
+    if (draft === undefined) throw new MatrixStoreError(`草稿不存在：${id}`)
+    if (payload.copy !== undefined) draft.copy = payload.copy
+    if (payload.coverPrompt !== undefined) draft.coverPrompt = payload.coverPrompt
+    if (payload.tags !== undefined) draft.tags = payload.tags
+    draft.updatedAt = new Date().toISOString()
+    this.save()
+    return draft
+  }
+
+  // ---------------------------------------------------------------- 已发布笔记
+  listPublishedNotes(accountId?: string): PublishedNote[] {
+    return accountId === undefined ? this.data.publishedNotes : this.data.publishedNotes.filter(note => note.accountId === accountId)
+  }
+  savePublishedNote(payload: PublishedNotePayload): PublishedNote {
+    return this.importPublishedNotes(payload.accountId, [payload])[0]
+  }
+  importPublishedNotes(accountId: string, payloads: PublishedNotePayload[]): PublishedNote[] {
+    this.requireAccount(accountId)
+    if (payloads.some(payload => payload.accountId !== accountId)) throw new MatrixStoreError('导入记录 accountId 与目标账号不一致')
+    const now = new Date().toISOString()
+    const existingUrls = new Set(this.data.publishedNotes.filter(note => note.accountId === accountId).map(note => note.sourceUrl).filter((url): url is string => url !== undefined))
+    const batchUrls = new Set<string>()
+    const created = payloads.filter((payload) => {
+      if (payload.sourceUrl === undefined) return true
+      if (existingUrls.has(payload.sourceUrl) || batchUrls.has(payload.sourceUrl)) return false
+      batchUrls.add(payload.sourceUrl)
+      return true
+    }).map(payload => ({ id: nextId(), ...payload, createdAt: now, updatedAt: payload.updatedAt ?? now }))
+    this.data.publishedNotes.push(...created)
+    if (created.length > 0) this.save()
+    return created
+  }
+  deletePublishedNote(id: string): void {
+    this.data.publishedNotes = this.data.publishedNotes.filter(n => n.id !== id)
+    this.save()
+  }
+  setNoteWeight(accountId: string, noteId: string, weight: number): PublishedNote {
+    if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new MatrixStoreError('权重必须是 0-5 的整数')
+    this.requirePublishedNote(accountId, noteId)
+    const note = this.data.publishedNotes.find(item => item.id === noteId && item.accountId === accountId)
+    if (note === undefined) throw new MatrixStoreError(`已发布笔记不存在或不属于该账号：${noteId}`)
+    note.weight = weight as NoteWeight
+    note.updatedAt = new Date().toISOString()
+    this.save()
+    return note
+  }
+
+  // ---------------------------------------------------------------- 指标快照
+  listMetricSnapshots(accountId?: string, noteId?: string): MetricSnapshot[] {
+    return this.data.metricSnapshots.filter(snapshot =>
+      (accountId === undefined || snapshot.accountId === accountId)
+      && (noteId === undefined || snapshot.noteId === noteId),
+    )
+  }
+  saveMetricSnapshot(payload: MetricSnapshotPayload): MetricSnapshot {
+    this.requirePublishedNote(payload.accountId, payload.noteId)
+    const snapshot: MetricSnapshot = { id: nextId(), ...payload, collectedAt: new Date().toISOString() }
+    this.data.metricSnapshots.push(snapshot)
+    this.save()
+    return snapshot
+  }
+
+  // ---------------------------------------------------------------- 趋势样本
+  listTrendSamples(accountId?: string): TrendSample[] {
+    return accountId === undefined ? this.data.trendSamples : this.data.trendSamples.filter(sample => sample.accountId === accountId)
+  }
+  saveTrendSample(payload: TrendSamplePayload): TrendSample {
+    this.requireAccount(payload.accountId)
+    const sample: TrendSample = { id: nextId(), ...payload, collectedAt: new Date().toISOString() }
+    this.data.trendSamples.push(sample)
+    this.save()
+    return sample
+  }
+
+  // ---------------------------------------------------------------- 创作室消息
+  listStudioMessages(accountId?: string): StudioMessage[] {
+    return accountId === undefined ? this.data.studioMessages : this.data.studioMessages.filter(message => message.accountId === accountId)
+  }
+  saveStudioMessage(payload: StudioMessagePayload): StudioMessage {
+    this.requireAccount(payload.accountId)
+    const message: StudioMessage = { id: nextId(), ...payload, receivedAt: new Date().toISOString(), read: false }
+    this.data.studioMessages.push(message)
+    this.save()
+    return message
+  }
+  markStudioMessageRead(id: string): void {
+    const message = this.data.studioMessages.find(m => m.id === id)
+    if (message === undefined) throw new MatrixStoreError(`创作室消息不存在：${id}`)
+    message.read = true
+    this.save()
   }
 }

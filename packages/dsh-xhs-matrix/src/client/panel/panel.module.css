@@ -261,6 +261,33 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   color: var(--xhs-text-sub);
 }
 
+.badgeDanger {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #FFE9EC;
+  color: #D62739;
+}
+
+.badgeWarn {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #FFF4E0;
+  color: #B36A00;
+}
+
+.success {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--xhs-green-soft);
+  color: var(--xhs-green);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
 /* --- 辅助 --- */
 .empty {
   padding: 10px 14px;

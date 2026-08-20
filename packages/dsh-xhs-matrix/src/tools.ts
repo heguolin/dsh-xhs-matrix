@@ -1,4 +1,4 @@
-/** Agent 工具族：xhs_today 决策流 + 草稿/选题/黑名单/账号操作。所有工具返回 { ok, message, ...data }。 */
+/** Agent 工具族：xhs_today 决策流 + 草稿/选题/账号操作。所有工具返回 { ok, message, ...data }。 */
 
 import type { Context } from '@deepseek-ai/cordis'
 import type { ContentBlock } from '@deepseek-ai/dsh-llm'
@@ -29,7 +29,7 @@ function render(result: { ok: boolean; message: string; [key: string]: unknown }
 }
 
 /**
- * 构建 7 个模型工具。
+ * 构建 8 个模型工具。
  * @param deps - 存储与上下文。
  * @returns 工具定义数组。
  */
@@ -50,7 +50,7 @@ export function makeTools(deps: ToolsDeps) {
 
   const toolToday = defineTool({
     name: 'xhs_today',
-    description: '今日决策：为每个（或指定）未发账号生成创作简报（人设 + 选题 + 黑名单约束）。' +
+    description: '今日决策：为每个（或指定）未发账号生成创作简报（人设 + 选题约束）。' +
       '简报返回后，直接按简报撰写小红书文案（标题 + 正文 + 话题标签）与封面提示词，再用 xhs_draft_save 保存。' +
       '触发词：今天要发什么、选题、小红书矩阵。',
     parameters: {
@@ -77,7 +77,6 @@ export function makeTools(deps: ToolsDeps) {
         return { ok: false, message: '未配置启用账号：请先在「矩阵」面板创建账号并分配人设。', briefs: [] }
       }
       const todayDrafts = store.listDrafts().filter(d => d.date === today())
-      const negatives = store.listNegatives()
       const briefs: string[] = []
       const skipped: string[] = []
       for (const account of accounts) {
@@ -86,17 +85,17 @@ export function makeTools(deps: ToolsDeps) {
           skipped.push(`${account.name}（未分配人设）`)
           continue
         }
-        const candidates = filterTopics(store.listTopics(), negatives, account.id, todayDrafts)
+        const candidates = filterTopics(store.listTopics(), account.id, todayDrafts)
         const topic = selectTopic(candidates, selectionStrategy)
         if (topic === undefined) {
-          skipped.push(`${account.name}（选题池为空或全部被黑名单/已用/今日已发排除）`)
+          skipped.push(`${account.name}（选题池为空或全部被已用/今日已发排除）`)
           continue
         }
-        briefs.push(composeBrief(account, persona, topic, negatives))
+        briefs.push(composeBrief(account, persona, topic))
       }
       if (briefs.length === 0) {
         const detail = skipped.length > 0 ? `：${skipped.join('，')}` : ''
-        return { ok: false, message: `今日无可生成内容${detail}。请补充选题或检查黑名单。`, briefs: [] }
+        return { ok: false, message: `今日无可生成内容${detail}。请补充选题或检查账号选题标准。`, briefs: [] }
       }
       const message = skipped.length > 0
         ? `已生成 ${briefs.length} 份创作简报（跳过：${skipped.join('；')}）`
@@ -211,33 +210,6 @@ export function makeTools(deps: ToolsDeps) {
     },
   })
 
-  const toolNegativeAdd = defineTool({
-    name: 'xhs_negative_add',
-    description: '添加黑名单条目（accountId 省略为全局；命中关键词的选题将不会出现在创作简报中）。',
-    parameters: {
-      keyword: { type: 'string', required: true, description: '黑名单关键词' },
-      reason: { type: 'string', required: true, description: '原因，如「上次没流量」' },
-      accountId: { type: 'string', description: '账号 id（省略 = 全局）' },
-    },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          ok: { type: 'boolean', required: true },
-          message: { type: 'string', required: true },
-          negativeId: { type: 'string', required: true },
-        },
-      },
-      render: (_args, value) => render(value),
-    },
-    async execute(args: { keyword: string; reason: string; accountId?: string }, _exec: unknown) {
-      const negative = store.addNegative({ keyword: args.keyword, reason: args.reason, accountId: args.accountId })
-      const scope = args.accountId === undefined ? '全局' : args.accountId
-      return { ok: true, message: `已添加${scope}黑名单「${args.keyword}」（${args.reason}）`, negativeId: negative.id }
-    },
-  })
-
   const toolAccounts = defineTool({
     name: 'xhs_accounts',
     description: '查询账号与人设清单（只读；账号/人设的增删改请在「矩阵」面板进行）。',
@@ -304,5 +276,102 @@ export function makeTools(deps: ToolsDeps) {
     },
   })
 
-  return [toolToday, toolDraftSave, toolTopics, toolTopicAdd, toolNegativeAdd, toolAccounts, toolDraftStatus]
+  const toolNotes = defineTool({
+    name: 'xhs_notes',
+    description: '查询指定账号的已发布笔记知识库（含标题、权重、最近指标摘要）。',
+    parameters: {
+      accountId: { type: 'string', required: true, description: '账号 id' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          ok: { type: 'boolean', required: true },
+          message: { type: 'string', required: true },
+          notes: { type: 'array', required: true, items: { type: 'string' } },
+        },
+      },
+      render: (_args, value) => render(value),
+    },
+    isConcurrencySafe: () => true,
+    async execute(args: { accountId: string }, _exec: unknown) {
+      if (!store.listAccounts().some(account => account.id === args.accountId)) {
+        return { ok: false, message: `账号不存在：${args.accountId}`, notes: [] }
+      }
+      const notes = store.listPublishedNotes(args.accountId)
+      const lines = notes.length === 0
+        ? ['该账号还没有已发布笔记']
+        : notes.map(note => {
+            const metric = store.listMetricSnapshots(args.accountId, note.id).at(-1)
+            return `${note.id}\t权重 ${note.weight}\t${note.title}${metric !== undefined ? `\t阅读 ${metric.reads}` : ''}`
+          })
+      return { ok: true, message: lines.join('\n'), notes: lines }
+    },
+  })
+
+  const toolTrends = defineTool({
+    name: 'xhs_trends',
+    description: '查询指定账号已保存的外部趋势样本（Apify 采集，公开数据）。',
+    parameters: {
+      accountId: { type: 'string', required: true, description: '账号 id' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          ok: { type: 'boolean', required: true },
+          message: { type: 'string', required: true },
+          trends: { type: 'array', required: true, items: { type: 'string' } },
+        },
+      },
+      render: (_args, value) => render(value),
+    },
+    isConcurrencySafe: () => true,
+    async execute(args: { accountId: string }, _exec: unknown) {
+      if (!store.listAccounts().some(account => account.id === args.accountId)) {
+        return { ok: false, message: `账号不存在：${args.accountId}`, trends: [] }
+      }
+      const trends = store.listTrendSamples(args.accountId)
+      const lines = trends.length === 0
+        ? ['暂无趋势样本，请在「矩阵」面板触发采集']
+        : trends.slice(0, 20).map(trend => `${trend.id}\t${trend.title}${trend.likes !== undefined ? `\t点赞 ${trend.likes}` : ''}`)
+      return { ok: true, message: lines.join('\n'), trends: lines }
+    },
+  })
+
+  const toolCollectionStatus = defineTool({
+    name: 'xhs_collection_status',
+    description: '查询指定账号的指标采集状态（running/success/failed、最近成功时间、错误）。',
+    parameters: {
+      accountId: { type: 'string', required: true, description: '账号 id' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          ok: { type: 'boolean', required: true },
+          message: { type: 'string', required: true },
+          status: { type: 'string', required: true },
+        },
+      },
+      render: (_args, value) => render(value),
+    },
+    isConcurrencySafe: () => true,
+    async execute(args: { accountId: string }, _exec: unknown) {
+      const account = store.listAccounts().find(item => item.id === args.accountId)
+      if (account === undefined) {
+        return { ok: false, message: `账号不存在：${args.accountId}`, status: 'unknown' }
+      }
+      const status = account.collectionStatus ?? { running: false, lastStatus: 'idle' as const }
+      const parts = [`状态：${status.running ? '采集中' : status.lastStatus}`]
+      if (status.lastSuccessAt !== undefined) parts.push(`最近成功：${status.lastSuccessAt}`)
+      if (status.lastError !== undefined) parts.push(`错误：${status.lastError}`)
+      return { ok: true, message: parts.join('；'), status: status.lastStatus }
+    },
+  })
+
+  return [toolToday, toolDraftSave, toolTopics, toolTopicAdd, toolAccounts, toolDraftStatus, toolNotes, toolTrends, toolCollectionStatus]
 }

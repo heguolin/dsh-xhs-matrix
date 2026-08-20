@@ -1,6 +1,6 @@
-/** 创作简报拼接：人设 + 选题 − 黑名单 + 风格声明（纯函数）。 */
+/** 创作简报拼接：人设 + 选题 + 风格声明（纯函数）。 */
 
-import type { Account, NegativeTopic, Persona, Topic } from './types.ts'
+import type { Account, Persona, Topic } from './types.ts'
 
 /** 默认爆款技巧框架：人设未另行规定自身文案结构时适用。 */
 const DEFAULT_TECHNIQUES = [
@@ -15,24 +15,18 @@ const DEFAULT_TECHNIQUES = [
  * @param account - 目标账号。
  * @param persona - 账号人设。
  * @param topic - 选中选题。
- * @param negatives - 全部黑名单（账号级 + 全局）。
  * @returns 简报文本。
  */
 export function composeBrief(
   account: Account,
   persona: Persona,
   topic: Topic,
-  negatives: NegativeTopic[],
 ): string {
-  const constraints = negatives
-    .filter(n => n.accountId === undefined || n.accountId === account.id)
-    .map(n => `【约束】不要写类似于「${n.keyword}」的内容，因为${n.reason}`)
   return [
     `【账号】${account.name}（${persona.name}）`,
     `【人设】${persona.prompt}`,
     `【风格】严格按「${persona.name}」人设的风格撰写（${persona.prompt}）；默认爆款技巧框架（人设未另行规定时）：${DEFAULT_TECHNIQUES}。`,
     `【选题】${topic.title}`,
-    ...constraints,
     `【任务】按以上人设撰写小红书文案（标题 + 正文 + 话题标签），并给出封面提示词（coverPrompt）。`,
   ].join('\n')
 }

@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
+import { DraftEditor } from './DraftEditor.tsx'
 
 interface DraftRow {
   id: string; accountId: string; topicId: string; date: string
-  copy: string; coverPrompt: string; status: string
+  copy: string; coverPrompt: string; tags?: string; status: string
   metrics?: { reads: number; likes: number; comments: number; collected: string }
+  evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }
 }
 
-/** 草稿 Tab：查看（点击展开完整文案）、标记 published/dropped、录入指标。 */
+/** 草稿 Tab：展开编辑（DraftEditor）、标记 published/dropped、录入指标、来源依据。 */
 export function DraftsTab({ api }: { api: XhsApi }) {
   const [drafts, setDrafts] = useState<DraftRow[]>([])
   const [error, setError] = useState('')
-  // 展开详情：expandedId 为正在查看完整内容的草稿 id。
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     try {
@@ -33,7 +35,6 @@ export function DraftsTab({ api }: { api: XhsApi }) {
   const copyDraft = async (draft: DraftRow): Promise<void> => {
     try {
       await navigator.clipboard.writeText(`【标题】${draft.copy}\n【封面提示词】${draft.coverPrompt}`)
-      setError('')
     } catch {
       setError('复制失败：请手动复制')
     }
@@ -65,9 +66,10 @@ export function DraftsTab({ api }: { api: XhsApi }) {
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
-      {drafts.length === 0 && <div className={css.muted}>暂无草稿。在对话中问「今天要发什么」生成。 </div>}
+      {drafts.length === 0 && <div className={css.muted}>暂无草稿。在「创作台」中生成，或在对话中问「今天要发什么」。</div>}
       {drafts.map(draft => {
         const expanded = expandedId === draft.id
+        const editing = editingId === draft.id
         return (
           <div key={draft.id} className={css.card} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
             <div style={{ width: '100%' }}>
@@ -90,27 +92,38 @@ export function DraftsTab({ api }: { api: XhsApi }) {
             </button>
             {expanded && (
               <div style={{ width: '100%' }}>
-                <div className={css.field}>
-                  <label>封面提示词</label>
-                  <div className={css.muted} style={{ whiteSpace: 'pre-wrap' }}>{draft.coverPrompt || '—'}</div>
-                </div>
-                {draft.metrics !== undefined && (
-                  <div className={css.field}>
-                    <label>流量指标</label>
-                    <div className={css.muted}>阅读 {draft.metrics.reads} · 点赞 {draft.metrics.likes} · 评论 {draft.metrics.comments}（采集于 {draft.metrics.collected.slice(0, 10)}）</div>
-                  </div>
-                )}
-                <button className={css.button} onClick={() => void copyDraft(draft)}>复制文案</button>
+                {editing
+                  ? <DraftEditor api={api} accountId={draft.accountId} draft={draft} onSaved={() => { setEditingId(null); void refresh() }} />
+                  : (
+                    <>
+                      <div className={css.field}>
+                        <label>封面提示词</label>
+                        <div className={css.muted} style={{ whiteSpace: 'pre-wrap' }}>{draft.coverPrompt || '—'}</div>
+                      </div>
+                      {draft.metrics !== undefined && (
+                        <div className={css.field}>
+                          <label>流量指标</label>
+                          <div className={css.muted}>阅读 {draft.metrics.reads} · 点赞 {draft.metrics.likes} · 评论 {draft.metrics.comments}（采集于 {draft.metrics.collected.slice(0, 10)}）</div>
+                        </div>
+                      )}
+                      {draft.evidence !== undefined && draft.evidence.reasons.length > 0 && (
+                        <div className={css.field}>
+                          <label>生成依据</label>
+                          <div className={css.muted}>{draft.evidence.reasons.join('；')}{draft.evidence.persona !== undefined && draft.evidence.persona !== '' ? `（人设：${draft.evidence.persona}）` : ''}</div>
+                        </div>
+                      )}
+                      <button className={css.button} onClick={() => void copyDraft(draft)}>复制文案</button>
+                      <button className={css.button} style={{ marginLeft: 8 }} onClick={() => setEditingId(draft.id)}>编辑</button>
+                    </>
+                  )}
               </div>
             )}
-            <div>
-              {draft.status === 'generated' && (
-                <>
-                  <button className={css.primary} onClick={() => void publish(draft)}>标记已发布</button>
-                  <button className={`${css.button} ${css.danger}`} onClick={() => void drop(draft)}>标记弃用</button>
-                </>
-              )}
-            </div>
+            {draft.status === 'generated' && (
+              <div>
+                <button className={css.primary} onClick={() => void publish(draft)}>标记已发布</button>
+                <button className={`${css.button} ${css.danger}`} onClick={() => void drop(draft)}>标记弃用</button>
+              </div>
+            )}
           </div>
         )
       })}

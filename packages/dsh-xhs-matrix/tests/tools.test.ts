@@ -29,14 +29,12 @@ describe('xhs 工具族', () => {
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业、数据支撑' })
     store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
     store.addTopics(['通勤穿搭'])
-    store.addNegative({ keyword: '美妆', reason: '上次没流量' })
     const [today] = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' })
     const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
     expect(result.ok).toBe(true)
     expect(result.briefs[0]).toContain('账号A')
     expect(result.briefs[0]).toContain('干货风')
     expect(result.briefs[0]).toContain('通勤穿搭')
-    expect(result.briefs[0]).toContain('美妆')
   })
 
   it('xhs_today：今日已发则跳过该账号', async () => {
@@ -125,23 +123,37 @@ describe('xhs 工具族', () => {
     expect(store.listTopics()).toHaveLength(2)
   })
 
-  it('xhs_negative_add：账号级与全局', async () => {
+  it('xhs_notes：查询账号已发布笔记知识库', async () => {
     const store = newStore()
+    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
+    store.savePublishedNote({ accountId: account.id, title: '实测笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
     const tools = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' })
-    const addTool = tools.find(t => t.name === 'xhs_negative_add')!
-    const global = await addTool.execute({ keyword: '美妆', reason: '没流量' }, execStub) as { ok: boolean }
-    expect(global.ok).toBe(true)
-    const scoped = await addTool.execute({ keyword: '测评', reason: '不涨粉', accountId: 'acc-a' }, execStub) as { ok: boolean }
-    expect(scoped.ok).toBe(true)
-    expect(store.listNegatives()).toHaveLength(2)
+    const notesTool = tools.find(t => t.name === 'xhs_notes')!
+    const result = await notesTool.execute({ accountId: account.id }, execStub) as { ok: boolean; notes: string[] }
+    expect(result.ok).toBe(true)
+    expect(result.notes[0]).toContain('实测笔记')
+  })
+
+  it('xhs_trends 与 xhs_collection_status：账号级只读查询', async () => {
+    const store = newStore()
+    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
+    store.saveTrendSample({ accountId: account.id, title: '趋势选题', source: 'apify', status: 'success' })
+    const tools = makeTools({ store, ctx: {} as any, selectionStrategy: 'fifo' })
+    const trendsTool = tools.find(t => t.name === 'xhs_trends')!
+    const trendsResult = await trendsTool.execute({ accountId: account.id }, execStub) as { ok: boolean; trends: string[] }
+    expect(trendsResult.ok).toBe(true)
+    expect(trendsResult.trends[0]).toContain('趋势选题')
+    const statusTool = tools.find(t => t.name === 'xhs_collection_status')!
+    const statusResult = await statusTool.execute({ accountId: account.id }, execStub) as { ok: boolean; status: string }
+    expect(statusResult.ok).toBe(true)
   })
 
   it('xhs_draft_status：published + metrics 触发反馈事件', async () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
-    store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
     const [topic] = store.addTopics(['通勤穿搭'])
-    const draft = store.saveDraft({ accountId: 'acc-a', topicId: topic.id, date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
+    const draft = store.saveDraft({ accountId: account.id, topicId: topic.id, date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
     const received: unknown[] = []
     const ctx = new Context()
     ctx.on('xhs/feedback', (event: unknown) => { received.push(event) })
