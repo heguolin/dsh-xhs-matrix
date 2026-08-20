@@ -84,27 +84,16 @@ describe('MatrixStore', () => {
     expect(() => new MatrixStore(file).load()).toThrow(MatrixStoreError)
   })
 
-  it('去重闸门：同账号+日期+选题的草稿可被 findDraft 发现', () => {
+  it('去重闸门：同账号+日期的草稿可被 findDraft 发现（v3 草稿无选题）', () => {
     const store = new MatrixStore(file)
-    const topic = store.addTopics(['通勤穿搭'])[0]
-    store.saveDraft({ accountId: 'acc-a', topicId: topic.id, date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
-    expect(store.findDraft('acc-a', '2026-08-18', topic.id)).toBeTruthy()
-    expect(store.findDraft('acc-b', '2026-08-18', topic.id)).toBeUndefined()
-  })
-
-  it('markTopicUsed 后选题不再 open', () => {
-    const store = new MatrixStore(file)
-    const [topic] = store.addTopics(['通勤穿搭'])
-    const draft = store.saveDraft({ accountId: 'acc-a', topicId: topic.id, date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
-    store.markTopicUsed(topic.id, draft.id)
-    expect(store.listTopics()[0].status).toBe('used')
-    expect(store.listTopics()[0].usedByDraftId).toBe(draft.id)
+    store.saveDraft({ accountId: 'acc-a', date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
+    expect(store.findDraft('acc-a', '2026-08-18')).toBeTruthy()
+    expect(store.findDraft('acc-b', '2026-08-18')).toBeUndefined()
   })
 
   it('setDraftStatus 携带 metrics', () => {
     const store = new MatrixStore(file)
-    const [topic] = store.addTopics(['通勤穿搭'])
-    const draft = store.saveDraft({ accountId: 'acc-a', topicId: topic.id, date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
+    const draft = store.saveDraft({ accountId: 'acc-a', date: '2026-08-18', copy: 'c', coverPrompt: 'p' })
     const updated = store.setDraftStatus(draft.id, 'published', { reads: 50, likes: 3, comments: 1, collected: '2026-08-20T10:00:00.000Z' })
     expect(updated.status).toBe('published')
     expect(updated.metrics?.reads).toBe(50)

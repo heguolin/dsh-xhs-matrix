@@ -359,8 +359,9 @@ export class MatrixStore {
 
   // ---------------------------------------------------------------- 草稿
   listDrafts(): Draft[] { return this.data.drafts }
-  findDraft(accountId: string, date: string, topicId: string): Draft | undefined {
-    return (this.data.drafts as Array<Draft & { topicId?: string }>).find(d => d.accountId === accountId && d.date === date && d.topicId === topicId)
+  /** v3 草稿独立于选题，去重键为账号 + 日期（无 topicId 残留）。 */
+  findDraft(accountId: string, date: string): Draft | undefined {
+    return this.data.drafts.find(d => d.accountId === accountId && d.date === date)
   }
   saveDraft(payload: DraftPayload): Draft {
     const draft: Draft = { id: nextId(), ...payload, status: 'generated', createdAt: new Date().toISOString() }
