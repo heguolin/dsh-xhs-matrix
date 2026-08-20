@@ -267,7 +267,7 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-soft:#ff24420f;--xhs-bg:#fffdfd;--xhs-card:#fff;--xhs-text:#2b2b2b;--xhs-text-sub:#8a8a8a;--xhs-text-weak:#b5afaf;--xhs-border:#f0e6e6;--xhs-green:#2ba471;--xhs-green-soft:#2ba4711a;--xhs-shadow:0 2px 12px #ff244214;z-index:60;background:var(--xhs-bg);display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:block}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);padding:20px;position:absolute;inset:0;overflow:auto}.hv-J7W_header{align-items:center;gap:8px;margin-bottom:16px;display:flex}.hv-J7W_headerDot{background:var(--xhs-red);border-radius:50%;width:8px;height:8px}.hv-J7W_header h2{margin:0;font-size:18px;font-weight:700}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:16px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 16px;font-size:13px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);box-shadow:0 0 0 3px var(--xhs-red-soft);outline:none}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:13px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_danger{color:var(--xhs-red)}.hv-J7W_danger:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;transition:box-shadow .15s;display:flex}.hv-J7W_card:hover{box-shadow:var(--xhs-shadow)}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeDanger{color:#d62739;background:#ffe9ec;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_badgeWarn{color:#b36a00;background:#fff4e0;border-radius:999px;padding:2px 10px;font-size:12px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft);color:var(--xhs-red);border-radius:8px;padding:10px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:block}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);grid-template-columns:188px 1fr;display:grid;position:absolute;inset:0;overflow:hidden}.hv-J7W_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.hv-J7W_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.hv-J7W_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.hv-J7W_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.hv-J7W_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.hv-J7W_accountItem:hover{border-color:var(--xhs-red)}.hv-J7W_accountItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.hv-J7W_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.hv-J7W_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.hv-J7W_statusDot.hv-J7W_ok{background:#31ae7e}.hv-J7W_statusDot.hv-J7W_warn{background:#f2a43e}.hv-J7W_statusDot.hv-J7W_error{background:#e25662}.hv-J7W_statusDot.hv-J7W_idle{background:#e4d9db}.hv-J7W_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.hv-J7W_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.hv-J7W_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_navItem.hv-J7W_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.hv-J7W_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.hv-J7W_workspace{background:var(--xhs-bg-main);flex-direction:column;min-width:0;min-height:0;display:flex}.hv-J7W_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.hv-J7W_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.hv-J7W_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.hv-J7W_topbarRight{align-items:center;gap:10px;display:flex}.hv-J7W_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.hv-J7W_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.hv-J7W_modeSwitch button.hv-J7W_on{background:var(--xhs-red);color:#fff;font-weight:600}.hv-J7W_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.hv-J7W_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.hv-J7W_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.hv-J7W_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.hv-J7W_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.hv-J7W_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.hv-J7W_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.hv-J7W_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_post:first-of-type{border-top:0}.hv-J7W_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.hv-J7W_postBody{flex:1;min-width:0}.hv-J7W_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.hv-J7W_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.hv-J7W_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.hv-J7W_chat{flex-direction:column;height:100%;min-height:0;display:flex}.hv-J7W_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.hv-J7W_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.hv-J7W_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_bubble.hv-J7W_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.hv-J7W_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.hv-J7W_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.hv-J7W_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.hv-J7W_chips{flex-wrap:wrap;gap:6px;display:flex}.hv-J7W_chip{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;padding:5px 10px;font-size:12px}.hv-J7W_chipInput{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:99px;width:100%;padding:5px 12px;font-size:12px}.hv-J7W_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_contextline:first-of-type{border-top:0}.hv-J7W_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.hv-J7W_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.hv-J7W_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.hv-J7W_studioTop strong{color:var(--xhs-text);font-size:14px}.hv-J7W_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.hv-J7W_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.hv-J7W_msg.hv-J7W_me{flex-direction:row-reverse;margin-left:auto}.hv-J7W_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgAvatar{background:var(--xhs-face);color:#8a3945}.hv-J7W_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.hv-J7W_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.hv-J7W_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.hv-J7W_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.hv-J7W_studioSend:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.hv-J7W_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.hv-J7W_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.hv-J7W_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.hv-J7W_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.hv-J7W_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.hv-J7W_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.hv-J7W_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.hv-J7W_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.hv-J7W_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.hv-J7W_tag.hv-J7W_on{background:var(--xhs-red);color:#fff}.hv-J7W_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.hv-J7W_filter.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.hv-J7W_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.hv-J7W_libBody{flex:1;min-width:0}.hv-J7W_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.hv-J7W_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.hv-J7W_weight{gap:4px;margin-top:8px;display:flex}.hv-J7W_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.hv-J7W_weight button:hover{border-color:var(--xhs-red)}.hv-J7W_weight button.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.hv-J7W_topicLayout{grid-template-columns:1.05fr .95fr;gap:14px;display:grid}.hv-J7W_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.hv-J7W_topicItem:first-of-type{border-top:0}.hv-J7W_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.hv-J7W_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.hv-J7W_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.hv-J7W_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.hv-J7W_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.hv-J7W_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.hv-J7W_personaItem:hover{border-color:var(--xhs-red)}.hv-J7W_personaItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.hv-J7W_personaName{font-size:13px;font-weight:700}.hv-J7W_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.hv-J7W_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.hv-J7W_draftEditor,.hv-J7W_sourcePanel{min-width:0}.hv-J7W_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.hv-J7W_source:first-of-type{border-top:0}.hv-J7W_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.hv-J7W_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.hv-J7W_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.hv-J7W_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.hv-J7W_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.hv-J7W_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.hv-J7W_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.hv-J7W_dialogClose:hover{color:var(--xhs-red)}.hv-J7W_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.hv-J7W_dialogRow .hv-J7W_face{width:28px;height:28px}.hv-J7W_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_primary:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.hv-J7W_rowActions{flex:none;align-items:center;gap:8px;display:flex}.hv-J7W_spacer{flex:1}";
 		const tagId = "dsh-xhs-matrix/panel.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -277,40 +277,231 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"header": "hv-J7W_header",
+			"score": "hv-J7W_score",
 			"field": "hv-J7W_field",
-			"tab": "hv-J7W_tab",
-			"tabActive": "hv-J7W_tabActive",
-			"textarea": "hv-J7W_textarea",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"primary": "hv-J7W_primary",
-			"success": "hv-J7W_success",
 			"muted": "hv-J7W_muted",
-			"input": "hv-J7W_input",
-			"button": "hv-J7W_button",
+			"warn": "hv-J7W_warn",
+			"tag": "hv-J7W_tag",
+			"active": "hv-J7W_active",
+			"studioLayout": "hv-J7W_studioLayout",
+			"topbarRight": "hv-J7W_topbarRight",
+			"studioSend": "hv-J7W_studioSend",
+			"draftLayout": "hv-J7W_draftLayout",
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"tab": "hv-J7W_tab",
 			"empty": "hv-J7W_empty",
-			"tabs": "hv-J7W_tabs",
+			"postMeta": "hv-J7W_postMeta",
+			"dialog": "hv-J7W_dialog",
+			"chip": "hv-J7W_chip",
+			"contextLine": "hv-J7W_contextLine",
+			"libRow": "hv-J7W_libRow",
+			"panelTitle": "hv-J7W_panelTitle",
+			"context": "hv-J7W_context",
+			"editbar": "hv-J7W_editbar",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"personaDesc": "hv-J7W_personaDesc",
+			"dangerBtn": "hv-J7W_dangerBtn",
 			"danger": "hv-J7W_danger",
-			"badgeGray": "hv-J7W_badgeGray",
-			"headerDot": "hv-J7W_headerDot",
-			"badgeDanger": "hv-J7W_badgeDanger",
 			"view": "hv-J7W_view",
+			"studioTop": "hv-J7W_studioTop",
+			"personaItem": "hv-J7W_personaItem",
+			"chatSend": "hv-J7W_chatSend",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"group": "hv-J7W_group",
+			"post": "hv-J7W_post",
+			"studioResult": "hv-J7W_studioResult",
+			"messages": "hv-J7W_messages",
+			"studioComposer": "hv-J7W_studioComposer",
+			"sidebar": "hv-J7W_sidebar",
+			"topicItem": "hv-J7W_topicItem",
+			"topbarSub": "hv-J7W_topbarSub",
+			"textarea": "hv-J7W_textarea",
+			"accountAdd": "hv-J7W_accountAdd",
+			"personaLayout": "hv-J7W_personaLayout",
+			"postTitle": "hv-J7W_postTitle",
+			"chat": "hv-J7W_chat",
+			"meter": "hv-J7W_meter",
+			"filterRow": "hv-J7W_filterRow",
+			"chatInput": "hv-J7W_chatInput",
+			"msgBubble": "hv-J7W_msgBubble",
+			"postBody": "hv-J7W_postBody",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"dialogRow": "hv-J7W_dialogRow",
+			"libMeta": "hv-J7W_libMeta",
+			"source": "hv-J7W_source",
+			"contextline": "hv-J7W_contextline",
+			"rowActions": "hv-J7W_rowActions",
+			"button": "hv-J7W_button",
+			"content": "hv-J7W_content",
+			"topbar": "hv-J7W_topbar",
+			"me": "hv-J7W_me",
+			"personaName": "hv-J7W_personaName",
+			"primary": "hv-J7W_primary",
+			"panel": "hv-J7W_panel",
+			"chathead": "hv-J7W_chathead",
+			"navItem": "hv-J7W_navItem",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"msgAvatar": "hv-J7W_msgAvatar",
+			"topicReason": "hv-J7W_topicReason",
+			"tabActive": "hv-J7W_tabActive",
+			"thumb": "hv-J7W_thumb",
+			"pillWarn": "hv-J7W_pillWarn",
+			"chipInput": "hv-J7W_chipInput",
+			"libBody": "hv-J7W_libBody",
+			"ok": "hv-J7W_ok",
+			"brand": "hv-J7W_brand",
+			"bubble": "hv-J7W_bubble",
+			"on": "hv-J7W_on",
+			"below": "hv-J7W_below",
+			"libTitle": "hv-J7W_libTitle",
+			"weight": "hv-J7W_weight",
+			"badge": "hv-J7W_badge",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"weightBadge": "hv-J7W_weightBadge",
+			"overlay": "hv-J7W_overlay",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"topicTitle": "hv-J7W_topicTitle",
+			"spacer": "hv-J7W_spacer",
+			"metric": "hv-J7W_metric",
+			"accountName": "hv-J7W_accountName",
+			"tabs": "hv-J7W_tabs",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"success": "hv-J7W_success",
+			"statusDot": "hv-J7W_statusDot",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"accountItem": "hv-J7W_accountItem",
+			"topicLayout": "hv-J7W_topicLayout",
+			"error": "hv-J7W_error",
+			"input": "hv-J7W_input",
+			"badgeGray": "hv-J7W_badgeGray",
+			"msg": "hv-J7W_msg",
+			"brandLogo": "hv-J7W_brandLogo",
+			"contextCard": "hv-J7W_contextCard",
+			"idle": "hv-J7W_idle",
+			"chips": "hv-J7W_chips",
+			"workspace": "hv-J7W_workspace",
+			"studioMain": "hv-J7W_studioMain",
+			"navIcon": "hv-J7W_navIcon",
+			"miniThumb": "hv-J7W_miniThumb",
+			"draftEditor": "hv-J7W_draftEditor",
+			"metrics": "hv-J7W_metrics",
+			"overview": "hv-J7W_overview",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"pill": "hv-J7W_pill",
 			"card": "hv-J7W_card",
-			"badge": "hv-J7W_badge"
+			"face": "hv-J7W_face",
+			"filter": "hv-J7W_filter",
+			"bar": "hv-J7W_bar",
+			"personaList": "hv-J7W_personaList",
+			"dialogClose": "hv-J7W_dialogClose"
 		};
 		//#endregion
-		//#region src/client/panel/AccountsTab.tsx
-		/** 账号 Tab：增删改 + 分配人设 + 启用/停用。 */
-		function AccountsTab({ api }) {
+		//#region src/client/panel/ImportDialog.tsx
+		/** 后台数据导入：CSV / JSON 粘贴导入当前账号已发布笔记。 */
+		function ImportDialog({ api, accountId, onDone }) {
+			const [format, setFormat] = (0, react.useState)("json");
+			const [content, setContent] = (0, react.useState)("");
+			const [error, setError] = (0, react.useState)("");
+			const [notice, setNotice] = (0, react.useState)("");
+			const run = async () => {
+				if (content.trim() === "") {
+					setError("请输入导入内容");
+					return;
+				}
+				try {
+					const count = await api.importPublishedNotes(accountId, format, content);
+					setNotice(`已导入 ${count} 条已发布笔记。`);
+					setContent("");
+					setError("");
+					onDone();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.danger,
+					children: error
+				}),
+				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.success,
+					children: notice
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "格式" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+						className: panel_module_css_default.input,
+						value: format,
+						onChange: (e) => setFormat(e.target.value),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: "json",
+							children: "JSON 数组"
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: "csv",
+							children: "CSV（title,copy,publishedAt,...）"
+						})]
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "内容" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						className: panel_module_css_default.input,
+						rows: 6,
+						value: content,
+						onChange: (e) => setContent(e.target.value),
+						placeholder: format === "json" ? "[{\"title\":\"...\",\"copy\":\"...\",\"publishedAt\":\"2026-08-01\"}]" : "title,copy,publishedAt\n..."
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					className: panel_module_css_default.primary,
+					onClick: () => void run(),
+					children: "导入"
+				})
+			] });
+		}
+		//#endregion
+		//#region src/client/panel/StatusBadge.tsx
+		/** 账号/采集/数据来源状态徽标。 */
+		function StatusBadge({ status, source }) {
+			const labels = {
+				unbound: "未绑定",
+				bound: "已绑定",
+				authorized: "已授权",
+				"awaiting-import": "待导入",
+				failed: "失败",
+				expired: "已失效",
+				idle: "空闲",
+				success: "成功",
+				running: "采集中",
+				manual: "手动",
+				import: "导入",
+				apify: "Apify"
+			};
+			const text = labels[status] ?? labels[source ?? ""] ?? status;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				className: `${status === "failed" ? panel_module_css_default.badgeDanger : status === "running" ? panel_module_css_default.badgeWarn : panel_module_css_default.badgeGreen} ${panel_module_css_default.badge}`,
+				children: text
+			});
+		}
+		//#endregion
+		//#region src/client/panel/AccountsDialog.tsx
+		/**
+		* 账号管理弹窗：列表 + 创建/编辑表单 + 绑定主页 + 笔记导入入口。
+		* 账号与采集状态用状态点与徽标区分，失败可重试绑定。
+		*/
+		function AccountsDialog({ api, onClose, onSaved }) {
 			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [personas, setPersonas] = (0, react.useState)([]);
 			const [name, setName] = (0, react.useState)("");
 			const [personaId, setPersonaId] = (0, react.useState)("");
+			const [profileUrl, setProfileUrl] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
+			const [notice, setNotice] = (0, react.useState)("");
 			const [editingId, setEditingId] = (0, react.useState)(null);
 			const [editName, setEditName] = (0, react.useState)("");
 			const [editPersonaId, setEditPersonaId] = (0, react.useState)("");
+			const [editProfileUrl, setEditProfileUrl] = (0, react.useState)("");
+			const [importingId, setImportingId] = (0, react.useState)(null);
 			const refresh = (0, react.useCallback)(async () => {
 				try {
 					const [accs, pers] = await Promise.all([api.listAccounts(), api.listPersonas()]);
@@ -325,14 +516,30 @@ window.__ModuleLoader__.load({
 				refresh();
 			}, [refresh]);
 			const create = async () => {
+				if (name.trim() === "") {
+					setError("请输入账号名");
+					return;
+				}
 				try {
-					await api.createAccount({
-						name,
+					const { id } = await api.createAccount({
+						name: name.trim(),
 						personaId,
 						enabled: true
 					});
+					if (profileUrl.trim() !== "") await api.updateAccount(id, {
+						name: name.trim(),
+						personaId,
+						enabled: true,
+						connection: {
+							profileUrl: profileUrl.trim(),
+							status: "awaiting-import",
+							source: "manual"
+						}
+					});
 					setName("");
 					setPersonaId("");
+					setProfileUrl("");
+					setNotice(`已添加账号「${name.trim()}」${profileUrl.trim() !== "" ? "，并绑定主页待导入" : ""}。`);
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -351,6 +558,7 @@ window.__ModuleLoader__.load({
 				}
 			};
 			const remove = async (id) => {
+				if (!window.confirm("确定删除该账号？其笔记、指标、草稿与创作记录会一并删除。")) return;
 				try {
 					await api.deleteAccount(id);
 					await refresh();
@@ -362,157 +570,233 @@ window.__ModuleLoader__.load({
 				setEditingId(account.id);
 				setEditName(account.name);
 				setEditPersonaId(account.personaId);
+				setEditProfileUrl(account.connection?.profileUrl ?? "");
 			};
 			const saveEdit = async (account) => {
 				try {
 					await api.updateAccount(account.id, {
 						name: editName,
 						personaId: editPersonaId,
-						enabled: account.enabled
+						enabled: account.enabled,
+						connection: editProfileUrl.trim() === "" ? void 0 : {
+							profileUrl: editProfileUrl.trim(),
+							status: account.connection?.status === "bound" || account.connection?.status === "authorized" ? account.connection.status : "awaiting-import",
+							source: account.connection?.source ?? "manual"
+						}
 					});
 					setEditingId(null);
+					setNotice("账号信息已保存。");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
 			const cancelEdit = () => setEditingId(null);
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.danger,
-					children: error
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "账号名" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: name,
-						onChange: (e) => setName(e.target.value),
-						placeholder: "账号A"
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: panel_module_css_default.overlay,
+				onClick: onClose,
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.dialog,
+					onClick: (e) => e.stopPropagation(),
 					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设" }),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-							className: panel_module_css_default.input,
-							value: personaId,
-							onChange: (e) => setPersonaId(e.target.value),
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: "",
-								children: "（未分配）"
-							}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: p.id,
-								children: p.name
-							}, p.id))]
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							className: panel_module_css_default.dialogClose,
+							onClick: onClose,
+							"aria-label": "关闭",
+							children: "×"
 						}),
-						personas.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "账号管理" }),
+						error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.danger,
+							children: error
+						}),
+						notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.success,
+							children: notice
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "新账号名" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: panel_module_css_default.input,
+								value: name,
+								onChange: (e) => setName(e.target.value),
+								placeholder: "效率研究所"
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									className: panel_module_css_default.input,
+									value: personaId,
+									onChange: (e) => setPersonaId(e.target.value),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "（未分配）"
+									}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: p.id,
+										children: p.name
+									}, p.id))]
+								}),
+								personas.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									children: "还没有人设，请先到「人设配置」创建。"
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "小红书主页 URL（可选，绑定后标记「待导入」）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: panel_module_css_default.input,
+								value: profileUrl,
+								onChange: (e) => setProfileUrl(e.target.value),
+								placeholder: "https://www.xiaohongshu.com/user/profile/..."
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							className: panel_module_css_default.primary,
+							onClick: () => void create(),
+							children: "添加账号"
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { style: { marginTop: 16 } }),
+						accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.dialogRow,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }), editingId === account.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									style: { width: 120 },
+									value: editName,
+									onChange: (e) => setEditName(e.target.value)
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									className: panel_module_css_default.input,
+									style: { width: 110 },
+									value: editPersonaId,
+									onChange: (e) => setEditPersonaId(e.target.value),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "（未分配）"
+									}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: p.id,
+										children: p.name
+									}, p.id))]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									style: { width: 170 },
+									value: editProfileUrl,
+									onChange: (e) => setEditProfileUrl(e.target.value),
+									placeholder: "主页 URL"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.dialogRowActions,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.button,
+										onClick: () => void saveEdit(account),
+										children: "保存"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.button,
+										onClick: cancelEdit,
+										children: "取消"
+									})]
+								})
+							] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									style: { minWidth: 0 },
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										style: {
+											fontWeight: 600,
+											fontSize: 13
+										},
+										children: account.name
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.muted,
+										style: { fontSize: 11 },
+										children: [
+											account.personaId === "" ? "未分配人设" : personas.find((p) => p.id === account.personaId)?.name ?? "未知人设",
+											" · ",
+											account.enabled ? "启用" : "停用"
+										]
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(account)]}` }),
+								account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.connection.status }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.dialogRowActions,
+									children: [
+										account.connection?.profileUrl !== void 0 && account.connection.profileUrl !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											title: account.connection.profileUrl,
+											onClick: () => {
+												const url = account.connection?.profileUrl;
+												if (url !== void 0) navigator.clipboard.writeText(url).catch(() => void 0);
+											},
+											children: "主页"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => setImportingId(importingId === account.id ? null : account.id),
+											children: "导入笔记"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => startEdit(account),
+											children: "编辑"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => void toggle(account),
+											children: account.enabled ? "停用" : "启用"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.dangerBtn,
+											onClick: () => void remove(account.id),
+											children: "删除"
+										})
+									]
+								})
+							] })]
+						}, account.id)),
+						accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default.empty,
-							children: "还没有人设，请先到「人设」Tab 创建（人设名 + 提示词）。"
+							children: "暂无账号。"
+						}),
+						importingId !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								marginTop: 14,
+								padding: 14,
+								border: `1px solid var(--xhs-border)`,
+								borderRadius: 12,
+								background: "var(--xhs-card)"
+							},
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImportDialog, {
+								api,
+								accountId: importingId,
+								onDone: () => {
+									refresh();
+									setImportingId(null);
+								}
+							})
 						})
 					]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void create(),
-					children: "添加账号"
-				}),
-				accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.card,
-					style: {
-						alignItems: "flex-start",
-						flexDirection: "column"
-					},
-					children: editingId === account.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.field,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "账号名" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								className: panel_module_css_default.input,
-								value: editName,
-								onChange: (e) => setEditName(e.target.value)
-							})]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.field,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-								className: panel_module_css_default.input,
-								value: editPersonaId,
-								onChange: (e) => setEditPersonaId(e.target.value),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-									value: "",
-									children: "（未分配）"
-								}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-									value: p.id,
-									children: p.name
-								}, p.id))]
-							})]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.primary,
-							onClick: () => void saveEdit(account),
-							children: "保存"
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.button,
-							onClick: cancelEdit,
-							children: "取消"
-						})] })
-					] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							style: { fontWeight: 600 },
-							children: account.name
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.muted,
-							style: { marginLeft: 10 },
-							children: account.personaId === "" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeGray,
-								children: "未分配"
-							}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badge,
-								children: personas.find((p) => p.id === account.personaId)?.name ?? "未知人设"
-							})
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.muted,
-							style: { marginLeft: 10 },
-							children: account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeGreen,
-								children: "启用"
-							}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeGray,
-								children: "停用"
-							})
-						})
-					] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.button,
-							onClick: () => startEdit(account),
-							children: "编辑"
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.button,
-							onClick: () => void toggle(account),
-							children: account.enabled ? "停用" : "启用"
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: `${panel_module_css_default.button} ${panel_module_css_default.danger}`,
-							onClick: () => void remove(account.id),
-							children: "删除"
-						})
-					] })] })
-				}, account.id))
-			] });
+				})
+			});
 		}
 		//#endregion
 		//#region src/client/panel/DraftEditor.tsx
-		/** 草稿编辑器：标题/正文/标签/封面提示词可直接修改，显式保存。 */
+		/**
+		* 草稿编辑器（设计稿 content/detail-surfaces.html）：
+		* 左栏正文直接编辑 + 编辑动作（重写标题/优化开头），右栏本次生成依据；
+		* 保存后仍保持「草稿」状态，不自动发布。
+		*/
 		function DraftEditor({ api, accountId, draft, onSaved }) {
 			const [copy, setCopy] = (0, react.useState)(draft.copy);
 			const [coverPrompt, setCoverPrompt] = (0, react.useState)(draft.coverPrompt);
 			const [tags, setTags] = (0, react.useState)(draft.tags ?? "");
 			const [error, setError] = (0, react.useState)("");
 			const [notice, setNotice] = (0, react.useState)("");
+			const [busy, setBusy] = (0, react.useState)(false);
 			const save = async () => {
 				try {
 					await api.updateDraft(draft.id, {
@@ -526,102 +810,170 @@ window.__ModuleLoader__.load({
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			const rewriteTitle = async () => {
-				copy.split("\n")[0];
+			const runStudio = async (instruction, apply) => {
+				setBusy(true);
+				try {
+					const text = (await api.studioSend(accountId, instruction, "creative")).message.content.trim();
+					if (text !== "") apply(text);
+					else setNotice("未获得有效输出，请手动修改。");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setBusy(false);
+				}
+			};
+			const rewriteTitle = () => runStudio(`请只重写下面文案的第一行标题，使其更吸引人，不要改动正文，直接输出新标题：\n${copy}`, (text) => {
 				const rest = copy.split("\n").slice(1).join("\n");
-				try {
-					const title = (await api.studioSend(accountId, `请只重写下面文案的第一行标题，使其更吸引人，不要改动正文，直接输出新标题：\n${copy}`, "creative")).message.content.trim().split("\n")[0] ?? "";
-					if (title !== "") setCopy(`${title}\n${rest}`);
-					else setNotice("未获得新标题，请手动修改。");
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
-			const optimizeOpening = async () => {
+				setCopy(`${text}\n${rest}`);
+			});
+			const optimizeOpening = () => runStudio(`请只重写下面文案的第二行（正文开头），使其更有钩子，不要改动其他部分，直接输出新开头：\n${copy}`, (text) => {
 				const lines = copy.split("\n");
-				const rest = lines.slice(1).join("\n");
-				try {
-					const opening = (await api.studioSend(accountId, `请只重写下面文案的第二行（正文开头），使其更有钩子，不要改动其他部分，直接输出新开头：\n${copy}`, "creative")).message.content.trim().split("\n")[0] ?? "";
-					if (opening !== "") setCopy(`${lines[0] ?? ""}\n${opening}${rest !== "" ? `\n${rest}` : ""}`);
-					else setNotice("未获得新开头，请手动修改。");
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.danger,
-					children: error
-				}),
-				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.success,
-					children: notice
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题（第一行）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: copy.split("\n")[0] ?? "",
-						onChange: (e) => setCopy(`${e.target.value}\n${copy.split("\n").slice(1).join("\n")}`)
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-						className: panel_module_css_default.textarea,
-						rows: 10,
-						value: copy,
-						onChange: (e) => setCopy(e.target.value)
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "话题标签" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: tags,
-						onChange: (e) => setTags(e.target.value),
-						placeholder: "#效率工具 #职场成长"
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "封面提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-						className: panel_module_css_default.textarea,
-						rows: 3,
-						value: coverPrompt,
-						onChange: (e) => setCoverPrompt(e.target.value)
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.button,
-					onClick: () => void rewriteTitle(),
-					children: "重写标题"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.button,
-					style: { marginLeft: 8 },
-					onClick: () => void optimizeOpening(),
-					children: "优化开头"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					style: { marginLeft: 8 },
-					onClick: () => void save(),
-					children: "保存草稿"
-				})
-			] });
+				const rest = lines.slice(2).join("\n");
+				setCopy(`${lines[0] ?? ""}\n${text}${rest !== "" ? `\n${rest}` : ""}`);
+			});
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: panel_module_css_default.draftLayout,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+					className: `${panel_module_css_default.panel} ${panel_module_css_default.draftEditor}`,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "可直接编辑" })
+						}),
+						error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.danger,
+							children: error
+						}),
+						notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.success,
+							children: notice
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题（第一行）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: panel_module_css_default.input,
+								value: copy.split("\n")[0] ?? "",
+								onChange: (e) => setCopy(`${e.target.value}\n${copy.split("\n").slice(1).join("\n")}`)
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+								className: panel_module_css_default.textarea,
+								rows: 12,
+								value: copy,
+								onChange: (e) => setCopy(e.target.value)
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "话题标签" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: panel_module_css_default.input,
+								value: tags,
+								onChange: (e) => setTags(e.target.value),
+								placeholder: "#效率工具 #职场成长"
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.field,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "封面提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+								className: panel_module_css_default.textarea,
+								rows: 3,
+								value: coverPrompt,
+								onChange: (e) => setCoverPrompt(e.target.value)
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.editbar,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => void rewriteTitle(),
+									disabled: busy,
+									children: "重写标题"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => void optimizeOpening(),
+									disabled: busy,
+									children: "优化开头"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void save(),
+									children: "保存草稿"
+								})
+							]
+						})
+					]
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+					className: `${panel_module_css_default.panel} ${panel_module_css_default.sourcePanel}`,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.panelTitle,
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "本次生成依据" })
+					}), draft.evidence === void 0 || draft.evidence.reasons.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.muted,
+						children: "该草稿无生成依据记录（可能为手动创建）。"
+					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						draft.evidence.persona !== void 0 && draft.evidence.persona !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.source,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["人设规则 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.weightBadge,
+								children: "已使用"
+							})] }), draft.evidence.persona]
+						}),
+						draft.evidence.noteIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.source,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["本地笔记 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.weightBadge,
+									children: "高权重参考"
+								})] }),
+								"引用 ",
+								draft.evidence.noteIds.length,
+								" 篇已发布笔记"
+							]
+						}),
+						draft.evidence.trendIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.source,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["外部趋势 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.weightBadge,
+									children: "Apify"
+								})] }),
+								"引用 ",
+								draft.evidence.trendIds.length,
+								" 个趋势样本"
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.source,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "匹配理由" }), draft.evidence.reasons.join("；")]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.source,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "编辑提醒" }), "已生成原创草稿，不复制外部原文；保存后仍为草稿状态。"]
+						})
+					] })]
+				})]
+			});
 		}
 		//#endregion
 		//#region src/client/panel/DraftsTab.tsx
-		/** 草稿 Tab：展开编辑（DraftEditor）、标记 published/dropped、录入指标、来源依据。 */
-		function DraftsTab({ api }) {
+		/**
+		* 草稿箱：列表 + 展开编辑（DraftEditor 双栏）+ 标记 published/dropped + 录入指标。
+		* 草稿保持「草稿」状态，发布由人工在端内完成。
+		*/
+		function DraftsTab({ api, onOpenStudio }) {
 			const [drafts, setDrafts] = (0, react.useState)([]);
+			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [error, setError] = (0, react.useState)("");
 			const [expandedId, setExpandedId] = (0, react.useState)(null);
-			const [editingId, setEditingId] = (0, react.useState)(null);
 			const refresh = (0, react.useCallback)(async () => {
 				try {
-					setDrafts(await api.listDrafts());
+					const [draftList, accountList] = await Promise.all([api.listDrafts(), api.listAccounts()]);
+					setDrafts(draftList);
+					setAccounts(accountList);
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -630,6 +982,7 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			const accountName = (id) => accounts.find((a) => a.id === id)?.name ?? id;
 			const toggleExpand = (id) => {
 				setExpandedId((prev) => prev === id ? null : id);
 			};
@@ -671,95 +1024,108 @@ window.__ModuleLoader__.load({
 				}),
 				drafts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.muted,
-					children: "暂无草稿。在「创作台」中生成，或在对话中问「今天要发什么」。"
+					children: "暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。"
 				}),
 				drafts.map((draft) => {
 					const expanded = expandedId === draft.id;
-					const editing = editingId === draft.id;
 					return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.card,
-						style: {
-							alignItems: "flex-start",
-							flexDirection: "column"
-						},
+						className: panel_module_css_default.libRow,
+						style: { flexDirection: "column" },
 						children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: { width: "100%" },
+								style: {
+									width: "100%",
+									display: "flex",
+									alignItems: "center",
+									gap: 10
+								},
 								children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										style: { fontWeight: 600 },
+										style: {
+											fontWeight: 600,
+											fontSize: 13
+										},
 										children: draft.date
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: panel_module_css_default.muted,
-										style: { marginLeft: 10 },
-										children: [
-											"账号 ",
-											draft.accountId,
-											" / 选题 ",
-											draft.topicId
-										]
+										children: ["账号 ", accountName(draft.accountId)]
 									}),
 									draft.status === "generated" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 										className: panel_module_css_default.badgeGray,
-										style: { marginLeft: 10 },
 										children: "已生成"
 									}) : draft.status === "published" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 										className: panel_module_css_default.badgeGreen,
-										style: { marginLeft: 10 },
 										children: "已发布"
 									}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 										className: panel_module_css_default.badgeGray,
-										style: { marginLeft: 10 },
 										children: "已弃用"
 									}),
 									draft.metrics !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: panel_module_css_default.badge,
-										style: { marginLeft: 10 },
 										children: ["阅读 ", draft.metrics.reads]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.ghostBtn,
+										onClick: () => toggleExpand(draft.id),
+										children: expanded ? "收起" : "展开"
 									})
 								]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.button,
+								className: panel_module_css_default.ghostBtn,
 								style: {
-									alignSelf: "stretch",
+									width: "100%",
 									textAlign: "left",
 									whiteSpace: "pre-wrap",
-									cursor: "pointer"
+									cursor: "pointer",
+									color: "var(--xhs-text-sub)"
 								},
 								onClick: () => toggleExpand(draft.id),
-								title: expanded ? "收起" : "点击查看完整文案",
+								title: "点击查看完整文案",
 								children: expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										style: { fontWeight: 600 },
+										style: {
+											fontWeight: 600,
+											color: "var(--xhs-text)"
+										},
 										children: draft.copy.split("\n")[0]
 									}),
 									"\n",
 									draft.copy
-								] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-									className: panel_module_css_default.muted,
-									children: [draft.copy.slice(0, 80), draft.copy.length > 80 ? "…" : ""]
-								})
+								] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [draft.copy.slice(0, 100), draft.copy.length > 100 ? "…" : ""] })
 							}),
-							expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								style: { width: "100%" },
-								children: editing ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftEditor, {
-									api,
-									accountId: draft.accountId,
-									draft,
-									onSaved: () => {
-										setEditingId(null);
-										refresh();
-									}
-								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.field,
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "封面提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: panel_module_css_default.muted,
-											style: { whiteSpace: "pre-wrap" },
-											children: draft.coverPrompt || "—"
-										})]
+										className: panel_module_css_default.rowActions,
+										style: {
+											marginBottom: 10,
+											flexWrap: "wrap"
+										},
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => void copyDraft(draft),
+												children: "复制文案"
+											}),
+											draft.status === "generated" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.primary,
+												onClick: () => void publish(draft),
+												children: "标记已发布"
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.dangerBtn,
+												onClick: () => void drop(draft),
+												children: "标记弃用"
+											})] }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => onOpenStudio(draft.accountId),
+												children: "在创作台继续"
+											})
+										]
 									}),
 									draft.metrics !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: panel_module_css_default.field,
@@ -778,35 +1144,14 @@ window.__ModuleLoader__.load({
 											]
 										})]
 									}),
-									draft.evidence !== void 0 && draft.evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.field,
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "生成依据" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-											className: panel_module_css_default.muted,
-											children: [draft.evidence.reasons.join("；"), draft.evidence.persona !== void 0 && draft.evidence.persona !== "" ? `（人设：${draft.evidence.persona}）` : ""]
-										})]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: panel_module_css_default.button,
-										onClick: () => void copyDraft(draft),
-										children: "复制文案"
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: panel_module_css_default.button,
-										style: { marginLeft: 8 },
-										onClick: () => setEditingId(draft.id),
-										children: "编辑"
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftEditor, {
+										api,
+										accountId: draft.accountId,
+										draft,
+										onSaved: () => void refresh()
 									})
-								] })
-							}),
-							draft.status === "generated" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.primary,
-								onClick: () => void publish(draft),
-								children: "标记已发布"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: `${panel_module_css_default.button} ${panel_module_css_default.danger}`,
-								onClick: () => void drop(draft),
-								children: "标记弃用"
-							})] })
+								]
+							})
 						]
 					}, draft.id);
 				})
@@ -822,14 +1167,45 @@ window.__ModuleLoader__.load({
 			4,
 			5
 		];
-		/** 已发布知识库：指标摘要 + 0-5 权重。 */
+		const FILTERS = [
+			{
+				id: "all",
+				label: "全部"
+			},
+			{
+				id: "high",
+				label: "权重高"
+			},
+			{
+				id: "pending",
+				label: "待补指标"
+			},
+			{
+				id: "recent",
+				label: "最近发布"
+			}
+		];
+		/**
+		* 已发布知识库（设计稿 content/detail-surfaces.html）：
+		* 筛选 chips + 笔记行（缩略图/指标/0-5 权重），权重即控制杆。
+		*/
 		function KnowledgeTab({ api, accountId }) {
 			const [notes, setNotes] = (0, react.useState)([]);
+			const [metrics, setMetrics] = (0, react.useState)([]);
+			const [filter, setFilter] = (0, react.useState)("all");
 			const [error, setError] = (0, react.useState)("");
 			const [notice, setNotice] = (0, react.useState)("");
+			const [importing, setImporting] = (0, react.useState)(false);
 			const refresh = (0, react.useCallback)(async () => {
+				if (accountId === "") {
+					setNotes([]);
+					setMetrics([]);
+					return;
+				}
 				try {
-					setNotes(await api.listNotes(accountId));
+					const [noteList, metricList] = await Promise.all([api.listNotes(accountId), api.listMetrics(accountId)]);
+					setNotes(noteList);
+					setMetrics(metricList);
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -847,6 +1223,17 @@ window.__ModuleLoader__.load({
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
+			const latestByNote = /* @__PURE__ */ new Map();
+			for (const m of metrics) {
+				const prev = latestByNote.get(m.noteId);
+				if (prev === void 0 || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m);
+			}
+			const filtered = [...notes].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).filter((note) => {
+				if (filter === "high") return note.weight >= 4;
+				if (filter === "pending") return latestByNote.get(note.id) === void 0;
+				if (filter === "recent") return Date.now() - Date.parse(note.publishedAt) < 720 * 60 * 60 * 1e3;
+				return true;
+			});
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
@@ -856,159 +1243,382 @@ window.__ModuleLoader__.load({
 					className: panel_module_css_default.success,
 					children: notice
 				}),
-				notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				accountId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.empty,
-					children: "该账号还没有已发布笔记。使用「导入」或从创作台保存后回填。"
+					children: "请先在左侧选择账号。"
 				}),
-				notes.map((note) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.card,
-					style: {
-						alignItems: "flex-start",
-						flexDirection: "column"
-					},
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							style: { width: "100%" },
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									style: { fontWeight: 600 },
-									children: note.title
-								}),
-								note.topic !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.muted,
-									style: { marginLeft: 10 },
-									children: note.topic
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.muted,
-									style: { marginLeft: 10 },
-									children: note.publishedAt.slice(0, 10)
-								})
-							]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.muted,
-							style: {
-								whiteSpace: "pre-wrap",
-								fontSize: 12
-							},
-							children: [note.copy.slice(0, 120), note.copy.length > 120 ? "…" : ""]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: `${panel_module_css_default.button} ${note.weight === weight ? panel_module_css_default.tabActive : ""}`,
-							onClick: () => void setWeight(note.id, weight),
-							children: weight
-						}, weight)) })
-					]
-				}, note.id))
+				accountId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.filterRow,
+						children: [
+							FILTERS.map((f) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: filter === f.id ? `${panel_module_css_default.filter} ${panel_module_css_default.on}` : panel_module_css_default.filter,
+								onClick: () => setFilter(f.id),
+								children: f.label
+							}, f.id)),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
+								onClick: () => setImporting(true),
+								children: "＋ 导入笔记"
+							})
+						]
+					}),
+					notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.empty,
+						children: "该账号还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据。"
+					}),
+					notes.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.muted,
+						children: "当前筛选下没有笔记。"
+					}),
+					filtered.map((note) => {
+						const metric = latestByNote.get(note.id);
+						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.libRow,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: panel_module_css_default.miniThumb }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.libBody,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.libTitle,
+										children: note.title
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.libMeta,
+										children: [
+											"发布 ",
+											note.publishedAt.slice(0, 10),
+											metric !== void 0 ? ` · 浏览 ${metric.reads.toLocaleString()} · 点赞 ${metric.likes} · 收藏 ${metric.favorites} · 评论 ${metric.comments}` : " · 指标待更新",
+											note.topic !== void 0 && ` · ${note.topic}`
+										]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.weight,
+										children: [WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: note.weight === weight ? panel_module_css_default.on : void 0,
+											onClick: () => void setWeight(note.id, weight),
+											title: `权重 ${weight}`,
+											children: weight
+										}, weight)), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: panel_module_css_default.muted,
+											style: {
+												marginLeft: 8,
+												alignSelf: "center"
+											},
+											children: [
+												"权重 ",
+												note.weight,
+												" / 5"
+											]
+										})]
+									})
+								]
+							})]
+						}, note.id);
+					}),
+					importing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: {
+							marginTop: 14,
+							padding: 14,
+							border: "1px solid var(--xhs-border)",
+							borderRadius: 12,
+							background: "var(--xhs-card)"
+						},
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImportDialog, {
+							api,
+							accountId,
+							onDone: () => {
+								refresh();
+								setImporting(false);
+							}
+						})
+					})
+				] })
 			] });
 		}
 		//#endregion
-		//#region src/client/panel/StatusBadge.tsx
-		/** 账号/采集/数据来源状态徽标。 */
-		function StatusBadge({ status, source }) {
-			const labels = {
-				unbound: "未绑定",
-				bound: "已绑定",
-				authorized: "已授权",
-				"awaiting-import": "待导入",
-				failed: "失败",
-				expired: "已失效",
-				idle: "空闲",
-				success: "成功",
-				running: "采集中",
-				manual: "手动",
-				import: "导入",
-				apify: "Apify"
-			};
-			const text = labels[status] ?? labels[source ?? ""] ?? status;
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-				className: `${status === "failed" ? panel_module_css_default.badgeDanger : status === "running" ? panel_module_css_default.badgeWarn : panel_module_css_default.badgeGreen} ${panel_module_css_default.badge}`,
-				children: text
-			});
-		}
-		//#endregion
 		//#region src/client/panel/OverviewTab.tsx
-		/** 运营总览：多账号状态、指标摘要、高权重笔记和草稿数。 */
-		function OverviewTab({ api, onOpenStudio }) {
-			const [accounts, setAccounts] = (0, react.useState)([]);
+		/**
+		* 运营总览（设计稿 content/hybrid-layout.html）：
+		* 账号表现指标卡 + 高权重历史内容 + 专属创作台摘要 + 今日趋势选题。
+		*/
+		function OverviewTab({ api, accountId, accounts, onOpenStudio }) {
+			const [notes, setNotes] = (0, react.useState)([]);
+			const [metrics, setMetrics] = (0, react.useState)([]);
+			const [trends, setTrends] = (0, react.useState)([]);
+			const [draftsCount, setDraftsCount] = (0, react.useState)(0);
+			const [personaName, setPersonaName] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
+			const [collecting, setCollecting] = (0, react.useState)(false);
+			const [manualTopic, setManualTopic] = (0, react.useState)("");
+			const account = accounts.find((item) => item.id === accountId);
 			const refresh = (0, react.useCallback)(async () => {
+				if (accountId === "") {
+					setNotes([]);
+					setMetrics([]);
+					setTrends([]);
+					setDraftsCount(0);
+					setPersonaName("");
+					return;
+				}
 				try {
-					setAccounts(await api.listAccounts());
+					const [noteList, metricList, trendList, draftList, personaList] = await Promise.all([
+						api.listNotes(accountId),
+						api.listMetrics(accountId),
+						api.listTrends(accountId),
+						api.listDrafts(),
+						api.listPersonas()
+					]);
+					setNotes(noteList);
+					setMetrics(metricList);
+					setTrends(trendList);
+					setDraftsCount(draftList.filter((d) => d.accountId === accountId && d.status === "generated").length);
+					const persona = personaList.find((p) => p.id === accounts.find((a) => a.id === accountId)?.personaId);
+					setPersonaName(persona?.name ?? "");
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api]);
+			}, [
+				api,
+				accountId,
+				accounts
+			]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			const latestByNote = /* @__PURE__ */ new Map();
+			for (const m of metrics) {
+				const prev = latestByNote.get(m.noteId);
+				if (prev === void 0 || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m);
+			}
+			const weekReads = [...latestByNote.values()].reduce((sum, m) => sum + m.reads, 0);
+			const highWeight = [...notes].filter((n) => n.weight >= 3).sort((a, b) => b.weight - a.weight).slice(0, 5);
+			const collect = async () => {
+				if (accountId === "") return;
+				setCollecting(true);
+				try {
+					await api.collectTrends(accountId, void 0, 10);
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setCollecting(false);
+				}
+			};
+			const addManualTopic = async () => {
+				const title = manualTopic.trim();
+				if (title === "") return;
+				try {
+					await api.addTopic(title);
+					setManualTopic("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			if (accountId === "") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: panel_module_css_default.empty,
+				children: "还没有选择账号。先在左侧「我的账号」选择一个账号，或点击右上角「＋ 添加账号」创建。"
+			}) });
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.empty,
-					children: "还没有账号。先在「账号」Tab 创建并绑定真实小红书账号。"
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.overview,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["账号表现 · ", account?.name ?? ""] }), account?.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.connection.status })]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.metrics,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: notes.length })]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["最近浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: weekReads.toLocaleString() })]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["待处理草稿", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: String(draftsCount).padStart(2, "0") })]
+									})
+								]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panelTitle,
+								style: { marginTop: 16 },
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "高权重历史内容" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									children: "权重 ≥ 3 优先进入创作上下文"
+								})]
+							}),
+							highWeight.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								children: "还没有高权重笔记。在「已发布知识库」中给笔记打权重。"
+							}),
+							highWeight.map((note) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.post,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: panel_module_css_default.thumb }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.postBody,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.postTitle,
+											children: note.title
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.postMeta,
+											children: [
+												"浏览 ",
+												latestByNote.get(note.id)?.reads?.toLocaleString() ?? "—",
+												" · 权重 ",
+												note.weight
+											]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.bar,
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", { style: { width: `${note.weight * 20}%` } })
+										})
+									]
+								})]
+							}, note.id))
+						]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: `${panel_module_css_default.panel} ${panel_module_css_default.chat}`,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.chathead,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "专属创作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.pill,
+									children: "百万上下文"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.bubble,
+								children: [
+									"已加载本账号人设、",
+									notes.length,
+									" 篇已发布笔记（含 ",
+									highWeight.length,
+									" 篇高权重）和 ",
+									trends.length,
+									" 个外部趋势样本。"
+								]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.bubble,
+								style: {
+									alignSelf: "flex-end",
+									background: "var(--xhs-red)",
+									color: "#fff"
+								},
+								children: "先给我 3 个今天适合写的选题"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.bubble,
+								children: "正在按人设标准筛选……点击「专属创作台」可进入完整对话。"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.chatInput,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "输入创作指令……" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.chatSend,
+									onClick: () => onOpenStudio(accountId),
+									children: "进入创作台"
+								})]
+							})
+						]
+					})]
 				}),
-				accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.card,
-					style: {
-						alignItems: "flex-start",
-						flexDirection: "column"
-					},
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.below,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "今日趋势选题" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.ghostBtn,
+								onClick: () => void collect(),
+								disabled: collecting,
+								children: collecting ? "采集中…" : "获取最新候选"
+							})]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.chips,
+							children: [trends.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.muted,
+								children: "暂无趋势样本，点击「获取最新候选」从 Apify 采集。"
+							}), trends.slice(0, 12).map((trend) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.chip,
+								children: trend.title.length > 14 ? `${trend.title.slice(0, 14)}…` : trend.title
+							}, trend.id))]
+						})]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "手动添加选题" })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
-								width: "100%",
 								display: "flex",
-								alignItems: "center",
-								gap: 10
+								gap: 8
 							},
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									style: { fontWeight: 600 },
-									children: account.name
-								}),
-								account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.connection.status }),
-								account.collectionStatus !== void 0 && account.collectionStatus.lastStatus !== "idle" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.collectionStatus.lastStatus }),
-								account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: `${panel_module_css_default.badge} ${panel_module_css_default.badgeGreen}`,
-									children: "启用"
-								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: `${panel_module_css_default.badge} ${panel_module_css_default.badgeGray}`,
-									children: "停用"
-								})
-							]
-						}),
-						account.connection?.profileUrl !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: panel_module_css_default.muted,
-							children: account.connection.profileUrl
-						}),
-						account.collectionStatus?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: panel_module_css_default.danger,
-							children: account.collectionStatus.lastError
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.primary,
-							onClick: () => onOpenStudio(account.id),
-							children: "打开创作台"
-						})
-					]
-				}, account.id))
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: panel_module_css_default.chipInput,
+								value: manualTopic,
+								onChange: (e) => setManualTopic(e.target.value),
+								placeholder: "输入一个选题标题"
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
+								onClick: () => void addManualTopic(),
+								children: "加入选题池"
+							})]
+						})]
+					})]
+				})
 			] });
 		}
 		//#endregion
 		//#region src/client/panel/PersonasTab.tsx
-		/** 人设 Tab：增删改（名称 + prompt 文本域 + 口癖标签）。 */
+		const HOOK_OPTIONS = [
+			"反常识",
+			"痛点切入",
+			"真实对比",
+			"教程结构",
+			"经验清单",
+			"互动提问"
+		];
+		/** 人设列表项：仅名称与摘要。 */
+		function personaSummary(p) {
+			return p.positioning || p.expertise || p.contentDirections || p.prompt || "";
+		}
+		/**
+		* 人设配置（设计稿 content/detail-surfaces.html）：
+		* 左侧选择人设，右侧结构化两栏编辑——定位/受众/禁用表达 + 写作风格/钩子/结构/标准。
+		*/
 		function PersonasTab({ api }) {
 			const [personas, setPersonas] = (0, react.useState)([]);
+			const [selectedId, setSelectedId] = (0, react.useState)(null);
+			const [creating, setCreating] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)("");
+			const [notice, setNotice] = (0, react.useState)("");
 			const [name, setName] = (0, react.useState)("");
 			const [prompt, setPrompt] = (0, react.useState)("");
 			const [toneTags, setToneTags] = (0, react.useState)("");
-			const [error, setError] = (0, react.useState)("");
+			const [positioning, setPositioning] = (0, react.useState)("");
+			const [audience, setAudience] = (0, react.useState)("");
+			const [expertise, setExpertise] = (0, react.useState)("");
+			const [contentDirections, setContentDirections] = (0, react.useState)("");
+			const [hookStyles, setHookStyles] = (0, react.useState)([]);
+			const [bodyStructure, setBodyStructure] = (0, react.useState)("");
+			const [endingStyle, setEndingStyle] = (0, react.useState)("");
+			const [forbiddenExpressions, setForbiddenExpressions] = (0, react.useState)("");
+			const [topicCriteria, setTopicCriteria] = (0, react.useState)("");
+			const [defaultHashtags, setDefaultHashtags] = (0, react.useState)("");
 			const refresh = (0, react.useCallback)(async () => {
 				try {
 					setPersonas(await api.listPersonas());
@@ -1020,95 +1630,296 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
-			const create = async () => {
+			const load = (persona) => {
+				setSelectedId(persona.id);
+				setCreating(false);
+				setName(persona.name);
+				setPrompt(persona.prompt);
+				setToneTags((persona.toneTags ?? []).join(", "));
+				setPositioning(persona.positioning ?? "");
+				setAudience(persona.audience ?? "");
+				setExpertise(persona.expertise ?? "");
+				setContentDirections(persona.contentDirections ?? "");
+				setHookStyles(persona.hookStyles ?? []);
+				setBodyStructure(persona.bodyStructure ?? "");
+				setEndingStyle(persona.endingStyle ?? "");
+				setForbiddenExpressions(persona.forbiddenExpressions ?? "");
+				setTopicCriteria(persona.topicCriteria ?? "");
+				setDefaultHashtags((persona.defaultHashtags ?? []).join(", "));
+			};
+			const startCreate = () => {
+				setSelectedId(null);
+				setCreating(true);
+				setName("");
+				setPrompt("");
+				setToneTags("");
+				setPositioning("");
+				setAudience("");
+				setExpertise("");
+				setContentDirections("");
+				setHookStyles([]);
+				setBodyStructure("");
+				setEndingStyle("");
+				setForbiddenExpressions("");
+				setTopicCriteria("");
+				setDefaultHashtags("");
+			};
+			const splitList = (text) => {
+				const items = text.split(/[,，]/).map((t) => t.trim()).filter((t) => t !== "");
+				return items.length > 0 ? items : void 0;
+			};
+			const save = async () => {
+				if (name.trim() === "") {
+					setError("请输入人设名");
+					return;
+				}
+				const payload = {
+					name: name.trim(),
+					prompt,
+					toneTags: splitList(toneTags),
+					positioning: positioning.trim() === "" ? void 0 : positioning.trim(),
+					audience: audience.trim() === "" ? void 0 : audience.trim(),
+					expertise: expertise.trim() === "" ? void 0 : expertise.trim(),
+					contentDirections: contentDirections.trim() === "" ? void 0 : contentDirections.trim(),
+					hookStyles: hookStyles.length > 0 ? hookStyles : void 0,
+					bodyStructure: bodyStructure.trim() === "" ? void 0 : bodyStructure.trim(),
+					endingStyle: endingStyle.trim() === "" ? void 0 : endingStyle.trim(),
+					forbiddenExpressions: forbiddenExpressions.trim() === "" ? void 0 : forbiddenExpressions.trim(),
+					topicCriteria: topicCriteria.trim() === "" ? void 0 : topicCriteria.trim(),
+					defaultHashtags: splitList(defaultHashtags)
+				};
 				try {
-					const tags = toneTags.split(/[,，]/).map((t) => t.trim()).filter((t) => t !== "");
-					await api.createPersona({
-						name,
-						prompt,
-						toneTags: tags.length > 0 ? tags : void 0
-					});
-					setName("");
-					setPrompt("");
-					setToneTags("");
+					if (creating) {
+						const { id } = await api.createPersona(payload);
+						setSelectedId(id);
+						setCreating(false);
+						setNotice(`人设「${payload.name}」已创建。`);
+					} else if (selectedId !== null) {
+						await api.updatePersona(selectedId, payload);
+						setNotice(`人设「${payload.name}」已保存。`);
+					}
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			const remove = async (id) => {
+			const remove = async () => {
+				if (selectedId === null) return;
+				if (!window.confirm("确定删除该人设？已分配该人设的账号将变为未分配。")) return;
 				try {
-					await api.deletePersona(id);
+					await api.deletePersona(selectedId);
+					setSelectedId(null);
+					setNotice("人设已删除。");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
+			};
+			const toggleHook = (style) => {
+				setHookStyles((prev) => prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style]);
 			};
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设名" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: name,
-						onChange: (e) => setName(e.target.value),
-						placeholder: "干货风"
-					})]
+				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.success,
+					children: notice
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设提示词" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-						className: panel_module_css_default.textarea,
-						value: prompt,
-						onChange: (e) => setPrompt(e.target.value),
-						placeholder: "专业、数据支撑、不废话"
+					className: panel_module_css_default.personaList,
+					children: [personas.map((persona) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+						className: selectedId === persona.id && !creating ? `${panel_module_css_default.personaItem} ${panel_module_css_default.active}` : panel_module_css_default.personaItem,
+						onClick: () => load(persona),
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.personaAvatar }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									flex: 1,
+									minWidth: 0
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.personaName,
+									children: persona.name
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.personaDesc,
+									children: personaSummary(persona) || "未填写定位"
+								})]
+							}),
+							(persona.toneTags ?? []).length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.badge,
+								children: (persona.toneTags ?? []).join("、")
+							})
+						]
+					}, persona.id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						className: panel_module_css_default.accountAdd,
+						onClick: startCreate,
+						children: "＋ 新建人设"
 					})]
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "口癖标签（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: toneTags,
-						onChange: (e) => setToneTags(e.target.value),
-						placeholder: "口语化, 结尾提问"
+				(selectedId !== null || creating) && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.personaLayout,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "账号定位与提示词" })
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "人设名" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: name,
+									onChange: (e) => setName(e.target.value)
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "系统提示词 / 账号定位" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									className: panel_module_css_default.textarea,
+									rows: 3,
+									value: prompt,
+									onChange: (e) => setPrompt(e.target.value),
+									placeholder: "你是一个真实、克制、擅长实测的效率工具创作者……"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "一句话定位" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: positioning,
+									onChange: (e) => setPositioning(e.target.value),
+									placeholder: "实用派测评 · 真实、不夸张"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "目标受众" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: audience,
+									onChange: (e) => setAudience(e.target.value),
+									placeholder: "25-35 岁职场人，想提升效率但反感夸大宣传"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "领域 / 专业度" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: expertise,
+									onChange: (e) => setExpertise(e.target.value),
+									placeholder: "AI 工具、职场效率"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "禁用表达（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: forbiddenExpressions,
+									onChange: (e) => setForbiddenExpressions(e.target.value),
+									placeholder: "绝对化承诺, 纯鸡汤"
+								})]
+							})
+						]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "写作风格" })
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "钩子风格 · 可多选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.chips,
+									children: HOOK_OPTIONS.map((style) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: hookStyles.includes(style) ? `${panel_module_css_default.tag} ${panel_module_css_default.on}` : panel_module_css_default.tag,
+										onClick: () => toggleHook(style),
+										children: style
+									}, style))
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文结构" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: bodyStructure,
+									onChange: (e) => setBodyStructure(e.target.value),
+									placeholder: "场景 → 问题 → 实测过程 → 结论 → 互动提问"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "结尾风格" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: endingStyle,
+									onChange: (e) => setEndingStyle(e.target.value),
+									placeholder: "总结价值 + 互动提问"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "内容方向" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									className: panel_module_css_default.textarea,
+									rows: 2,
+									value: contentDirections,
+									onChange: (e) => setContentDirections(e.target.value),
+									placeholder: "真实体验、工具对比、可复现方法"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "选题标准" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									className: panel_module_css_default.textarea,
+									rows: 2,
+									value: topicCriteria,
+									onChange: (e) => setTopicCriteria(e.target.value),
+									placeholder: "必须有具体价值；优先真实体验、工具对比"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "默认话题（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: defaultHashtags,
+									onChange: (e) => setDefaultHashtags(e.target.value),
+									placeholder: "#效率工具, #职场成长"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "口癖标签（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: toneTags,
+									onChange: (e) => setToneTags(e.target.value),
+									placeholder: "口语化, 结尾提问"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.rowActions,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void save(),
+									children: "保存设置"
+								}), !creating && selectedId !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.dangerBtn,
+									onClick: () => void remove(),
+									children: "删除人设"
+								})]
+							})
+						]
 					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void create(),
-					children: "添加人设"
-				}),
-				personas.map((persona) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.card,
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							style: { fontWeight: 600 },
-							children: persona.name
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.muted,
-							style: { flex: 1 },
-							children: persona.prompt
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badge,
-							children: (persona.toneTags ?? []).join("、") || "—"
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: `${panel_module_css_default.button} ${panel_module_css_default.danger}`,
-							onClick: () => void remove(persona.id),
-							children: "删除"
-						})
-					]
-				}, persona.id))
+				})
 			] });
 		}
 		//#endregion
 		//#region src/client/panel/StudioTab.tsx
-		/** 矩阵专属创作台：账号级对话、模式切换、证据展示、保存草稿。 */
+		/**
+		* 专属创作台（设计稿 content/creative-studio.html）：
+		* 对话区最大化 + 右侧本次创作上下文（人设/知识库/趋势/指标快照），
+		* 上下文始终可见，生成结果通过人工操作保存为草稿。
+		*/
 		function StudioTab({ api, accountId, onOpenDraft }) {
 			const [messages, setMessages] = (0, react.useState)([]);
 			const [input, setInput] = (0, react.useState)("");
@@ -1116,9 +1927,46 @@ window.__ModuleLoader__.load({
 			const [error, setError] = (0, react.useState)("");
 			const [sending, setSending] = (0, react.useState)(false);
 			const [evidence, setEvidence] = (0, react.useState)(void 0);
+			const [context, setContext] = (0, react.useState)({
+				personaName: "",
+				hookStyles: [],
+				noteCount: 0,
+				highCount: 0,
+				trendCount: 0,
+				metricCount: 0
+			});
 			const refresh = (0, react.useCallback)(async () => {
+				if (accountId === "") {
+					setMessages([]);
+					setContext({
+						personaName: "",
+						hookStyles: [],
+						noteCount: 0,
+						highCount: 0,
+						trendCount: 0,
+						metricCount: 0
+					});
+					return;
+				}
 				try {
-					setMessages(await api.listStudioMessages(accountId));
+					const [msgList, accountList, personaList, noteList, trendList, metricList] = await Promise.all([
+						api.listStudioMessages(accountId),
+						api.listAccounts(),
+						api.listPersonas(),
+						api.listNotes(accountId),
+						api.listTrends(accountId),
+						api.listMetrics(accountId)
+					]);
+					setMessages(msgList);
+					const persona = personaList.find((p) => p.id === accountList.find((a) => a.id === accountId)?.personaId);
+					setContext({
+						personaName: persona?.name ?? "未分配",
+						hookStyles: persona?.hookStyles ?? [],
+						noteCount: noteList.length,
+						highCount: noteList.filter((n) => n.weight >= 3).length,
+						trendCount: trendList.length,
+						metricCount: metricList.length
+					});
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -1128,7 +1976,7 @@ window.__ModuleLoader__.load({
 				refresh();
 			}, [refresh]);
 			const send = async () => {
-				if (input.trim() === "") return;
+				if (input.trim() === "" || sending) return;
 				setSending(true);
 				try {
 					const result = await api.studioSend(accountId, input.trim(), mode);
@@ -1157,112 +2005,275 @@ window.__ModuleLoader__.load({
 						return;
 					}
 					await api.studioSaveDraft(accountId, created.id, last.content, "");
+					setError("");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-				accountId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.empty,
-					children: "请先在「账号」Tab 创建账号，再从「总览」打开创作台。"
-				}),
-				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.danger,
-					children: error
-				}),
-				messages.length === 0 && accountId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.muted,
-					children: "这是当前账号的专属创作台。输入指令后，仅注入该账号的人设、知识库与外部趋势。"
-				}),
-				messages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.card,
-					style: {
-						alignItems: "flex-start",
-						flexDirection: "column"
-					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-						className: message.role === "user" ? panel_module_css_default.badge : panel_module_css_default.badgeGreen,
-						children: message.role === "user" ? "我" : "创作助手"
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						style: {
-							whiteSpace: "pre-wrap",
-							fontSize: 13,
-							width: "100%"
-						},
-						children: message.content
-					})]
-				}, message.id)),
-				evidence !== void 0 && evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "本次生成依据" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.muted,
-						children: [evidence.reasons.join("；"), evidence.persona !== void 0 && evidence.persona !== "" ? `（人设：${evidence.persona}）` : ""]
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.tabs,
-					style: { marginTop: 12 },
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-						className: mode === "creative" ? panel_module_css_default.tabActive : panel_module_css_default.tab,
-						onClick: () => setMode("creative"),
-						children: "创作模式"
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-						className: mode === "full" ? panel_module_css_default.tabActive : panel_module_css_default.tab,
-						onClick: () => setMode("full"),
-						children: "完整知识库"
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.field,
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-						className: panel_module_css_default.textarea,
-						rows: 3,
-						value: input,
-						onChange: (e) => setInput(e.target.value),
-						placeholder: "输入创作指令：写一篇、分析选题、改开头……"
-					})
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void send(),
-					disabled: sending,
-					children: sending ? "生成中…" : "发送"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.button,
-					style: { marginLeft: 8 },
-					onClick: () => void saveLastAsDraft(),
-					children: "保存最近结果为草稿"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.button,
-					style: { marginLeft: 8 },
-					onClick: () => onOpenDraft(),
-					children: "打开草稿箱"
-				})
-			] });
+			if (accountId === "") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: panel_module_css_default.empty,
+				children: "请先在左侧「我的账号」选择账号，再进入创作台。"
+			});
+			const hasConversation = messages.length > 0;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: panel_module_css_default.studioLayout,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.studioMain,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+							className: panel_module_css_default.studioTop,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "专属创作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.studioTopSub,
+								children: "人设、知识库、Apify 趋势已隔离加载"
+							})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.pill,
+								children: "● 仅矩阵内容"
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.messages,
+							children: [
+								error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.danger,
+									children: error
+								}),
+								!hasConversation && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.msg,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgAvatar,
+										children: "薯"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.msgBubble,
+										children: ["你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、趋势选题和草稿。", /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.studioResult,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "已加载创作上下文" }),
+												"人设规则 · ",
+												context.noteCount,
+												" 篇本地知识库 · ",
+												context.highCount,
+												" 篇高权重样本 · ",
+												context.trendCount,
+												" 个 Apify 趋势样本 · ",
+												context.metricCount,
+												" 条指标历史快照"
+											]
+										})]
+									})]
+								}),
+								messages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: message.role === "user" ? `${panel_module_css_default.msg} ${panel_module_css_default.me}` : panel_module_css_default.msg,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgAvatar,
+										children: message.role === "user" ? "我" : "薯"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgBubble,
+										children: message.content
+									})]
+								}, message.id)),
+								evidence !== void 0 && evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.msg,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgAvatar,
+										children: "薯"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgBubble,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.studioResult,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "本次生成依据" }),
+												evidence.reasons.join("；"),
+												evidence.persona !== void 0 && evidence.persona !== "" && `（人设：${evidence.persona}）`
+											]
+										})
+									})]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.studioComposer,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+								rows: 2,
+								value: input,
+								onChange: (e) => setInput(e.target.value),
+								onKeyDown: (e) => {
+									if (e.key === "Enter" && !e.shiftKey) {
+										e.preventDefault();
+										send();
+									}
+								},
+								placeholder: "输入创作指令，例如：找 3 个今天适合发布的选题，并把第 1 个写成可发布草稿……"
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.studioSend,
+								onClick: () => void send(),
+								disabled: sending || input.trim() === "",
+								children: sending ? "生成中…" : "发送 ↑"
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								display: "flex",
+								gap: 8,
+								padding: "0 20px 16px",
+								alignItems: "center"
+							},
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.modeSwitch,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: mode === "creative" ? panel_module_css_default.on : void 0,
+										onClick: () => setMode("creative"),
+										children: "创作模式"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: mode === "full" ? panel_module_css_default.on : void 0,
+										onClick: () => setMode("full"),
+										children: "完整知识库"
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									style: { flex: 1 },
+									children: mode === "creative" ? "仅高权重样本进入上下文" : "全部已发布笔记进入上下文"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.studioSendGhost,
+									onClick: () => void saveLastAsDraft(),
+									children: "保存最近结果为草稿"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.studioSendGhost,
+									onClick: onOpenDraft,
+									children: "打开草稿箱"
+								})
+							]
+						})
+					]
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+					className: panel_module_css_default.context,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h4", { children: "本次创作上下文" }),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.contextCard,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "账号人设" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.contextLine,
+									children: context.personaName
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									style: { marginTop: 6 },
+									children: (context.hookStyles.length === 0 ? ["待配置"] : context.hookStyles).map((style) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.tag,
+										children: style
+									}, style))
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.contextCard,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "本地知识库" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [
+										context.noteCount,
+										" 篇已发布 · ",
+										context.highCount,
+										" 篇高权重"
+									]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.meter,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {})
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.contextLine,
+									children: "权重 5 样本优先参考，权重 0 样本不进入推荐"
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.contextCard,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "外部趋势" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [context.trendCount, " 个 Apify 趋势样本"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.contextLine,
+									children: "仅使用公开数据，不复制原文"
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.contextCard,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "指标历史快照" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [context.metricCount, " 条采集记录"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.contextLine,
+									children: "采集任务只更新数据，不自动生成"
+								})
+							]
+						})
+					]
+				})]
+			});
 		}
 		//#endregion
 		//#region src/client/panel/TopicsTab.tsx
-		/** 选题 Tab：状态过滤、手动添加、批量导入、标记弃用。 */
-		function TopicsTab({ api }) {
+		/**
+		* 趋势选题（设计稿 content/detail-surfaces.html）：
+		* 左栏 Apify 趋势候选（推荐分 + 可解释匹配理由），右栏账号选题标准；
+		* 下部保留选题池管理（手动添加 / 批量导入 / 状态过滤）。
+		*/
+		function TopicsTab({ api, accountId }) {
+			const [candidates, setCandidates] = (0, react.useState)([]);
 			const [topics, setTopics] = (0, react.useState)([]);
+			const [persona, setPersona] = (0, react.useState)(void 0);
 			const [filter, setFilter] = (0, react.useState)("");
 			const [title, setTitle] = (0, react.useState)("");
 			const [bulk, setBulk] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
+			const [collecting, setCollecting] = (0, react.useState)(false);
 			const refresh = (0, react.useCallback)(async () => {
 				try {
-					setTopics(await api.listTopics());
-					setError("");
+					const [topicList, accountList, personaList] = await Promise.all([
+						api.listTopics(),
+						api.listAccounts(),
+						api.listPersonas()
+					]);
+					setTopics(topicList);
+					const account = accountList.find((item) => item.id === accountId);
+					setPersona(personaList.find((p) => p.id === account?.personaId));
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api]);
+			}, [api, accountId]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			const collect = async () => {
+				if (accountId === "") {
+					setError("请先在左侧选择账号");
+					return;
+				}
+				setCollecting(true);
+				try {
+					const ranked = await api.collectTrends(accountId, void 0, 10);
+					setCandidates(ranked);
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setCollecting(false);
+				}
+			};
 			const add = async () => {
 				if (title.trim() === "") return;
 				try {
@@ -1299,157 +2310,451 @@ window.__ModuleLoader__.load({
 					children: error
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "单个选题" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-						className: panel_module_css_default.input,
-						value: title,
-						onChange: (e) => setTitle(e.target.value),
-						placeholder: "通勤穿搭"
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void add(),
-					children: "添加选题"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "批量导入（每行一个）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-						className: panel_module_css_default.textarea,
-						value: bulk,
-						onChange: (e) => setBulk(e.target.value),
-						placeholder: "通勤穿搭\n秋季护肤"
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.button,
-					onClick: () => void doImport(),
-					children: "批量导入"
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "状态过滤" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-						className: panel_module_css_default.input,
-						value: filter,
-						onChange: (e) => setFilter(e.target.value),
+					className: panel_module_css_default.topicLayout,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: "",
-								children: "全部"
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Apify 趋势候选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void collect(),
+									disabled: collecting,
+									children: collecting ? "采集中…" : "开始采集"
+								})]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: "open",
-								children: "open（可用）"
+							candidates.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								children: "尚未采集。点击「开始采集」拉取外部趋势并按当前人设与知识库权重排序； 未配置 Apify（apifyActorId / apifyApiToken）时会提示错误。"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: "used",
-								children: "used（已用）"
+							candidates.map((candidate, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.topicItem,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.topicTitle,
+										children: candidate.title
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.topicReason,
+										children: ["匹配：", candidate.reasons.length > 0 ? candidate.reasons.join(" · ") : "人设相关"]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										className: panel_module_css_default.score,
+										children: [
+											"推荐分 ",
+											candidate.score,
+											" · 来源：Apify"
+										]
+									})
+								]
+							}, `${candidate.title}-${index}`))
+						]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "账号选题标准" })
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: "retired",
-								children: "retired（弃用）"
-							})
+							persona === void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								children: "该账号尚未分配人设，请先到「人设配置」创建并分配。"
+							}),
+							persona !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
+										style: {
+											display: "block",
+											color: "var(--xhs-text)",
+											marginBottom: 4
+										},
+										children: "领域"
+									}), persona.expertise || "—"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
+										style: {
+											display: "block",
+											color: "var(--xhs-text)",
+											marginBottom: 4
+										},
+										children: "必须满足"
+									}), persona.topicCriteria || "—"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
+										style: {
+											display: "block",
+											color: "var(--xhs-text)",
+											marginBottom: 4
+										},
+										children: "优先方向"
+									}), persona.contentDirections || "—"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
+										style: {
+											display: "block",
+											color: "var(--xhs-text)",
+											marginBottom: 4
+										},
+										children: "钩子风格"
+									}), persona.hookStyles?.join("、") || "—"]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.contextLine,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
+										style: {
+											display: "block",
+											color: "var(--xhs-text)",
+											marginBottom: 4
+										},
+										children: "默认话题"
+									}), persona.defaultHashtags?.join("、") || "—"]
+								})
+							] })
 						]
 					})]
 				}),
-				visible.map((topic) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.card,
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							style: { fontWeight: 600 },
-							children: topic.title
-						}),
-						topic.status === "open" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badgeGreen,
-							children: "可用"
-						}) : topic.status === "used" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badgeGray,
-							children: "已用"
-						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.badgeGray,
-							children: "弃用"
-						}),
-						topic.status === "open" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: panel_module_css_default.button,
-							onClick: () => void retire(topic.id),
-							children: "弃用"
-						})
-					]
-				}, topic.id))
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						marginTop: 14,
+						display: "grid",
+						gridTemplateColumns: "1fr 1fr",
+						gap: 14
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "选题池" })
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									display: "flex",
+									gap: 8,
+									marginBottom: 10
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									style: { flex: 1 },
+									value: title,
+									onChange: (e) => setTitle(e.target.value),
+									placeholder: "单个选题"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void add(),
+									children: "添加"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "批量导入（每行一个）" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+										className: panel_module_css_default.textarea,
+										rows: 3,
+										value: bulk,
+										onChange: (e) => setBulk(e.target.value),
+										placeholder: "通勤穿搭\n秋季护肤"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.button,
+										onClick: () => void doImport(),
+										children: "批量导入"
+									})
+								]
+							})
+						]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "选题列表" })
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.field,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									className: panel_module_css_default.input,
+									value: filter,
+									onChange: (e) => setFilter(e.target.value),
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: "",
+											children: "全部"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: "open",
+											children: "open（可用）"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: "used",
+											children: "used（已用）"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: "retired",
+											children: "retired（弃用）"
+										})
+									]
+								})
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									maxHeight: 320,
+									overflowY: "auto"
+								},
+								children: [visible.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.muted,
+									children: "暂无选题。"
+								}), visible.map((topic) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.dialogRow,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: {
+												flex: 1,
+												minWidth: 0,
+												overflow: "hidden",
+												textOverflow: "ellipsis",
+												whiteSpace: "nowrap"
+											},
+											children: topic.title
+										}),
+										topic.status === "open" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: panel_module_css_default.badgeGreen,
+											children: "可用"
+										}) : topic.status === "used" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: panel_module_css_default.badgeGray,
+											children: "已用"
+										}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: panel_module_css_default.badgeGray,
+											children: "弃用"
+										}),
+										topic.status === "open" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => void retire(topic.id),
+											children: "弃用"
+										})
+									]
+								}, topic.id))]
+							})
+						]
+					})]
+				})
 			] });
 		}
 		//#endregion
 		//#region src/client/panel/XhsPanel.tsx
-		const TABS = [
+		const NAV_GROUPS = [
 			{
-				id: "overview",
-				label: "总览"
+				group: "运营",
+				items: [
+					{
+						id: "overview",
+						icon: "◈",
+						label: "总览"
+					},
+					{
+						id: "knowledge",
+						icon: "▤",
+						label: "已发布知识库"
+					},
+					{
+						id: "topics",
+						icon: "✦",
+						label: "趋势选题"
+					}
+				]
 			},
 			{
-				id: "accounts",
-				label: "账号"
+				group: "创作",
+				items: [{
+					id: "studio",
+					icon: "✎",
+					label: "创作台"
+				}, {
+					id: "drafts",
+					icon: "▣",
+					label: "草稿箱"
+				}]
 			},
 			{
-				id: "personas",
-				label: "人设"
-			},
-			{
-				id: "knowledge",
-				label: "知识库"
-			},
-			{
-				id: "topics",
-				label: "选题"
-			},
-			{
-				id: "drafts",
-				label: "草稿"
-			},
-			{
-				id: "studio",
-				label: "创作台"
+				group: "设置",
+				items: [{
+					id: "personas",
+					icon: "◉",
+					label: "人设配置"
+				}]
 			}
 		];
-		/** 混合布局面板容器：运营总览 + 账号管理 + 知识库 + 创作台。 */
+		/** 根据连接与采集状态计算左侧状态点（绿/橙/红/灰）。 */
+		function accountDot(account) {
+			const status = account.connection?.status ?? "";
+			if (status === "failed" || account.collectionStatus?.lastStatus === "failed") return "error";
+			if (status === "awaiting-import" || status === "unbound" || account.collectionStatus?.running) return "warn";
+			if (status === "bound" || status === "authorized") return "ok";
+			return "idle";
+		}
+		const PAGE_TITLES = {
+			overview: "账号运营总览",
+			knowledge: "已发布知识库",
+			topics: "趋势选题",
+			studio: "专属创作台",
+			drafts: "草稿箱",
+			personas: "人设配置"
+		};
+		/**
+		* 矩阵工作台（依据设计稿 content/hybrid-layout.html 的混合布局）：
+		* 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前页面工作区。
+		*/
 		function XhsPanel(props) {
 			const { api } = props;
-			const [tab, setTab] = (0, react.useState)("overview");
+			const [page, setPage] = (0, react.useState)("overview");
 			const [accountId, setAccountId] = (0, react.useState)("");
+			const [accounts, setAccounts] = (0, react.useState)([]);
+			const [dialogOpen, setDialogOpen] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)("");
+			const refreshAccounts = (0, react.useCallback)(async () => {
+				try {
+					setAccounts(await api.listAccounts());
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			}, [api]);
+			(0, react.useEffect)(() => {
+				refreshAccounts();
+			}, [refreshAccounts]);
+			const current = accounts.find((item) => item.id === accountId);
 			const openStudio = (id) => {
 				setAccountId(id);
-				setTab("studio");
+				setPage("studio");
 			};
+			const openDrafts = () => setPage("drafts");
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default.view,
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.header,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.headerDot }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", { children: "小红书矩阵" })]
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+						className: panel_module_css_default.sidebar,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.brand,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.brandLogo,
+									children: "薯"
+								}), "矩阵工作台"]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.group,
+								children: "我的账号"
+							}),
+							accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								className: accountId === account.id ? `${panel_module_css_default.accountItem} ${panel_module_css_default.active}` : panel_module_css_default.accountItem,
+								onClick: () => setAccountId(account.id),
+								title: account.name,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.accountName,
+										children: account.name
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(account)]}` })
+								]
+							}, account.id)),
+							accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.empty,
+								children: "还没有账号，点击下方添加。"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.accountAdd,
+								onClick: () => setDialogOpen(true),
+								children: "＋ 添加账号"
+							}),
+							NAV_GROUPS.map((group) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.group,
+								children: group.group
+							}), group.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								className: page === item.id ? `${panel_module_css_default.navItem} ${panel_module_css_default.active}` : panel_module_css_default.navItem,
+								onClick: () => setPage(item.id),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.navIcon,
+									children: item.icon
+								}), item.label]
+							}, item.id))] }, group.group))
+						]
 					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.tabs,
-						children: TABS.map((t) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							className: tab === t.id ? panel_module_css_default.tabActive : panel_module_css_default.tab,
-							onClick: () => setTab(t.id),
-							children: t.label
-						}, t.id))
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("main", {
+						className: panel_module_css_default.workspace,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.topbar,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: page === "overview" && current !== void 0 ? `${current.name} · ${PAGE_TITLES.overview}` : PAGE_TITLES[page] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.topbarSub,
+								children: page === "studio" && current !== void 0 ? "人设、知识库、Apify 趋势已隔离加载 · 仅矩阵内容" : "小红书矩阵内容管理"
+							})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.topbarRight,
+								children: [page === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.modeSwitch,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.on,
+										onClick: () => setPage("overview"),
+										children: "运营总览"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										onClick: () => {
+											if (accountId !== "") openStudio(accountId);
+										},
+										children: "专属创作台"
+									})]
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => setDialogOpen(true),
+									children: "＋ 添加账号"
+								})]
+							})]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.content,
+							children: [
+								error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.danger,
+									children: error
+								}),
+								page === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(OverviewTab, {
+									api,
+									accountId,
+									accounts,
+									onOpenStudio: openStudio
+								}),
+								page === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
+									api,
+									accountId
+								}),
+								page === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, {
+									api,
+									accountId
+								}),
+								page === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
+									api,
+									accountId,
+									onOpenDraft: openDrafts
+								}),
+								page === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, {
+									api,
+									onOpenStudio: openStudio
+								}),
+								page === "personas" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonasTab, { api })
+							]
+						})]
 					}),
-					tab === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(OverviewTab, {
+					dialogOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsDialog, {
 						api,
-						onOpenStudio: openStudio
-					}),
-					tab === "accounts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsTab, { api }),
-					tab === "personas" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonasTab, { api }),
-					tab === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
-						api,
-						accountId
-					}),
-					tab === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, { api }),
-					tab === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, { api }),
-					tab === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
-						api,
-						accountId,
-						onOpenDraft: () => setTab("drafts")
+						onClose: () => setDialogOpen(false),
+						onSaved: () => {
+							refreshAccounts();
+						}
 					})
 				]
 			});

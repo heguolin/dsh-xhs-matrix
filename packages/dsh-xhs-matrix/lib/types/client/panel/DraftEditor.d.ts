@@ -6,8 +6,18 @@ interface DraftRow {
     coverPrompt: string;
     tags?: string;
     status: string;
+    evidence?: {
+        persona?: string;
+        noteIds: string[];
+        trendIds: string[];
+        reasons: string[];
+    };
 }
-/** 草稿编辑器：标题/正文/标签/封面提示词可直接修改，显式保存。 */
+/**
+ * 草稿编辑器（设计稿 content/detail-surfaces.html）：
+ * 左栏正文直接编辑 + 编辑动作（重写标题/优化开头），右栏本次生成依据；
+ * 保存后仍保持「草稿」状态，不自动发布。
+ */
 export declare function DraftEditor({ api, accountId, draft, onSaved }: {
     api: XhsApi;
     accountId: string;

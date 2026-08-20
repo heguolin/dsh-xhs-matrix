@@ -213,6 +213,25 @@ export function makeRoutes(deps: RoutesDeps): WebRoute[] {
       const method = req.method ?? 'GET'
       if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'forbidden: loopback-only' }); return }
       if (method === 'GET') { writeJson(res, 200, { drafts: store.listDrafts() }); return }
+
+      // The webserver registry keys routes by path, so PATCH shares this
+      // handler with GET/POST instead of registering the same exact path twice.
+      if (method === 'PATCH') {
+        const id = queryParam(new URL(req.url ?? '/', 'http://localhost'), 'draft')
+        if (id === undefined) { writeJson(res, 400, { error: 'draft 查询参数必填' }); return }
+        const body = await readJsonBody(req)
+        if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
+        const payload: { copy?: string; coverPrompt?: string; tags?: string } = {}
+        if (body.copy !== undefined) { if (typeof body.copy !== 'string') { writeJson(res, 400, { error: 'copy 必须是字符串' }); return }; payload.copy = body.copy }
+        if (body.coverPrompt !== undefined) { if (typeof body.coverPrompt !== 'string') { writeJson(res, 400, { error: 'coverPrompt 必须是字符串' }); return }; payload.coverPrompt = body.coverPrompt }
+        if (body.tags !== undefined) { if (typeof body.tags !== 'string') { writeJson(res, 400, { error: 'tags 必须是字符串' }); return }; payload.tags = body.tags }
+        try {
+          const draft = store.updateDraft(id, payload)
+          writeJson(res, 200, { draft })
+        } catch (error) { fail(res, error) }
+        return
+      }
+
       if (method !== 'POST') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
       const body = await readJsonBody(req)
       if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
@@ -237,23 +256,6 @@ export function makeRoutes(deps: RoutesDeps): WebRoute[] {
       } catch (error) {
         fail(res, error)
       }
-    }),
-    // ------------------------------------------------- 草稿编辑
-    route(XHS_API.drafts, async (req, res) => {
-      if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'forbidden: loopback-only' }); return }
-      if ((req.method ?? 'GET') !== 'PATCH') { writeJson(res, 405, { error: `method not allowed: ${req.method}` }); return }
-      const id = queryParam(new URL(req.url ?? '/', 'http://localhost'), 'draft')
-      if (id === undefined) { writeJson(res, 400, { error: 'draft 查询参数必填' }); return }
-      const body = await readJsonBody(req)
-      if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
-      const payload: { copy?: string; coverPrompt?: string; tags?: string } = {}
-      if (body.copy !== undefined) { if (typeof body.copy !== 'string') { writeJson(res, 400, { error: 'copy 必须是字符串' }); return }; payload.copy = body.copy }
-      if (body.coverPrompt !== undefined) { if (typeof body.coverPrompt !== 'string') { writeJson(res, 400, { error: 'coverPrompt 必须是字符串' }); return }; payload.coverPrompt = body.coverPrompt }
-      if (body.tags !== undefined) { if (typeof body.tags !== 'string') { writeJson(res, 400, { error: 'tags 必须是字符串' }); return }; payload.tags = body.tags }
-      try {
-        const draft = store.updateDraft(id, payload)
-        writeJson(res, 200, { draft })
-      } catch (error) { fail(res, error) }
     }),
     // ------------------------------------------------- 草稿状态回填
     route(XHS_API.drafts + '/status', async (req, res) => {

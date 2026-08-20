@@ -1,7 +1,11 @@
 import type { XhsApi } from '../api.ts';
-/** 矩阵专属创作台：账号级对话、模式切换、证据展示、保存草稿。 */
+/**
+ * 专属创作台（设计稿 content/creative-studio.html）：
+ * 对话区最大化 + 右侧本次创作上下文（人设/知识库/趋势/指标快照），
+ * 上下文始终可见，生成结果通过人工操作保存为草稿。
+ */
 export declare function StudioTab({ api, accountId, onOpenDraft }: {
     api: XhsApi;
     accountId: string;
-    onOpenDraft: (draftId?: string) => void;
+    onOpenDraft: () => void;
 }): import("react").JSX.Element;

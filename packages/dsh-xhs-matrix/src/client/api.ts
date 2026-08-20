@@ -58,7 +58,9 @@ export class XhsApi {
     const body = await readJson<{ account: { id: string } }>(await fetch(XHS_API.accounts, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }))
     return body.account
   }
-  async updateAccount(id: string, payload: AccountPayload): Promise<{ id: string }> {
+  async updateAccount(id: string, payload: AccountPayload & {
+    connection?: { profileUrl?: string; externalId?: string; status?: string; source?: string }
+  }): Promise<{ id: string }> {
     const body = await readJson<{ account: { id: string } }>(await fetch(XHS_API.accounts + query({ account: id }), { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }))
     return body.account
   }

@@ -36,7 +36,14 @@ export declare class XhsApi {
     createAccount(payload: AccountPayload): Promise<{
         id: string;
     }>;
-    updateAccount(id: string, payload: AccountPayload): Promise<{
+    updateAccount(id: string, payload: AccountPayload & {
+        connection?: {
+            profileUrl?: string;
+            externalId?: string;
+            status?: string;
+            source?: string;
+        };
+    }): Promise<{
         id: string;
     }>;
     deleteAccount(id: string): Promise<void>;

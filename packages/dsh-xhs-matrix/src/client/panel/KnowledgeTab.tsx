@@ -1,22 +1,41 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
+import { ImportDialog } from './ImportDialog.tsx'
 
 interface NoteRow {
   id: string; title: string; copy: string; publishedAt: string; source: string; weight: number; topic?: string
 }
+interface MetricRow { noteId: string; reads: number; likes: number; favorites: number; comments: number; collectedAt: string }
 
 const WEIGHTS = [0, 1, 2, 3, 4, 5] as const
+type FilterId = 'all' | 'high' | 'pending' | 'recent'
 
-/** 已发布知识库：指标摘要 + 0-5 权重。 */
+const FILTERS: Array<{ id: FilterId; label: string }> = [
+  { id: 'all', label: '全部' },
+  { id: 'high', label: '权重高' },
+  { id: 'pending', label: '待补指标' },
+  { id: 'recent', label: '最近发布' },
+]
+
+/**
+ * 已发布知识库（设计稿 content/detail-surfaces.html）：
+ * 筛选 chips + 笔记行（缩略图/指标/0-5 权重），权重即控制杆。
+ */
 export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: string }) {
   const [notes, setNotes] = useState<NoteRow[]>([])
+  const [metrics, setMetrics] = useState<MetricRow[]>([])
+  const [filter, setFilter] = useState<FilterId>('all')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [importing, setImporting] = useState(false)
 
   const refresh = useCallback(async () => {
+    if (accountId === '') { setNotes([]); setMetrics([]); return }
     try {
-      setNotes(await api.listNotes(accountId))
+      const [noteList, metricList] = await Promise.all([api.listNotes(accountId), api.listMetrics(accountId)])
+      setNotes(noteList)
+      setMetrics(metricList)
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -35,30 +54,81 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
     }
   }
 
+  // 每篇笔记最新指标快照
+  const latestByNote = new Map<string, MetricRow>()
+  for (const m of metrics) {
+    const prev = latestByNote.get(m.noteId)
+    if (prev === undefined || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m)
+  }
+
+  const filtered = [...notes]
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    .filter(note => {
+      if (filter === 'high') return note.weight >= 4
+      if (filter === 'pending') return latestByNote.get(note.id) === undefined
+      if (filter === 'recent') {
+        const day = 30 * 24 * 60 * 60 * 1000
+        return Date.now() - Date.parse(note.publishedAt) < day
+      }
+      return true
+    })
+
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
       {notice !== '' && <div className={css.success}>{notice}</div>}
-      {notes.length === 0 && <div className={css.empty}>该账号还没有已发布笔记。使用「导入」或从创作台保存后回填。</div>}
-      {notes.map(note => (
-        <div key={note.id} className={css.card} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
-          <div style={{ width: '100%' }}>
-            <span style={{ fontWeight: 600 }}>{note.title}</span>
-            {note.topic !== undefined && <span className={css.muted} style={{ marginLeft: 10 }}>{note.topic}</span>}
-            <span className={css.muted} style={{ marginLeft: 10 }}>{note.publishedAt.slice(0, 10)}</span>
-          </div>
-          <div className={css.muted} style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{note.copy.slice(0, 120)}{note.copy.length > 120 ? '…' : ''}</div>
-          <div>
-            {WEIGHTS.map(weight => (
-              <button
-                key={weight}
-                className={`${css.button} ${note.weight === weight ? css.tabActive : ''}`}
-                onClick={() => void setWeight(note.id, weight)}
-              >{weight}</button>
+      {accountId === '' && <div className={css.empty}>请先在左侧选择账号。</div>}
+
+      {accountId !== '' && (
+        <>
+          <div className={css.filterRow}>
+            {FILTERS.map(f => (
+              <button key={f.id} className={filter === f.id ? `${css.filter} ${css.on}` : css.filter} onClick={() => setFilter(f.id)}>{f.label}</button>
             ))}
+            <span style={{ flex: 1 }} />
+            <button className={css.primary} onClick={() => setImporting(true)}>＋ 导入笔记</button>
           </div>
-        </div>
-      ))}
+
+          {notes.length === 0 && <div className={css.empty}>该账号还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据。</div>}
+          {notes.length > 0 && filtered.length === 0 && <div className={css.muted}>当前筛选下没有笔记。</div>}
+
+          {filtered.map(note => {
+            const metric = latestByNote.get(note.id)
+            return (
+              <div key={note.id} className={css.libRow}>
+                <div className={css.miniThumb} />
+                <div className={css.libBody}>
+                  <div className={css.libTitle}>{note.title}</div>
+                  <div className={css.libMeta}>
+                    发布 {note.publishedAt.slice(0, 10)}
+                    {metric !== undefined
+                      ? ` · 浏览 ${metric.reads.toLocaleString()} · 点赞 ${metric.likes} · 收藏 ${metric.favorites} · 评论 ${metric.comments}`
+                      : ' · 指标待更新'}
+                    {note.topic !== undefined && ` · ${note.topic}`}
+                  </div>
+                  <div className={css.weight}>
+                    {WEIGHTS.map(weight => (
+                      <button
+                        key={weight}
+                        className={note.weight === weight ? css.on : undefined}
+                        onClick={() => void setWeight(note.id, weight)}
+                        title={`权重 ${weight}`}
+                      >{weight}</button>
+                    ))}
+                    <span className={css.muted} style={{ marginLeft: 8, alignSelf: 'center' }}>权重 {note.weight} / 5</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+
+          {importing && (
+            <div style={{ marginTop: 14, padding: 14, border: '1px solid var(--xhs-border)', borderRadius: 12, background: 'var(--xhs-card)' }}>
+              <ImportDialog api={api} accountId={accountId} onDone={() => { void refresh(); setImporting(false) }} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

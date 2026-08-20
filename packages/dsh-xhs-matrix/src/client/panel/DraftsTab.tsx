@@ -10,16 +10,21 @@ interface DraftRow {
   evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }
 }
 
-/** 草稿 Tab：展开编辑（DraftEditor）、标记 published/dropped、录入指标、来源依据。 */
-export function DraftsTab({ api }: { api: XhsApi }) {
+/**
+ * 草稿箱：列表 + 展开编辑（DraftEditor 双栏）+ 标记 published/dropped + 录入指标。
+ * 草稿保持「草稿」状态，发布由人工在端内完成。
+ */
+export function DraftsTab({ api, onOpenStudio }: { api: XhsApi; onOpenStudio: (accountId: string) => void }) {
   const [drafts, setDrafts] = useState<DraftRow[]>([])
+  const [accounts, setAccounts] = useState<Array<{ id: string; name: string }>>([])
   const [error, setError] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [editingId, setEditingId] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     try {
-      setDrafts(await api.listDrafts())
+      const [draftList, accountList] = await Promise.all([api.listDrafts(), api.listAccounts()])
+      setDrafts(draftList)
+      setAccounts(accountList)
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -27,6 +32,8 @@ export function DraftsTab({ api }: { api: XhsApi }) {
   }, [api])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  const accountName = (id: string): string => accounts.find(a => a.id === id)?.name ?? id
 
   const toggleExpand = (id: string): void => {
     setExpandedId(prev => prev === id ? null : id)
@@ -66,62 +73,50 @@ export function DraftsTab({ api }: { api: XhsApi }) {
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
-      {drafts.length === 0 && <div className={css.muted}>暂无草稿。在「创作台」中生成，或在对话中问「今天要发什么」。</div>}
+      {drafts.length === 0 && <div className={css.muted}>暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。</div>}
       {drafts.map(draft => {
         const expanded = expandedId === draft.id
-        const editing = editingId === draft.id
         return (
-          <div key={draft.id} className={css.card} style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
-            <div style={{ width: '100%' }}>
-              <span style={{ fontWeight: 600 }}>{draft.date}</span>
-              <span className={css.muted} style={{ marginLeft: 10 }}>账号 {draft.accountId} / 选题 {draft.topicId}</span>
-              {draft.status === 'generated' ? <span className={css.badgeGray} style={{ marginLeft: 10 }}>已生成</span>
-                : draft.status === 'published' ? <span className={css.badgeGreen} style={{ marginLeft: 10 }}>已发布</span>
-                : <span className={css.badgeGray} style={{ marginLeft: 10 }}>已弃用</span>}
-              {draft.metrics !== undefined && <span className={css.badge} style={{ marginLeft: 10 }}>阅读 {draft.metrics.reads}</span>}
+          <div key={draft.id} className={css.libRow} style={{ flexDirection: 'column' }}>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{draft.date}</span>
+              <span className={css.muted}>账号 {accountName(draft.accountId)}</span>
+              {draft.status === 'generated' ? <span className={css.badgeGray}>已生成</span>
+                : draft.status === 'published' ? <span className={css.badgeGreen}>已发布</span>
+                : <span className={css.badgeGray}>已弃用</span>}
+              {draft.metrics !== undefined && <span className={css.badge}>阅读 {draft.metrics.reads}</span>}
+              <span style={{ flex: 1 }} />
+              <button className={css.ghostBtn} onClick={() => toggleExpand(draft.id)}>{expanded ? '收起' : '展开'}</button>
             </div>
             <button
-              className={css.button}
-              style={{ alignSelf: 'stretch', textAlign: 'left', whiteSpace: 'pre-wrap', cursor: 'pointer' }}
+              className={css.ghostBtn}
+              style={{ width: '100%', textAlign: 'left', whiteSpace: 'pre-wrap', cursor: 'pointer', color: 'var(--xhs-text-sub)' }}
               onClick={() => toggleExpand(draft.id)}
-              title={expanded ? '收起' : '点击查看完整文案'}
+              title="点击查看完整文案"
             >
               {expanded
-                ? <><span style={{ fontWeight: 600 }}>{draft.copy.split('\n')[0]}</span>{'\n'}{draft.copy}</>
-                : <span className={css.muted}>{draft.copy.slice(0, 80)}{draft.copy.length > 80 ? '…' : ''}</span>}
+                ? <><span style={{ fontWeight: 600, color: 'var(--xhs-text)' }}>{draft.copy.split('\n')[0]}</span>{'\n'}{draft.copy}</>
+                : <span>{draft.copy.slice(0, 100)}{draft.copy.length > 100 ? '…' : ''}</span>}
             </button>
             {expanded && (
               <div style={{ width: '100%' }}>
-                {editing
-                  ? <DraftEditor api={api} accountId={draft.accountId} draft={draft} onSaved={() => { setEditingId(null); void refresh() }} />
-                  : (
+                <div className={css.rowActions} style={{ marginBottom: 10, flexWrap: 'wrap' }}>
+                  <button className={css.ghostBtn} onClick={() => void copyDraft(draft)}>复制文案</button>
+                  {draft.status === 'generated' && (
                     <>
-                      <div className={css.field}>
-                        <label>封面提示词</label>
-                        <div className={css.muted} style={{ whiteSpace: 'pre-wrap' }}>{draft.coverPrompt || '—'}</div>
-                      </div>
-                      {draft.metrics !== undefined && (
-                        <div className={css.field}>
-                          <label>流量指标</label>
-                          <div className={css.muted}>阅读 {draft.metrics.reads} · 点赞 {draft.metrics.likes} · 评论 {draft.metrics.comments}（采集于 {draft.metrics.collected.slice(0, 10)}）</div>
-                        </div>
-                      )}
-                      {draft.evidence !== undefined && draft.evidence.reasons.length > 0 && (
-                        <div className={css.field}>
-                          <label>生成依据</label>
-                          <div className={css.muted}>{draft.evidence.reasons.join('；')}{draft.evidence.persona !== undefined && draft.evidence.persona !== '' ? `（人设：${draft.evidence.persona}）` : ''}</div>
-                        </div>
-                      )}
-                      <button className={css.button} onClick={() => void copyDraft(draft)}>复制文案</button>
-                      <button className={css.button} style={{ marginLeft: 8 }} onClick={() => setEditingId(draft.id)}>编辑</button>
+                      <button className={css.primary} onClick={() => void publish(draft)}>标记已发布</button>
+                      <button className={css.dangerBtn} onClick={() => void drop(draft)}>标记弃用</button>
                     </>
                   )}
-              </div>
-            )}
-            {draft.status === 'generated' && (
-              <div>
-                <button className={css.primary} onClick={() => void publish(draft)}>标记已发布</button>
-                <button className={`${css.button} ${css.danger}`} onClick={() => void drop(draft)}>标记弃用</button>
+                  <button className={css.ghostBtn} onClick={() => onOpenStudio(draft.accountId)}>在创作台继续</button>
+                </div>
+                {draft.metrics !== undefined && (
+                  <div className={css.field}>
+                    <label>流量指标</label>
+                    <div className={css.muted}>阅读 {draft.metrics.reads} · 点赞 {draft.metrics.likes} · 评论 {draft.metrics.comments}（采集于 {draft.metrics.collected.slice(0, 10)}）</div>
+                  </div>
+                )}
+                <DraftEditor api={api} accountId={draft.accountId} draft={draft} onSaved={() => void refresh()} />
               </div>
             )}
           </div>
