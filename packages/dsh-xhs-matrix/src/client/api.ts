@@ -159,6 +159,54 @@ export class XhsApi {
     const body = await readJson<{ message: { id: string; content: string }; evidence: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }; warning?: string }>(await fetch(XHS_API.studioMessages + query({ account: accountId }), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ input, mode }) }))
     return body
   }
+  /**
+   * 流式发送创作指令（SSE）：onDelta 收到文本增量；完成后 resolve 含
+   * messageId/coverPrompt/evidence 的摘要。
+   */
+  async studioSendStream(
+    accountId: string, input: string, mode: 'full' | 'creative',
+    onDelta: (delta: string) => void,
+  ): Promise<{ messageId: string; coverPrompt: string; evidence: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }; warning?: string }> {
+    const response = await fetch(XHS_API.studioMessages + query({ account: accountId }), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ input, mode, stream: true }),
+    })
+    if (!response.ok) {
+      const body = await response.json().catch(() => undefined)
+      const message = typeof body === 'object' && body !== null && typeof (body as { error?: unknown }).error === 'string'
+        ? (body as { error: string }).error
+        : `HTTP ${response.status}`
+      throw new XhsApiError(message)
+    }
+    if (response.body === null) throw new XhsApiError('流式响应无 body')
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let summary: { messageId: string; coverPrompt: string; evidence: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }; warning?: string } | undefined
+    let failed: string | undefined
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      // 按 \n\n 切分 SSE 事件
+      let boundary: number
+      while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+        const event = buffer.slice(0, boundary)
+        buffer = buffer.slice(boundary + 2)
+        for (const line of event.split('\n')) {
+          if (!line.startsWith('data: ')) continue
+          const payload: { delta?: string; done?: boolean; error?: string } = JSON.parse(line.slice(6))
+          if (typeof payload.delta === 'string') onDelta(payload.delta)
+          if (payload.error !== undefined) failed = payload.error
+          if (payload.done === true) summary = payload as never
+        }
+      }
+    }
+    if (failed !== undefined) throw new XhsApiError(failed)
+    if (summary === undefined) throw new XhsApiError('流式响应未正常结束')
+    return summary
+  }
   /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
   async studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{ id: string }> {
     const body = await readJson<{ draft: { id: string } }>(await fetch(XHS_API.studio + '/draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accountId, copy, coverPrompt }) }))

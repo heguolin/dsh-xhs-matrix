@@ -39,7 +39,29 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
       if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
       const input = typeof body.input === 'string' && body.input.trim() !== '' ? body.input.trim() : ''
       const mode = body.mode === 'full' ? 'full' : 'creative'
+      const stream = body.stream === true
       if (input === '') { writeJson(res, 400, { error: 'input 必填' }); return }
+      if (stream) {
+        // SSE 流式：text-delta 增量 → data: {"delta":...}；完成后 data: {"done":true,...}。
+        res.writeHead(200, {
+          'content-type': 'text/event-stream; charset=utf-8',
+          'cache-control': 'no-cache',
+          connection: 'keep-alive',
+          'x-accel-buffering': 'no',
+        })
+        try {
+          const result = await studio.sendStream(accountId, input, mode, delta => {
+            res.write(`data: ${JSON.stringify({ delta })}\n\n`)
+          })
+          res.write(`data: ${JSON.stringify({ done: true, messageId: result.message.id, coverPrompt: result.coverPrompt, evidence: result.evidence, warning: result.warning })}\n\n`)
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          res.write(`data: ${JSON.stringify({ error: message })}\n\n`)
+        } finally {
+          res.end()
+        }
+        return
+      }
       try {
         const result = await studio.send(accountId, input, mode)
         writeJson(res, 201, { message: result.message, evidence: result.evidence, warning: result.warning })

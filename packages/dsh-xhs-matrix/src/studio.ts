@@ -13,6 +13,18 @@ export interface StudioCompleteRequest {
 /** 模型客户端抽象：注入实现，避免 studio 直接依赖 Host 服务。 */
 export interface StudioLlmClient {
   complete(request: StudioCompleteRequest): Promise<{ text: string }>
+  /** 流式补全：onDelta 收到文本增量，返回完整文本。 */
+  stream(request: StudioCompleteRequest, onDelta: (delta: string) => void): Promise<string>
+}
+
+/** 从模型输出中拆分正文与封面提示词；无标记时整段视为正文。 */
+export function parseCoverPrompt(text: string): { copy: string; coverPrompt: string } {
+  const marker = '【封面提示词】'
+  const index = text.indexOf(marker)
+  if (index < 0) return { copy: text.trim(), coverPrompt: '' }
+  const copy = text.slice(0, index).trim()
+  const coverPrompt = text.slice(index + marker.length).trim()
+  return { copy, coverPrompt }
 }
 
 /** 创作上下文组装结果。 */
@@ -116,6 +128,8 @@ export class StudioService {
       '不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。',
       '参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。',
       '生成结果不会自动发布；草稿必须由用户明确保存后才会落库。',
+      '【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：',
+      '【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>',
     ].join('\n')
     const response = await this.llm.complete({ system, messages, maxTokens: 4000 })
     this.store.saveStudioMessage({ accountId, role: 'user', content: input })
@@ -127,6 +141,49 @@ export class StudioService {
       reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`],
     }
     return { message, evidence }
+  }
+
+  /**
+   * 流式发送：追加用户消息、组装上下文、流式调用模型并把增量回传给 onDelta，
+   * 完成后解析封面提示词、保存助手消息。
+   * @param onDelta - 文本增量回调（供 SSE 转发）。
+   */
+  async sendStream(
+    accountId: string,
+    input: string,
+    mode: 'full' | 'creative',
+    onDelta: (delta: string) => void,
+    maxInputChars?: number,
+  ): Promise<{ message: StudioMessage; evidence: DraftEvidence; coverPrompt: string; warning?: string }> {
+    this.store.listAccounts().find(item => item.id === accountId) ?? (() => { throw new Error(`账号不存在：${accountId}`) })()
+    const built = buildStudioContext(this.store, accountId, mode, maxInputChars)
+    if (built.truncated) throw new Error(built.warning ?? '上下文超出限制')
+    const history = this.store.listStudioMessages(accountId)
+    const messages = [
+      ...history.map(message => ({ role: message.role as 'user' | 'assistant', content: message.content })),
+      { role: 'user' as const, content: input },
+    ]
+    const system = [
+      built.context,
+      '',
+      '你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。',
+      '不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。',
+      '参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。',
+      '生成结果不会自动发布；草稿必须由用户明确保存后才会落库。',
+      '【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：',
+      '【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>',
+    ].join('\n')
+    const fullText = await this.llm.stream({ system, messages, maxTokens: 4000 }, onDelta)
+    const { copy, coverPrompt } = parseCoverPrompt(fullText)
+    this.store.saveStudioMessage({ accountId, role: 'user', content: input })
+    const message = this.store.saveStudioMessage({ accountId, role: 'assistant', content: copy })
+    const evidence: DraftEvidence = {
+      persona: `${this.store.listPersonas().find(p => p.id === this.store.listAccounts().find(a => a.id === accountId)?.personaId)?.name ?? ''}`,
+      noteIds: this.store.listPublishedNotes(accountId).filter(note => note.weight >= 3).map(note => note.id),
+      trendIds: this.store.listViralItems(accountId, 'accepted').slice(0, 20).map(item => item.id),
+      reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`],
+    }
+    return { message, evidence, coverPrompt }
   }
 
   /** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */

@@ -17,6 +17,9 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const [evidence, setEvidence] = useState<StudioEvidence | undefined>(undefined)
+  // 流式生成中的临时助手文本与最近一次封面提示词。
+  const [streamText, setStreamText] = useState('')
+  const [coverPrompt, setCoverPrompt] = useState('')
   // 创作上下文统计
   const [context, setContext] = useState<{ personaName: string; hookStyles: string[]; noteCount: number; highCount: number; viralCount: number; metricCount: number }>({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0, metricCount: 0 })
 
@@ -51,13 +54,23 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
 
   const send = async (): Promise<void> => {
     if (input.trim() === '' || sending) return
+    const prompt = input.trim()
+    setInput('')
     setSending(true)
+    setStreamText('')
+    setEvidence(undefined)
+    setCoverPrompt('')
+    setError('')
     try {
-      const result = await api.studioSend(accountId, input.trim(), mode)
-      setEvidence(result.evidence)
-      setInput('')
+      const summary = await api.studioSendStream(accountId, prompt, mode, delta => {
+        setStreamText(prev => prev + delta)
+      })
+      setEvidence(summary.evidence)
+      setCoverPrompt(summary.coverPrompt ?? '')
+      setStreamText('')
       await refresh()
     } catch (e) {
+      setStreamText('')
       setError(e instanceof Error ? e.message : String(e))
     } finally {
       setSending(false)
@@ -68,7 +81,7 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
     const last = [...messages].reverse().find(m => m.role === 'assistant')
     if (last === undefined) { setError('还没有生成结果可保存'); return }
     try {
-      await api.studioSaveDraft(accountId, last.content, '')
+      await api.studioSaveDraft(accountId, last.content, coverPrompt)
       setError('')
       await refresh()
     } catch (e) {
@@ -114,6 +127,26 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
               <div className={css.msgBubble}>{message.content}</div>
             </div>
           ))}
+          {sending && (
+            <div className={css.msg}>
+              <div className={css.msgAvatar}>薯</div>
+              <div className={css.msgBubble}>
+                {streamText === '' ? '生成中…' : streamText}
+                {streamText !== '' && <span className={css.muted}> ▍</span>}
+              </div>
+            </div>
+          )}
+          {!sending && coverPrompt !== '' && (
+            <div className={css.msg}>
+              <div className={css.msgAvatar}>薯</div>
+              <div className={css.msgBubble}>
+                <div className={css.studioResult}>
+                  <b>封面提示词</b>
+                  {coverPrompt}
+                </div>
+              </div>
+            </div>
+          )}
           {evidence !== undefined && evidence.reasons.length > 0 && (
             <div className={css.msg}>
               <div className={css.msgAvatar}>薯</div>
@@ -148,7 +181,9 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
           <span className={css.muted} style={{ flex: 1 }}>
             {mode === 'creative' ? '仅高权重样本进入上下文' : '全部已发布笔记进入上下文'}
           </span>
-          <button className={css.studioSendGhost} onClick={() => void saveLastAsDraft()}>保存最近结果为草稿</button>
+          <button className={css.studioSendGhost} onClick={() => void saveLastAsDraft()} disabled={sending}>
+            保存最近结果为草稿{coverPrompt !== '' ? '（含封面提示词）' : ''}
+          </button>
           <button className={css.studioSendGhost} onClick={onOpenDraft}>打开草稿箱</button>
         </div>
       </div>

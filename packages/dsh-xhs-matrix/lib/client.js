@@ -171,6 +171,51 @@ window.__ModuleLoader__.load({
 					})
 				}));
 			}
+			/**
+			* 流式发送创作指令（SSE）：onDelta 收到文本增量；完成后 resolve 含
+			* messageId/coverPrompt/evidence 的摘要。
+			*/
+			async studioSendStream(accountId, input, mode, onDelta) {
+				const response = await fetch(XHS_API.studioMessages + query({ account: accountId }), {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						input,
+						mode,
+						stream: true
+					})
+				});
+				if (!response.ok) {
+					const body = await response.json().catch(() => void 0);
+					throw new XhsApiError(typeof body === "object" && body !== null && typeof body.error === "string" ? body.error : `HTTP ${response.status}`);
+				}
+				if (response.body === null) throw new XhsApiError("流式响应无 body");
+				const reader = response.body.getReader();
+				const decoder = new TextDecoder("utf-8");
+				let buffer = "";
+				let summary;
+				let failed;
+				for (;;) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					buffer += decoder.decode(value, { stream: true });
+					let boundary;
+					while ((boundary = buffer.indexOf("\n\n")) >= 0) {
+						const event = buffer.slice(0, boundary);
+						buffer = buffer.slice(boundary + 2);
+						for (const line of event.split("\n")) {
+							if (!line.startsWith("data: ")) continue;
+							const payload = JSON.parse(line.slice(6));
+							if (typeof payload.delta === "string") onDelta(payload.delta);
+							if (payload.error !== void 0) failed = payload.error;
+							if (payload.done === true) summary = payload;
+						}
+					}
+				}
+				if (failed !== void 0) throw new XhsApiError(failed);
+				if (summary === void 0) throw new XhsApiError("流式响应未正常结束");
+				return summary;
+			}
 			/** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
 			async studioSaveDraft(accountId, copy, coverPrompt) {
 				return (await readJson(await fetch(XHS_API.studio + "/draft", {
@@ -282,122 +327,122 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"dialogClose": "hv-J7W_dialogClose",
-			"tabActive": "hv-J7W_tabActive",
-			"topbarSub": "hv-J7W_topbarSub",
-			"topicItem": "hv-J7W_topicItem",
-			"bubble": "hv-J7W_bubble",
-			"contextCard": "hv-J7W_contextCard",
-			"face": "hv-J7W_face",
-			"on": "hv-J7W_on",
-			"weight": "hv-J7W_weight",
-			"studioTopSub": "hv-J7W_studioTopSub",
-			"content": "hv-J7W_content",
-			"post": "hv-J7W_post",
-			"personaLayout": "hv-J7W_personaLayout",
-			"contextLine": "hv-J7W_contextLine",
-			"accountName": "hv-J7W_accountName",
-			"accountAdd": "hv-J7W_accountAdd",
-			"workspace": "hv-J7W_workspace",
-			"filter": "hv-J7W_filter",
-			"chathead": "hv-J7W_chathead",
-			"msgBubble": "hv-J7W_msgBubble",
-			"badge": "hv-J7W_badge",
-			"studioMain": "hv-J7W_studioMain",
-			"postBody": "hv-J7W_postBody",
-			"below": "hv-J7W_below",
-			"muted": "hv-J7W_muted",
-			"chatSend": "hv-J7W_chatSend",
-			"libBody": "hv-J7W_libBody",
-			"empty": "hv-J7W_empty",
-			"active": "hv-J7W_active",
-			"studioComposer": "hv-J7W_studioComposer",
-			"studioResult": "hv-J7W_studioResult",
-			"brand": "hv-J7W_brand",
-			"error": "hv-J7W_error",
-			"thumb": "hv-J7W_thumb",
-			"ghostBtn": "hv-J7W_ghostBtn",
-			"sidebar": "hv-J7W_sidebar",
-			"viewGrid": "hv-J7W_viewGrid",
-			"filterRow": "hv-J7W_filterRow",
-			"overview": "hv-J7W_overview",
-			"topbar": "hv-J7W_topbar",
-			"danger": "hv-J7W_danger",
-			"tab": "hv-J7W_tab",
-			"primary": "hv-J7W_primary",
-			"panel": "hv-J7W_panel",
-			"textarea": "hv-J7W_textarea",
-			"me": "hv-J7W_me",
-			"personaItem": "hv-J7W_personaItem",
-			"draftLayout": "hv-J7W_draftLayout",
-			"viewHost": "hv-J7W_viewHost",
-			"tag": "hv-J7W_tag",
-			"pill": "hv-J7W_pill",
-			"modeSwitch": "hv-J7W_modeSwitch",
-			"libRow": "hv-J7W_libRow",
-			"libTitle": "hv-J7W_libTitle",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"personaList": "hv-J7W_personaList",
-			"overlay": "hv-J7W_overlay",
-			"tabs": "hv-J7W_tabs",
-			"editbar": "hv-J7W_editbar",
-			"libMeta": "hv-J7W_libMeta",
-			"personaDesc": "hv-J7W_personaDesc",
-			"accountItem": "hv-J7W_accountItem",
-			"studioLayout": "hv-J7W_studioLayout",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"brandLogo": "hv-J7W_brandLogo",
-			"ok": "hv-J7W_ok",
-			"postTitle": "hv-J7W_postTitle",
-			"msgAvatar": "hv-J7W_msgAvatar",
 			"context": "hv-J7W_context",
-			"msg": "hv-J7W_msg",
-			"scoreLow": "hv-J7W_scoreLow",
-			"dialogRow": "hv-J7W_dialogRow",
-			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"messages": "hv-J7W_messages",
-			"metric": "hv-J7W_metric",
-			"score": "hv-J7W_score",
-			"input": "hv-J7W_input",
-			"spacer": "hv-J7W_spacer",
-			"metrics": "hv-J7W_metrics",
-			"idle": "hv-J7W_idle",
-			"studioTop": "hv-J7W_studioTop",
-			"bar": "hv-J7W_bar",
-			"contextline": "hv-J7W_contextline",
-			"draftEditor": "hv-J7W_draftEditor",
-			"sourcePanel": "hv-J7W_sourcePanel",
-			"topicTitle": "hv-J7W_topicTitle",
-			"chips": "hv-J7W_chips",
-			"topbarRight": "hv-J7W_topbarRight",
-			"warn": "hv-J7W_warn",
-			"panelTitle": "hv-J7W_panelTitle",
-			"postMeta": "hv-J7W_postMeta",
-			"studioSend": "hv-J7W_studioSend",
-			"rowActions": "hv-J7W_rowActions",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"success": "hv-J7W_success",
-			"group": "hv-J7W_group",
-			"meter": "hv-J7W_meter",
+			"libBody": "hv-J7W_libBody",
+			"active": "hv-J7W_active",
+			"msgBubble": "hv-J7W_msgBubble",
+			"studioResult": "hv-J7W_studioResult",
+			"viewGrid": "hv-J7W_viewGrid",
+			"topicItem": "hv-J7W_topicItem",
 			"miniThumb": "hv-J7W_miniThumb",
-			"personaName": "hv-J7W_personaName",
-			"field": "hv-J7W_field",
-			"chatInput": "hv-J7W_chatInput",
-			"statusDot": "hv-J7W_statusDot",
-			"source": "hv-J7W_source",
-			"button": "hv-J7W_button",
-			"pillWarn": "hv-J7W_pillWarn",
-			"badgeGray": "hv-J7W_badgeGray",
-			"chat": "hv-J7W_chat",
-			"dialog": "hv-J7W_dialog",
-			"navIcon": "hv-J7W_navIcon",
-			"weightBadge": "hv-J7W_weightBadge",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"dangerBtn": "hv-J7W_dangerBtn",
-			"topicReason": "hv-J7W_topicReason",
 			"card": "hv-J7W_card",
-			"navItem": "hv-J7W_navItem"
+			"editbar": "hv-J7W_editbar",
+			"metrics": "hv-J7W_metrics",
+			"studioTop": "hv-J7W_studioTop",
+			"filter": "hv-J7W_filter",
+			"idle": "hv-J7W_idle",
+			"personaList": "hv-J7W_personaList",
+			"topbarRight": "hv-J7W_topbarRight",
+			"below": "hv-J7W_below",
+			"brand": "hv-J7W_brand",
+			"weight": "hv-J7W_weight",
+			"muted": "hv-J7W_muted",
+			"studioLayout": "hv-J7W_studioLayout",
+			"messages": "hv-J7W_messages",
+			"brandLogo": "hv-J7W_brandLogo",
+			"topicTitle": "hv-J7W_topicTitle",
+			"personaName": "hv-J7W_personaName",
+			"content": "hv-J7W_content",
+			"topicReason": "hv-J7W_topicReason",
+			"group": "hv-J7W_group",
+			"postMeta": "hv-J7W_postMeta",
+			"draftLayout": "hv-J7W_draftLayout",
+			"sidebar": "hv-J7W_sidebar",
+			"libTitle": "hv-J7W_libTitle",
+			"panelTitle": "hv-J7W_panelTitle",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"chat": "hv-J7W_chat",
+			"me": "hv-J7W_me",
+			"filterRow": "hv-J7W_filterRow",
+			"primary": "hv-J7W_primary",
+			"studioMain": "hv-J7W_studioMain",
+			"accountName": "hv-J7W_accountName",
+			"scoreLow": "hv-J7W_scoreLow",
+			"contextCard": "hv-J7W_contextCard",
+			"postTitle": "hv-J7W_postTitle",
+			"metric": "hv-J7W_metric",
+			"bubble": "hv-J7W_bubble",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"textarea": "hv-J7W_textarea",
+			"studioComposer": "hv-J7W_studioComposer",
+			"workspace": "hv-J7W_workspace",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"thumb": "hv-J7W_thumb",
+			"danger": "hv-J7W_danger",
+			"viewHost": "hv-J7W_viewHost",
+			"weightBadge": "hv-J7W_weightBadge",
+			"msgAvatar": "hv-J7W_msgAvatar",
+			"statusDot": "hv-J7W_statusDot",
+			"personaDesc": "hv-J7W_personaDesc",
+			"draftEditor": "hv-J7W_draftEditor",
+			"panel": "hv-J7W_panel",
+			"button": "hv-J7W_button",
+			"personaItem": "hv-J7W_personaItem",
+			"dialog": "hv-J7W_dialog",
+			"source": "hv-J7W_source",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"field": "hv-J7W_field",
+			"topbarSub": "hv-J7W_topbarSub",
+			"navIcon": "hv-J7W_navIcon",
+			"contextline": "hv-J7W_contextline",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"error": "hv-J7W_error",
+			"pill": "hv-J7W_pill",
+			"meter": "hv-J7W_meter",
+			"tag": "hv-J7W_tag",
+			"accountItem": "hv-J7W_accountItem",
+			"pillWarn": "hv-J7W_pillWarn",
+			"chatInput": "hv-J7W_chatInput",
+			"accountAdd": "hv-J7W_accountAdd",
+			"badgeGray": "hv-J7W_badgeGray",
+			"chathead": "hv-J7W_chathead",
+			"dialogClose": "hv-J7W_dialogClose",
+			"overlay": "hv-J7W_overlay",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"face": "hv-J7W_face",
+			"dangerBtn": "hv-J7W_dangerBtn",
+			"post": "hv-J7W_post",
+			"contextLine": "hv-J7W_contextLine",
+			"score": "hv-J7W_score",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"empty": "hv-J7W_empty",
+			"ok": "hv-J7W_ok",
+			"overview": "hv-J7W_overview",
+			"personaLayout": "hv-J7W_personaLayout",
+			"chatSend": "hv-J7W_chatSend",
+			"navItem": "hv-J7W_navItem",
+			"rowActions": "hv-J7W_rowActions",
+			"on": "hv-J7W_on",
+			"badge": "hv-J7W_badge",
+			"tab": "hv-J7W_tab",
+			"libMeta": "hv-J7W_libMeta",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"success": "hv-J7W_success",
+			"bar": "hv-J7W_bar",
+			"spacer": "hv-J7W_spacer",
+			"dialogRow": "hv-J7W_dialogRow",
+			"studioSend": "hv-J7W_studioSend",
+			"topbar": "hv-J7W_topbar",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"chips": "hv-J7W_chips",
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"msg": "hv-J7W_msg",
+			"input": "hv-J7W_input",
+			"tabActive": "hv-J7W_tabActive",
+			"postBody": "hv-J7W_postBody",
+			"tabs": "hv-J7W_tabs",
+			"warn": "hv-J7W_warn",
+			"libRow": "hv-J7W_libRow"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -1979,6 +2024,8 @@ window.__ModuleLoader__.load({
 			const [error, setError] = (0, react.useState)("");
 			const [sending, setSending] = (0, react.useState)(false);
 			const [evidence, setEvidence] = (0, react.useState)(void 0);
+			const [streamText, setStreamText] = (0, react.useState)("");
+			const [coverPrompt, setCoverPrompt] = (0, react.useState)("");
 			const [context, setContext] = (0, react.useState)({
 				personaName: "",
 				hookStyles: [],
@@ -2029,13 +2076,23 @@ window.__ModuleLoader__.load({
 			}, [refresh]);
 			const send = async () => {
 				if (input.trim() === "" || sending) return;
+				const prompt = input.trim();
+				setInput("");
 				setSending(true);
+				setStreamText("");
+				setEvidence(void 0);
+				setCoverPrompt("");
+				setError("");
 				try {
-					const result = await api.studioSend(accountId, input.trim(), mode);
-					setEvidence(result.evidence);
-					setInput("");
+					const summary = await api.studioSendStream(accountId, prompt, mode, (delta) => {
+						setStreamText((prev) => prev + delta);
+					});
+					setEvidence(summary.evidence);
+					setCoverPrompt(summary.coverPrompt ?? "");
+					setStreamText("");
 					await refresh();
 				} catch (e) {
+					setStreamText("");
 					setError(e instanceof Error ? e.message : String(e));
 				} finally {
 					setSending(false);
@@ -2048,7 +2105,7 @@ window.__ModuleLoader__.load({
 					return;
 				}
 				try {
-					await api.studioSaveDraft(accountId, last.content, "");
+					await api.studioSaveDraft(accountId, last.content, coverPrompt);
 					setError("");
 					await refresh();
 				} catch (e) {
@@ -2116,6 +2173,32 @@ window.__ModuleLoader__.load({
 										children: message.content
 									})]
 								}, message.id)),
+								sending && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.msg,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgAvatar,
+										children: "薯"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.msgBubble,
+										children: [streamText === "" ? "生成中…" : streamText, streamText !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: panel_module_css_default.muted,
+											children: " ▍"
+										})]
+									})]
+								}),
+								!sending && coverPrompt !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.msg,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgAvatar,
+										children: "薯"
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.msgBubble,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.studioResult,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "封面提示词" }), coverPrompt]
+										})
+									})]
+								}),
 								evidence !== void 0 && evidence.reasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: panel_module_css_default.msg,
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2180,10 +2263,11 @@ window.__ModuleLoader__.load({
 									style: { flex: 1 },
 									children: mode === "creative" ? "仅高权重样本进入上下文" : "全部已发布笔记进入上下文"
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									className: panel_module_css_default.studioSendGhost,
 									onClick: () => void saveLastAsDraft(),
-									children: "保存最近结果为草稿"
+									disabled: sending,
+									children: ["保存最近结果为草稿", coverPrompt !== "" ? "（含封面提示词）" : ""]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									className: panel_module_css_default.studioSendGhost,

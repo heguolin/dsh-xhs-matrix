@@ -145,7 +145,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
 
   it('创作台保存草稿不要求 topicId', async () => {
     const accountId = await seedAccount()
-    const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }) }
+    const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }), stream: async (_request, onDelta) => { onDelta('回复'); return '回复' } }
     const studio = new StudioService(store, llm)
     const { server: studioServer, base: studioBase } = await startServer(store, viralProvider, studio)
     try {

@@ -13,7 +13,7 @@ import { CollectionScheduler } from './metrics.ts'
 import { resolveStudioModel, type ModelRoute } from './model-config.ts'
 import { makeRoutes } from './routes/index.ts'
 import { MatrixStore } from './store.ts'
-import { StudioService, type StudioLlmClient } from './studio.ts'
+import { StudioService, type StudioCompleteRequest, type StudioLlmClient } from './studio.ts'
 import { makeTools } from './tools.ts'
 
 /** 稳定插件名。 */
@@ -79,11 +79,13 @@ export function buildStudioLlmClient(
     modelRoute = undefined
   }
   if (modelRoute === undefined) {
+    const notConfigured = async (): Promise<{ text: string }> => {
+      throw new Error('未配置创作台模型：请在 Harness 设置 agent-default-model（provider 与 model）')
+    }
     return {
       client: {
-        complete: async () => {
-          throw new Error('未配置创作台模型：请在 Harness 设置 agent-default-model（provider 与 model）')
-        },
+        complete: notConfigured,
+        stream: async () => { await notConfigured(); return '' },
       },
       modelLabel: '未配置',
     }
@@ -91,29 +93,47 @@ export function buildStudioLlmClient(
   return {
     client: {
       async complete(request) {
-        const messages: Message[] = request.messages.map((message) => (
-          message.role === 'assistant'
-            ? createAssistantMessage({ content: [{ type: 'text', text: message.content }], source: { provider: modelRoute.provider, model: modelRoute.model } })
-            : createUserMessage({ content: [{ type: 'text', text: message.content }], source: { kind: 'plugin', plugin: 'dsh-xhs-matrix' } })
-        ))
-        const options: GenerateOptions = {
-          provider: modelRoute.provider,
-          model: modelRoute.model,
-          messages,
-          system: request.system,
-          maxTokens: request.maxTokens,
-        }
-        const assembler = new BlockAssembler()
-        for await (const chunk of stream(options)) assembler.push(chunk)
-        if (assembler.finish.kind !== 'stop') {
-          throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
-        }
-        const text = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
+        const text = await runModelStream(stream, request, modelRoute)
         return { text }
+      },
+      async stream(request, onDelta) {
+        return runModelStream(stream, request, modelRoute, onDelta)
       },
     },
     modelLabel: `${modelRoute.provider}/${modelRoute.model}`,
   }
+}
+
+/** 消息映射 + 流式调用 + 文本拼接；onDelta 可选（非流式调用传空）。 */
+function runModelStream(
+  stream: (options: GenerateOptions) => AsyncIterable<StreamChunk>,
+  request: StudioCompleteRequest,
+  modelRoute: ModelRoute,
+  onDelta?: (delta: string) => void,
+): Promise<string> {
+  const messages: Message[] = request.messages.map((message) => (
+    message.role === 'assistant'
+      ? createAssistantMessage({ content: [{ type: 'text', text: message.content }], source: { provider: modelRoute.provider, model: modelRoute.model } })
+      : createUserMessage({ content: [{ type: 'text', text: message.content }], source: { kind: 'plugin', plugin: 'dsh-xhs-matrix' } })
+  ))
+  const options: GenerateOptions = {
+    provider: modelRoute.provider,
+    model: modelRoute.model,
+    messages,
+    system: request.system,
+    maxTokens: request.maxTokens,
+  }
+  const assembler = new BlockAssembler()
+  return (async () => {
+    for await (const chunk of stream(options)) {
+      if (chunk.type === 'text-delta' && onDelta !== undefined) onDelta(chunk.text)
+      assembler.push(chunk)
+    }
+    if (assembler.finish.kind !== 'stop') {
+      throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
+    }
+    return assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
+  })()
 }
 
 /**

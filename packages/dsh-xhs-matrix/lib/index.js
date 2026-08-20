@@ -897,8 +897,35 @@ function makeStudioRoutes(store, studio) {
 		}
 		const input = typeof body.input === "string" && body.input.trim() !== "" ? body.input.trim() : "";
 		const mode = body.mode === "full" ? "full" : "creative";
+		const stream = body.stream === true;
 		if (input === "") {
 			writeJson(res, 400, { error: "input 必填" });
+			return;
+		}
+		if (stream) {
+			res.writeHead(200, {
+				"content-type": "text/event-stream; charset=utf-8",
+				"cache-control": "no-cache",
+				connection: "keep-alive",
+				"x-accel-buffering": "no"
+			});
+			try {
+				const result = await studio.sendStream(accountId, input, mode, (delta) => {
+					res.write(`data: ${JSON.stringify({ delta })}\n\n`);
+				});
+				res.write(`data: ${JSON.stringify({
+					done: true,
+					messageId: result.message.id,
+					coverPrompt: result.coverPrompt,
+					evidence: result.evidence,
+					warning: result.warning
+				})}\n\n`);
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
+			} finally {
+				res.end();
+			}
 			return;
 		}
 		try {
@@ -1129,6 +1156,18 @@ function makeRoutes(deps) {
 }
 //#endregion
 //#region src/studio.ts
+/** 从模型输出中拆分正文与封面提示词；无标记时整段视为正文。 */
+function parseCoverPrompt(text) {
+	const index = text.indexOf("【封面提示词】");
+	if (index < 0) return {
+		copy: text.trim(),
+		coverPrompt: ""
+	};
+	return {
+		copy: text.slice(0, index).trim(),
+		coverPrompt: text.slice(index + 7).trim()
+	};
+}
 /** 上下文估算的每字符 token 上界（用于可见的限制提示）。 */
 const CHARS_PER_TOKEN = 3;
 /** 只读取当前账号矩阵数据并组装为上下文；绝不复用主工作区内容。 */
@@ -1217,7 +1256,9 @@ var StudioService = class {
 			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
 			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
 			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
-			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。"
+			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
+			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
+			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
 		].join("\n");
 		const response = await this.llm.complete({
 			system,
@@ -1241,6 +1282,59 @@ var StudioService = class {
 				trendIds: this.store.listViralItems(accountId, "accepted").slice(0, 20).map((item) => item.id),
 				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
 			}
+		};
+	}
+	/**
+	* 流式发送：追加用户消息、组装上下文、流式调用模型并把增量回传给 onDelta，
+	* 完成后解析封面提示词、保存助手消息。
+	* @param onDelta - 文本增量回调（供 SSE 转发）。
+	*/
+	async sendStream(accountId, input, mode, onDelta, maxInputChars) {
+		this.store.listAccounts().find((item) => item.id === accountId) ?? (() => {
+			throw new Error(`账号不存在：${accountId}`);
+		})();
+		const built = buildStudioContext(this.store, accountId, mode, maxInputChars);
+		if (built.truncated) throw new Error(built.warning ?? "上下文超出限制");
+		const messages = [...this.store.listStudioMessages(accountId).map((message) => ({
+			role: message.role,
+			content: message.content
+		})), {
+			role: "user",
+			content: input
+		}];
+		const system = [
+			built.context,
+			"",
+			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
+			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
+			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
+			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
+			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
+			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
+		].join("\n");
+		const { copy, coverPrompt } = parseCoverPrompt(await this.llm.stream({
+			system,
+			messages,
+			maxTokens: 4e3
+		}, onDelta));
+		this.store.saveStudioMessage({
+			accountId,
+			role: "user",
+			content: input
+		});
+		return {
+			message: this.store.saveStudioMessage({
+				accountId,
+				role: "assistant",
+				content: copy
+			}),
+			evidence: {
+				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
+				noteIds: this.store.listPublishedNotes(accountId).filter((note) => note.weight >= 3).map((note) => note.id),
+				trendIds: this.store.listViralItems(accountId, "accepted").slice(0, 20).map((item) => item.id),
+				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
+			},
+			coverPrompt
 		};
 	}
 	/** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
@@ -1843,47 +1937,70 @@ function buildStudioLlmClient(resolveModel, listProviders, stream) {
 	} catch {
 		modelRoute = void 0;
 	}
-	if (modelRoute === void 0) return {
-		client: { complete: async () => {
+	if (modelRoute === void 0) {
+		const notConfigured = async () => {
 			throw new Error("未配置创作台模型：请在 Harness 设置 agent-default-model（provider 与 model）");
-		} },
-		modelLabel: "未配置"
-	};
+		};
+		return {
+			client: {
+				complete: notConfigured,
+				stream: async () => {
+					await notConfigured();
+					return "";
+				}
+			},
+			modelLabel: "未配置"
+		};
+	}
 	return {
-		client: { async complete(request) {
-			const messages = request.messages.map((message) => message.role === "assistant" ? createAssistantMessage({
-				content: [{
-					type: "text",
-					text: message.content
-				}],
-				source: {
-					provider: modelRoute.provider,
-					model: modelRoute.model
-				}
-			}) : createUserMessage({
-				content: [{
-					type: "text",
-					text: message.content
-				}],
-				source: {
-					kind: "plugin",
-					plugin: "dsh-xhs-matrix"
-				}
-			}));
-			const options = {
-				provider: modelRoute.provider,
-				model: modelRoute.model,
-				messages,
-				system: request.system,
-				maxTokens: request.maxTokens
-			};
-			const assembler = new BlockAssembler();
-			for await (const chunk of stream(options)) assembler.push(chunk);
-			if (assembler.finish.kind !== "stop") throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`);
-			return { text: assembler.blocks().filter((block) => block.type === "text").map((block) => block.text).join("") };
-		} },
+		client: {
+			async complete(request) {
+				return { text: await runModelStream(stream, request, modelRoute) };
+			},
+			async stream(request, onDelta) {
+				return runModelStream(stream, request, modelRoute, onDelta);
+			}
+		},
 		modelLabel: `${modelRoute.provider}/${modelRoute.model}`
 	};
+}
+/** 消息映射 + 流式调用 + 文本拼接；onDelta 可选（非流式调用传空）。 */
+function runModelStream(stream, request, modelRoute, onDelta) {
+	const messages = request.messages.map((message) => message.role === "assistant" ? createAssistantMessage({
+		content: [{
+			type: "text",
+			text: message.content
+		}],
+		source: {
+			provider: modelRoute.provider,
+			model: modelRoute.model
+		}
+	}) : createUserMessage({
+		content: [{
+			type: "text",
+			text: message.content
+		}],
+		source: {
+			kind: "plugin",
+			plugin: "dsh-xhs-matrix"
+		}
+	}));
+	const options = {
+		provider: modelRoute.provider,
+		model: modelRoute.model,
+		messages,
+		system: request.system,
+		maxTokens: request.maxTokens
+	};
+	const assembler = new BlockAssembler();
+	return (async () => {
+		for await (const chunk of stream(options)) {
+			if (chunk.type === "text-delta" && onDelta !== void 0) onDelta(chunk.text);
+			assembler.push(chunk);
+		}
+		if (assembler.finish.kind !== "stop") throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`);
+		return assembler.blocks().filter((block) => block.type === "text").map((block) => block.text).join("");
+	})();
 }
 /**
 * 挂载存储、路由、工具与公告。

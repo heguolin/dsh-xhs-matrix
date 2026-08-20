@@ -143,6 +143,21 @@ export declare class XhsApi {
         };
         warning?: string;
     }>;
+    /**
+     * 流式发送创作指令（SSE）：onDelta 收到文本增量；完成后 resolve 含
+     * messageId/coverPrompt/evidence 的摘要。
+     */
+    studioSendStream(accountId: string, input: string, mode: 'full' | 'creative', onDelta: (delta: string) => void): Promise<{
+        messageId: string;
+        coverPrompt: string;
+        evidence: {
+            persona?: string;
+            noteIds: string[];
+            trendIds: string[];
+            reasons: string[];
+        };
+        warning?: string;
+    }>;
     /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
     studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{
         id: string;
