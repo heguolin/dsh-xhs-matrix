@@ -225,6 +225,36 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(store.listViralItems(accountId, 'accepted')).toHaveLength(1)
   })
 
+  it('采纳无正文条目时抓取详情补全正文并重算评分', async () => {
+    const accountId = await seedAccount()
+    const detailProvider: ViralProvider = {
+      search: async () => ({ status: 'success', items: [{ title: '无正文标题', sourceUrl: 'https://xhs.com/note/1', source: 'apify' }] }),
+      fetchNoteDetail: async () => ({ title: '无正文标题', body: '抓回的完整正文内容', sourceUrl: 'https://xhs.com/note/1', source: 'apify' }),
+    }
+    const { server: detailServer, base: detailBase } = await startServer(store, detailProvider)
+    try {
+      const created = await json(detailBase + '/api/dsh-xhs-matrix/viral', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ accountId, query: 'AI', maxItems: 5 }),
+      })
+      const item = (created.body as { items: Array<{ id: string }> }).items[0]
+      // 采集时 body 为空
+      expect(store.listViralItems(accountId)[0].body).toBe('')
+      const reviewed = await json(`${detailBase}/api/dsh-xhs-matrix/viral?account=${accountId}&item=${item.id}`, {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'accepted' }),
+      })
+      expect(reviewed.status).toBe(200)
+      // 采纳后详情已补全：正文非空、标题保留、状态 accepted
+      const saved = store.listViralItems(accountId)[0]
+      expect(saved.body).toBe('抓回的完整正文内容')
+      expect(saved.title).toBe('无正文标题')
+      expect(saved.status).toBe('accepted')
+    } finally {
+      detailServer.close()
+    }
+  })
+
   it('未配置爆款数据源返回 400', async () => {
     const { server: noProviderServer, base: noProviderBase } = await startServer(store)
     try {

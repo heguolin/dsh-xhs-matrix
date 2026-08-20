@@ -1,4 +1,4 @@
-import { t as MatrixStore } from "./store-DNTV5dLk.js";
+import { t as MatrixStore } from "./store-D_cUcyBm.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -155,6 +155,53 @@ var ApifyViralProvider = class {
 				status: "failed",
 				error: error instanceof Error ? error.message : String(error)
 			};
+		}
+	}
+	/** 按笔记链接抓详情（get_note_detail）；任何失败返回 undefined。 */
+	async fetchNoteDetail(noteUrl) {
+		if (this.config.actorId.trim() === "" || this.config.apiToken.trim() === "") return void 0;
+		const headers = {
+			Authorization: `Bearer ${this.config.apiToken}`,
+			"content-type": "application/json"
+		};
+		try {
+			const runResponse = await this.fetcher(`https://api.apify.com/v2/acts/${encodeURIComponent(this.config.actorId)}/runs?token=${encodeURIComponent(this.config.apiToken)}`, {
+				method: "POST",
+				headers,
+				body: JSON.stringify({
+					operation: "get_note_detail",
+					note_url: noteUrl
+				}),
+				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
+			});
+			if (!runResponse.ok) return void 0;
+			const run = await runResponse.json();
+			const runId = run.data?.id;
+			const datasetId = run.data?.defaultDatasetId;
+			if (runId === void 0 || datasetId === void 0) return void 0;
+			let status = run.data?.status;
+			for (let poll = 0; poll < this.config.maxPolls && status !== "SUCCEEDED"; poll += 1) {
+				if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") return void 0;
+				await this.sleep(250);
+				const stateResponse = await this.fetcher(`https://api.apify.com/v2/actor-runs/${encodeURIComponent(runId)}?token=${encodeURIComponent(this.config.apiToken)}`, {
+					headers,
+					signal: AbortSignal.timeout(this.config.requestTimeoutMs)
+				});
+				if (!stateResponse.ok) return void 0;
+				status = (await stateResponse.json()).data?.status;
+			}
+			if (status !== "SUCCEEDED") return void 0;
+			const datasetResponse = await this.fetcher(`https://api.apify.com/v2/datasets/${encodeURIComponent(datasetId)}/items?clean=true&limit=1&token=${encodeURIComponent(this.config.apiToken)}`, {
+				headers,
+				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
+			});
+			if (!datasetResponse.ok) return void 0;
+			const items = await datasetResponse.json();
+			if (!Array.isArray(items) || items.length === 0) return void 0;
+			const normalized = normalizeApifyItem(items[0]);
+			return normalized.body !== void 0 && normalized.body !== "" ? normalized : void 0;
+		} catch {
+			return;
 		}
 	}
 };
@@ -1070,7 +1117,27 @@ function makeViralRoutes(store, provider) {
 				return;
 			}
 			try {
-				writeJson(res, 200, { item: store.reviewViralItem(accountId, itemId, status) });
+				const item = store.reviewViralItem(accountId, itemId, status);
+				if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
+					const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
+					if (detail !== void 0) {
+						const account = store.listAccounts().find((entry) => entry.id === accountId);
+						const persona = account !== void 0 ? store.listPersonas().find((entry) => entry.id === account.personaId) : void 0;
+						if (account !== void 0 && persona !== void 0) {
+							const best = rankViralItems(account, persona, store.listPublishedNotes(accountId), [detail])[0];
+							store.updateViralItem(accountId, itemId, {
+								title: detail.title,
+								body: detail.body ?? "",
+								score: best !== void 0 ? best.score : item.score,
+								reasons: best !== void 0 ? best.reasons : item.reasons
+							});
+						} else store.updateViralItem(accountId, itemId, {
+							title: detail.title,
+							body: detail.body ?? ""
+						});
+					}
+				}
+				writeJson(res, 200, { item: store.listViralItems(accountId).find((entry) => entry.id === itemId) ?? item });
 			} catch (error) {
 				fail(res, error);
 			}

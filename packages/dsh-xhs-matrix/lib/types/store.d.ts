@@ -98,6 +98,13 @@ export declare class MatrixStore {
     saveViralItem(payload: ViralItemPayload): ViralItem;
     /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
     reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem;
+    /** 更新爆款条目的详情字段（采纳后抓回完整正文/标题，或重算评分）。 */
+    updateViralItem(accountId: string, itemId: string, patch: {
+        title?: string;
+        body?: string;
+        score?: number;
+        reasons?: string[];
+    }): ViralItem;
     /** 读取运行时设置（apify 等）。 */
     getSettings(): MatrixSettings;
     /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */

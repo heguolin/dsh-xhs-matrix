@@ -61,7 +61,29 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         if (status !== 'accepted' && status !== 'ignored') { writeJson(res, 400, { error: 'status 必须是 accepted 或 ignored' }); return }
         try {
           const item = store.reviewViralItem(accountId, itemId, status)
-          writeJson(res, 200, { item })
+          // 采纳时若搜索接口未带回正文（常见），用笔记链接抓详情补全，
+          // 并按补全后的完整内容重算相关性评分——创作参考用真实全文而非标题。
+          if (status === 'accepted' && provider?.fetchNoteDetail !== undefined && item.body === '' && item.sourceUrl !== undefined) {
+            const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => undefined)
+            if (detail !== undefined) {
+              const account = store.listAccounts().find(entry => entry.id === accountId)
+              const persona = account !== undefined ? store.listPersonas().find(entry => entry.id === account.personaId) : undefined
+              if (account !== undefined && persona !== undefined) {
+                const notes = store.listPublishedNotes(accountId)
+                const ranked = rankViralItems(account, persona, notes, [detail])
+                const best = ranked[0]
+                store.updateViralItem(accountId, itemId, {
+                  title: detail.title,
+                  body: detail.body ?? '',
+                  score: best !== undefined ? best.score : item.score,
+                  reasons: best !== undefined ? best.reasons : item.reasons,
+                })
+              } else {
+                store.updateViralItem(accountId, itemId, { title: detail.title, body: detail.body ?? '' })
+              }
+            }
+          }
+          writeJson(res, 200, { item: store.listViralItems(accountId).find(entry => entry.id === itemId) ?? item })
         } catch (error) { fail(res, error) }
         return
       }

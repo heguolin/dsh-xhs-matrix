@@ -237,6 +237,19 @@ export class MatrixStore {
     return item
   }
 
+  /** 更新爆款条目的详情字段（采纳后抓回完整正文/标题，或重算评分）。 */
+  updateViralItem(accountId: string, itemId: string, patch: { title?: string; body?: string; score?: number; reasons?: string[] }): ViralItem {
+    this.requireAccount(accountId)
+    const item = this.data.viralItems.find(i => i.id === itemId && i.accountId === accountId)
+    if (item === undefined) throw new MatrixStoreError(`爆款不存在或不属于该账号：${itemId}`)
+    if (patch.title !== undefined) item.title = patch.title
+    if (patch.body !== undefined) item.body = patch.body
+    if (patch.score !== undefined) item.score = patch.score
+    if (patch.reasons !== undefined) item.reasons = patch.reasons
+    this.save()
+    return item
+  }
+
   // ---------------------------------------------------------------- 运行时设置
   /** 读取运行时设置（apify 等）。 */
   getSettings(): MatrixSettings {
