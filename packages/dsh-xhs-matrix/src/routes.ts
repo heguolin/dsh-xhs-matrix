@@ -5,7 +5,8 @@ import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { isLoopbackRequest } from './loopback.ts'
 import { XHS_API } from './protocol.ts'
 import { MatrixStore, type AccountPayload, type DraftPayload, type PersonaPayload } from './store.ts'
-import { rankTrends, type NormalizedTrend, type TrendProvider } from './trends.ts'
+import { rankTrends, type NormalizedTrend } from './trends.ts'
+import type { ViralProvider } from './collector/provider.ts'
 import { validateMetricSnapshot, type MetricSnapshotInput, type CollectionScheduler } from './metrics.ts'
 import { StudioService } from './studio.ts'
 import type { DraftMetrics, DraftStatus, NoteWeight } from './types.ts'
@@ -59,7 +60,7 @@ function guard(req: IncomingMessage, res: ServerResponse, method: string): boole
 /** 路由族依赖。 */
 export interface RoutesDeps {
   store: MatrixStore
-  trendProvider?: TrendProvider
+  trendProvider?: ViralProvider
   scheduler?: CollectionScheduler
   studio?: StudioService
   /** Apify 配置更新后重建数据源/调度器/路由的回调。 */
@@ -333,7 +334,7 @@ export function makeRoutes(deps: RoutesDeps): WebRoute[] {
         const result = await trendProvider.search({ accountId, query, maxItems })
         if (result.status === 'failed') { writeJson(res, 502, { error: result.error ?? '趋势采集失败' }); return }
         const notes = store.listPublishedNotes(accountId)
-        const ranked = rankTrends(account, persona, notes, result.samples)
+        const ranked = rankTrends(account, persona, notes, result.items)
         for (const item of ranked) {
           store.saveTrendSample({ accountId, title: item.title, summary: item.summary, sourceUrl: item.sourceUrl, source: item.source, actorId: item.actorId, publishedAt: item.publishedAt, reads: item.reads, likes: item.likes, favorites: item.favorites, comments: item.comments, keywords: item.keywords, contentType: item.contentType, status: 'success' })
         }

@@ -2,7 +2,7 @@
 
 import { MatrixStore } from './store.ts'
 import type { DataSource, MetricSnapshot } from './types.ts'
-import type { CollectionResult, TrendProvider } from './trends.ts'
+import type { ViralCollectionResult, ViralProvider } from './collector/provider.ts'
 
 const SOURCES: DataSource[] = ['manual', 'import', 'apify', 'authorized']
 
@@ -43,7 +43,7 @@ export function validateMetricSnapshot(input: MetricSnapshotInput): Omit<MetricS
 
 export interface CollectionSchedulerDeps {
   store: MatrixStore
-  provider: TrendProvider
+  provider: ViralProvider
   now?: () => Date
   intervalMs?: number
 }
@@ -53,7 +53,7 @@ export class CollectionScheduler {
   private timer: ReturnType<typeof setInterval> | undefined
   private active = false
   private readonly store: MatrixStore
-  private readonly provider: TrendProvider
+  private readonly provider: ViralProvider
   private readonly now: () => Date
   private readonly intervalMs: number
 
@@ -88,7 +88,7 @@ export class CollectionScheduler {
     if (persona === undefined) return
     this.store.updateCollectionStatus(accountId, { running: true, lastStatus: 'idle' })
     const query = persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name
-    let result: CollectionResult
+    let result: ViralCollectionResult
     try {
       result = await this.provider.search({ accountId, query, maxItems: account.collection.maxItems })
     } catch (error) {
@@ -105,10 +105,11 @@ export class CollectionScheduler {
       return
     }
     for (const note of notes) {
-      const match = result.samples.find(sample => sample.sourceUrl !== undefined && note.sourceUrl !== undefined && sample.sourceUrl === note.sourceUrl)
+      const match = result.items.find(item => item.sourceUrl !== undefined && note.sourceUrl !== undefined && item.sourceUrl === note.sourceUrl)
       this.store.saveMetricSnapshot({
         accountId, noteId: note.id,
-        reads: match?.reads ?? 0, likes: match?.likes ?? 0, favorites: match?.favorites ?? 0, comments: match?.comments ?? 0,
+        // v3 标准化不再提供收藏数，指标快照按 0 落库（Task 8-11 会重构采集链路）。
+        reads: match?.reads ?? 0, likes: match?.likes ?? 0, favorites: 0, comments: match?.comments ?? 0,
         source: 'apify', status: 'success' as const,
       })
     }

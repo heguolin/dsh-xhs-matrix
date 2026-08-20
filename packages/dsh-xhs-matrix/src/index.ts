@@ -8,7 +8,7 @@ import type {} from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import { createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { Message } from '@deepseek-ai/dsh-llm'
-import { ApifyTrendProvider, type ApifyConfig } from './apify.ts'
+import { ApifyViralProvider, type ApifyConfig } from './collector/apify.ts'
 import { CollectionScheduler } from './metrics.ts'
 import { makeRoutes } from './routes.ts'
 import { MatrixStore } from './store.ts'
@@ -114,7 +114,7 @@ export function apply(ctx: Context, config?: Config): void {
     const actorId = apifyStore.actorId !== '' ? apifyStore.actorId : value.apifyActorId
     const apiToken = apifyStore.apiToken !== '' ? apifyStore.apiToken : value.apifyApiToken
     const trendProvider = actorId !== '' && apiToken !== ''
-      ? new ApifyTrendProvider({
+      ? new ApifyViralProvider({
           actorId,
           apiToken,
           maxItems: apifyStore.maxItems ?? value.apifyMaxItems ?? 10,
