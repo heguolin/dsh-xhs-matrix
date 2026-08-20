@@ -35,7 +35,7 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
     if (column === undefined) return
     container = document.createElement('div')
     container.dataset.dshXhsmatrixView = ''
-    container.className = css.view
+    container.className = css.viewHost
     column.appendChild(container)
     root = createRoot(container)
     root.render(<XhsPanel controller={controller} api={api} />)
@@ -45,13 +45,11 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
   waitObserver.observe(document.body, { childList: true, subtree: true })
 
   const applyPanelStyle = (): void => {
-    // 显隐与左右分栏由内联样式兜底：即使页面残留旧版 CSS 标签（注入去重跳过），
-    // 布局与显隐依然由宿主元素自身保证，不依赖任何外部样式表。
+    // 显隐由内联样式兜底：即使页面残留旧版 CSS 标签（注入去重跳过），
+    // 面板是否显示依然由宿主元素自身保证；左右分栏由 XhsPanel 内部
+    // viewGrid 承担，本容器只负责定位与显示开关。
     if (container === undefined) return
-    const open = controller.getSnapshot().panelOpen
-    container.style.setProperty('display', open ? 'grid' : 'none', 'important')
-    container.style.setProperty('grid-template-columns', '188px minmax(0, 1fr)', 'important')
-    container.style.setProperty('grid-template-rows', 'minmax(0, 1fr)', 'important')
+    container.style.setProperty('display', controller.getSnapshot().panelOpen ? 'block' : 'none', 'important')
     container.style.setProperty('width', '100%', 'important')
     container.style.setProperty('height', '100%', 'important')
   }

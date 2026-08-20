@@ -81,15 +81,23 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 /* ==========================================================================
    工作台骨架
    ========================================================================== */
-.view {
+
+/* 挂载宿主：绝对定位占满中栏；显隐由 mount.tsx 内联 style（block/none）控制。 */
+.viewHost {
   position: absolute;
   inset: 0;
-  /* display 由 [data-dsh-xhsmatrix-view] 的显隐规则控制（none / grid） */
-  grid-template-columns: 188px 1fr;
-  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
   background: var(--xhs-bg);
   color: var(--xhs-text);
-  overflow: hidden;
+}
+
+/* 工作台内部网格：左侧导航 + 右侧工作区，由组件自身保证，不依赖外部容器。 */
+.viewGrid {
+  display: grid;
+  grid-template-columns: 188px 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
 }
 
 /* --- 左侧导航 --- */

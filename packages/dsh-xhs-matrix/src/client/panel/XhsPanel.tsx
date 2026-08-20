@@ -118,7 +118,7 @@ export function XhsPanel(props: XhsPanelProps) {
   const openDrafts = (): void => rememberPage('drafts')
 
   return (
-    <>
+    <div className={css.viewGrid}>
       {/* ---- 左侧导航 ---- */}
       <aside className={css.sidebar}>
         <div className={css.brand}><span className={css.brandLogo}>薯</span>矩阵工作台</div>
@@ -184,7 +184,13 @@ export function XhsPanel(props: XhsPanelProps) {
         <div className={css.content}>
           {error !== '' && <div className={css.danger}>{error}</div>}
           {currentPage === 'overview' && (
-            <OverviewTab api={api} accounts={accounts} onOpenAccount={openAccountPage} onOpenStudio={openStudio} />
+            <OverviewTab
+              api={api}
+              accounts={accounts}
+              onOpenAccount={openAccountPage}
+              onOpenStudio={openStudio}
+              onAccountUpdated={() => { void refreshAccounts() }}
+            />
           )}
           {currentPage === 'knowledge' && <KnowledgeTab key={`kb-${accountId}`} api={api} accountId={accountId} />}
           {currentPage === 'topics' && <TopicsTab key={`tp-${accountId}`} api={api} accountId={accountId} />}
@@ -206,6 +212,6 @@ export function XhsPanel(props: XhsPanelProps) {
           }}
         />
       )}
-    </>
+    </div>
   )
 }

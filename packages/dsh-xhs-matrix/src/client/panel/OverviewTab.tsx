@@ -26,21 +26,27 @@ interface AccountSummary {
  * 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现、草稿摘要与
  * 今日趋势选题；点击任意账号卡片进入该账号的独立工作区。
  */
-export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio }: {
+export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAccountUpdated }: {
   api: XhsApi
   accounts: AccountRow[]
   onOpenAccount: (accountId: string, page: PageId) => void
   onOpenStudio: (accountId: string) => void
+  onAccountUpdated: () => void
 }) {
   const [summaries, setSummaries] = useState<AccountSummary[]>([])
   const [trends, setTrends] = useState<Array<{ id: string; title: string; accountId: string }>>([])
+  const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [error, setError] = useState('')
   const [manualTopic, setManualTopic] = useState('')
+  // 人设快捷绑定：bindingFor 为正在绑定的账号 id，bindPick 为下拉选择值。
+  const [bindingFor, setBindingFor] = useState<string | null>(null)
+  const [bindPick, setBindPick] = useState('')
 
   const refresh = useCallback(async () => {
     if (accounts.length === 0) { setSummaries([]); setTrends([]); return }
     try {
       const [personaList, draftList] = await Promise.all([api.listPersonas(), api.listDrafts()])
+      setPersonas(personaList)
       const rows = await Promise.all(accounts.map(async account => {
         const [noteList, metricList] = await Promise.all([
           api.listNotes(account.id),
@@ -87,6 +93,21 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio }: {
     }
   }
 
+  /** 在总览卡片上直接绑定/更换账号人设。 */
+  const bindPersona = async (account: AccountRow): Promise<void> => {
+    if (bindPick === '') { setError('请选择一个人设'); return }
+    try {
+      await api.updateAccount(account.id, { name: account.name, personaId: bindPick, enabled: account.enabled })
+      setBindingFor(null)
+      setBindPick('')
+      setError('')
+      await refresh()
+      onAccountUpdated()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   const totalNotes = summaries.reduce((sum, row) => sum + row.noteCount, 0)
   const totalDrafts = summaries.reduce((sum, row) => sum + row.draftCount, 0)
   const totalReads = summaries.reduce((sum, row) => sum + row.reads, 0)
@@ -114,7 +135,32 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio }: {
                 <span className={css.face} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{row.account.name}</div>
-                  <div className={css.muted} style={{ fontSize: 11 }}>人设：{row.personaName}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                    <span className={css.muted} style={{ fontSize: 11 }}>人设：{row.personaName}</span>
+                    {bindingFor === row.account.id ? (
+                      <>
+                        <select
+                          className={css.input}
+                          style={{ width: 150, padding: '3px 8px', fontSize: 11 }}
+                          value={bindPick}
+                          onChange={e => setBindPick(e.target.value)}
+                        >
+                          <option value="">（选择人设）</option>
+                          {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                        <button className={css.ghostBtn} style={{ padding: '3px 10px', fontSize: 11 }} onClick={() => void bindPersona(row.account)}>确认</button>
+                        <button className={css.ghostBtn} style={{ padding: '3px 10px', fontSize: 11 }} onClick={() => { setBindingFor(null); setBindPick('') }}>取消</button>
+                      </>
+                    ) : (
+                      <button
+                        className={css.ghostBtn}
+                        style={{ padding: '3px 10px', fontSize: 11 }}
+                        onClick={() => { setBindingFor(row.account.id); setBindPick(row.account.personaId) }}
+                      >
+                        {row.personaName === '未分配' ? '绑定人设' : '更换人设'}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <span className={`${css.statusDot} ${css[accountDot(row.account)]}`} />
                 {row.account.connection !== undefined && <StatusBadge status={row.account.connection.status} />}

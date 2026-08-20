@@ -25,10 +25,11 @@ interface AccountRow {
  * 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现、草稿摘要与
  * 今日趋势选题；点击任意账号卡片进入该账号的独立工作区。
  */
-export declare function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio }: {
+export declare function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAccountUpdated }: {
     api: XhsApi;
     accounts: AccountRow[];
     onOpenAccount: (accountId: string, page: PageId) => void;
     onOpenStudio: (accountId: string) => void;
+    onAccountUpdated: () => void;
 }): import("react").JSX.Element;
 export {};
