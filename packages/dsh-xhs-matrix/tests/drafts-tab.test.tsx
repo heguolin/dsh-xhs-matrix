@@ -21,7 +21,7 @@ describe('DraftsTab 展开详情', () => {
     const host = document.createElement('div')
     document.body.appendChild(host)
     const root: Root = createRoot(host)
-    root.render(<DraftsTab api={api} onOpenStudio={() => {}} />)
+    root.render(<DraftsTab api={api} accountId="acc-a" onOpenStudio={() => {}} />)
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // 初始为截断预览

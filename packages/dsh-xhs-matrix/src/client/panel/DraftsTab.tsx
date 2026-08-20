@@ -14,7 +14,7 @@ interface DraftRow {
  * 草稿箱：列表 + 展开编辑（DraftEditor 双栏）+ 标记 published/dropped + 录入指标。
  * 草稿保持「草稿」状态，发布由人工在端内完成。
  */
-export function DraftsTab({ api, onOpenStudio }: { api: XhsApi; onOpenStudio: (accountId: string) => void }) {
+export function DraftsTab({ api, accountId, onOpenStudio }: { api: XhsApi; accountId: string; onOpenStudio: (accountId: string) => void }) {
   const [drafts, setDrafts] = useState<DraftRow[]>([])
   const [accounts, setAccounts] = useState<Array<{ id: string; name: string }>>([])
   const [error, setError] = useState('')
@@ -34,6 +34,9 @@ export function DraftsTab({ api, onOpenStudio }: { api: XhsApi; onOpenStudio: (a
   useEffect(() => { void refresh() }, [refresh])
 
   const accountName = (id: string): string => accounts.find(a => a.id === id)?.name ?? id
+
+  // 草稿箱按当前账号隔离：只显示该账号工作区的草稿。
+  const visibleDrafts = accountId === '' ? drafts : drafts.filter(d => d.accountId === accountId)
 
   const toggleExpand = (id: string): void => {
     setExpandedId(prev => prev === id ? null : id)
@@ -73,8 +76,9 @@ export function DraftsTab({ api, onOpenStudio }: { api: XhsApi; onOpenStudio: (a
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
-      {drafts.length === 0 && <div className={css.muted}>暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。</div>}
-      {drafts.map(draft => {
+      {accountId === '' && <div className={css.empty}>请先在左侧选择账号，草稿箱按账号隔离。</div>}
+      {accountId !== '' && visibleDrafts.length === 0 && <div className={css.muted}>该账号暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。</div>}
+      {visibleDrafts.map(draft => {
         const expanded = expandedId === draft.id
         return (
           <div key={draft.id} className={css.libRow} style={{ flexDirection: 'column' }}>

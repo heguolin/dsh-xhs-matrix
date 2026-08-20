@@ -267,8 +267,8 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);grid-template-columns:188px 1fr;position:absolute;inset:0;overflow:hidden}.hv-J7W_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.hv-J7W_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.hv-J7W_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.hv-J7W_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.hv-J7W_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.hv-J7W_accountItem:hover{border-color:var(--xhs-red)}.hv-J7W_accountItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.hv-J7W_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.hv-J7W_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.hv-J7W_statusDot.hv-J7W_ok{background:#31ae7e}.hv-J7W_statusDot.hv-J7W_warn{background:#f2a43e}.hv-J7W_statusDot.hv-J7W_error{background:#e25662}.hv-J7W_statusDot.hv-J7W_idle{background:#e4d9db}.hv-J7W_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.hv-J7W_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.hv-J7W_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_navItem.hv-J7W_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.hv-J7W_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.hv-J7W_workspace{background:var(--xhs-bg-main);flex-direction:column;min-width:0;min-height:0;display:flex}.hv-J7W_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.hv-J7W_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.hv-J7W_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.hv-J7W_topbarRight{align-items:center;gap:10px;display:flex}.hv-J7W_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.hv-J7W_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.hv-J7W_modeSwitch button.hv-J7W_on{background:var(--xhs-red);color:#fff;font-weight:600}.hv-J7W_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.hv-J7W_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.hv-J7W_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.hv-J7W_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.hv-J7W_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.hv-J7W_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.hv-J7W_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.hv-J7W_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_post:first-of-type{border-top:0}.hv-J7W_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.hv-J7W_postBody{flex:1;min-width:0}.hv-J7W_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.hv-J7W_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.hv-J7W_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.hv-J7W_chat{flex-direction:column;height:100%;min-height:0;display:flex}.hv-J7W_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.hv-J7W_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.hv-J7W_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_bubble.hv-J7W_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.hv-J7W_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.hv-J7W_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.hv-J7W_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.hv-J7W_chips{flex-wrap:wrap;gap:6px;display:flex}.hv-J7W_chip{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;padding:5px 10px;font-size:12px}.hv-J7W_chipInput{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:99px;width:100%;padding:5px 12px;font-size:12px}.hv-J7W_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_contextline:first-of-type{border-top:0}.hv-J7W_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.hv-J7W_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.hv-J7W_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.hv-J7W_studioTop strong{color:var(--xhs-text);font-size:14px}.hv-J7W_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.hv-J7W_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.hv-J7W_msg.hv-J7W_me{flex-direction:row-reverse;margin-left:auto}.hv-J7W_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgAvatar{background:var(--xhs-face);color:#8a3945}.hv-J7W_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.hv-J7W_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.hv-J7W_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.hv-J7W_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.hv-J7W_studioSend:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.hv-J7W_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.hv-J7W_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.hv-J7W_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.hv-J7W_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.hv-J7W_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.hv-J7W_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.hv-J7W_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.hv-J7W_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.hv-J7W_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.hv-J7W_tag.hv-J7W_on{background:var(--xhs-red);color:#fff}.hv-J7W_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.hv-J7W_filter.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.hv-J7W_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.hv-J7W_libBody{flex:1;min-width:0}.hv-J7W_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.hv-J7W_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.hv-J7W_weight{gap:4px;margin-top:8px;display:flex}.hv-J7W_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.hv-J7W_weight button:hover{border-color:var(--xhs-red)}.hv-J7W_weight button.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.hv-J7W_topicLayout{grid-template-columns:1.05fr .95fr;gap:14px;display:grid}.hv-J7W_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.hv-J7W_topicItem:first-of-type{border-top:0}.hv-J7W_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.hv-J7W_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.hv-J7W_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.hv-J7W_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.hv-J7W_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.hv-J7W_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.hv-J7W_personaItem:hover{border-color:var(--xhs-red)}.hv-J7W_personaItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.hv-J7W_personaName{font-size:13px;font-weight:700}.hv-J7W_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.hv-J7W_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.hv-J7W_draftEditor,.hv-J7W_sourcePanel{min-width:0}.hv-J7W_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.hv-J7W_source:first-of-type{border-top:0}.hv-J7W_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.hv-J7W_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.hv-J7W_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.hv-J7W_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.hv-J7W_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.hv-J7W_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.hv-J7W_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.hv-J7W_dialogClose:hover{color:var(--xhs-red)}.hv-J7W_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.hv-J7W_dialogRow .hv-J7W_face{width:28px;height:28px}.hv-J7W_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_primary:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.hv-J7W_rowActions{flex:none;align-items:center;gap:8px;display:flex}.hv-J7W_spacer{flex:1}";
-		const tagId = "dsh-xhs-matrix/panel.module.css?v=9f04edfd";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_view{background:var(--xhs-bg);color:var(--xhs-text);grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;position:absolute;inset:0;overflow:hidden}.hv-J7W_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.hv-J7W_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.hv-J7W_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.hv-J7W_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.hv-J7W_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.hv-J7W_accountItem:hover{border-color:var(--xhs-red)}.hv-J7W_accountItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.hv-J7W_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.hv-J7W_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.hv-J7W_statusDot.hv-J7W_ok{background:#31ae7e}.hv-J7W_statusDot.hv-J7W_warn{background:#f2a43e}.hv-J7W_statusDot.hv-J7W_error{background:#e25662}.hv-J7W_statusDot.hv-J7W_idle{background:#e4d9db}.hv-J7W_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.hv-J7W_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.hv-J7W_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_navItem.hv-J7W_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.hv-J7W_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.hv-J7W_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.hv-J7W_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.hv-J7W_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.hv-J7W_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.hv-J7W_topbarRight{align-items:center;gap:10px;display:flex}.hv-J7W_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.hv-J7W_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.hv-J7W_modeSwitch button.hv-J7W_on{background:var(--xhs-red);color:#fff;font-weight:600}.hv-J7W_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.hv-J7W_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.hv-J7W_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.hv-J7W_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.hv-J7W_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.hv-J7W_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.hv-J7W_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.hv-J7W_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_post:first-of-type{border-top:0}.hv-J7W_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.hv-J7W_postBody{flex:1;min-width:0}.hv-J7W_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.hv-J7W_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.hv-J7W_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.hv-J7W_chat{flex-direction:column;height:100%;min-height:0;display:flex}.hv-J7W_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.hv-J7W_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.hv-J7W_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_bubble.hv-J7W_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.hv-J7W_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.hv-J7W_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.hv-J7W_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.hv-J7W_chips{flex-wrap:wrap;gap:6px;display:flex}.hv-J7W_chip{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;padding:5px 10px;font-size:12px}.hv-J7W_chipInput{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:99px;width:100%;padding:5px 12px;font-size:12px}.hv-J7W_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_contextline:first-of-type{border-top:0}.hv-J7W_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.hv-J7W_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.hv-J7W_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.hv-J7W_studioTop strong{color:var(--xhs-text);font-size:14px}.hv-J7W_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.hv-J7W_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.hv-J7W_msg.hv-J7W_me{flex-direction:row-reverse;margin-left:auto}.hv-J7W_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgAvatar{background:var(--xhs-face);color:#8a3945}.hv-J7W_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.hv-J7W_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.hv-J7W_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.hv-J7W_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.hv-J7W_studioSend:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.hv-J7W_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.hv-J7W_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.hv-J7W_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.hv-J7W_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.hv-J7W_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.hv-J7W_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.hv-J7W_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.hv-J7W_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.hv-J7W_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.hv-J7W_tag.hv-J7W_on{background:var(--xhs-red);color:#fff}.hv-J7W_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.hv-J7W_filter.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.hv-J7W_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.hv-J7W_libBody{flex:1;min-width:0}.hv-J7W_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.hv-J7W_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.hv-J7W_weight{gap:4px;margin-top:8px;display:flex}.hv-J7W_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.hv-J7W_weight button:hover{border-color:var(--xhs-red)}.hv-J7W_weight button.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.hv-J7W_topicLayout{grid-template-columns:1.05fr .95fr;gap:14px;display:grid}.hv-J7W_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.hv-J7W_topicItem:first-of-type{border-top:0}.hv-J7W_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.hv-J7W_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.hv-J7W_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.hv-J7W_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.hv-J7W_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.hv-J7W_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.hv-J7W_personaItem:hover{border-color:var(--xhs-red)}.hv-J7W_personaItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.hv-J7W_personaName{font-size:13px;font-weight:700}.hv-J7W_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.hv-J7W_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.hv-J7W_draftEditor,.hv-J7W_sourcePanel{min-width:0}.hv-J7W_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.hv-J7W_source:first-of-type{border-top:0}.hv-J7W_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.hv-J7W_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.hv-J7W_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.hv-J7W_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.hv-J7W_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.hv-J7W_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.hv-J7W_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.hv-J7W_dialogClose:hover{color:var(--xhs-red)}.hv-J7W_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.hv-J7W_dialogRow .hv-J7W_face{width:28px;height:28px}.hv-J7W_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_primary:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.hv-J7W_rowActions{flex:none;align-items:center;gap:8px;display:flex}.hv-J7W_spacer{flex:1}";
+		const tagId = "dsh-xhs-matrix/panel.module.css?v=032c7839";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "dsh-xhs-matrix";
@@ -277,123 +277,123 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"spacer": "hv-J7W_spacer",
-			"studioMain": "hv-J7W_studioMain",
-			"msgAvatar": "hv-J7W_msgAvatar",
-			"msg": "hv-J7W_msg",
-			"dangerBtn": "hv-J7W_dangerBtn",
-			"below": "hv-J7W_below",
-			"studioComposer": "hv-J7W_studioComposer",
-			"workspace": "hv-J7W_workspace",
-			"weightBadge": "hv-J7W_weightBadge",
-			"topbarSub": "hv-J7W_topbarSub",
-			"context": "hv-J7W_context",
-			"contextline": "hv-J7W_contextline",
-			"editbar": "hv-J7W_editbar",
-			"modeSwitch": "hv-J7W_modeSwitch",
-			"msgBubble": "hv-J7W_msgBubble",
-			"chatInput": "hv-J7W_chatInput",
-			"filter": "hv-J7W_filter",
-			"navItem": "hv-J7W_navItem",
-			"topicItem": "hv-J7W_topicItem",
-			"ok": "hv-J7W_ok",
-			"personaLayout": "hv-J7W_personaLayout",
-			"ghostBtn": "hv-J7W_ghostBtn",
-			"chat": "hv-J7W_chat",
-			"score": "hv-J7W_score",
+			"personaItem": "hv-J7W_personaItem",
+			"tab": "hv-J7W_tab",
+			"personaName": "hv-J7W_personaName",
+			"active": "hv-J7W_active",
 			"studioResult": "hv-J7W_studioResult",
-			"muted": "hv-J7W_muted",
-			"danger": "hv-J7W_danger",
-			"panel": "hv-J7W_panel",
-			"bar": "hv-J7W_bar",
-			"libMeta": "hv-J7W_libMeta",
-			"overlay": "hv-J7W_overlay",
-			"group": "hv-J7W_group",
-			"draftEditor": "hv-J7W_draftEditor",
-			"face": "hv-J7W_face",
-			"messages": "hv-J7W_messages",
-			"dialogRow": "hv-J7W_dialogRow",
-			"accountName": "hv-J7W_accountName",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"weight": "hv-J7W_weight",
+			"accountAdd": "hv-J7W_accountAdd",
+			"below": "hv-J7W_below",
+			"context": "hv-J7W_context",
+			"editbar": "hv-J7W_editbar",
+			"textarea": "hv-J7W_textarea",
 			"button": "hv-J7W_button",
-			"studioLayout": "hv-J7W_studioLayout",
-			"rowActions": "hv-J7W_rowActions",
+			"studioSend": "hv-J7W_studioSend",
+			"card": "hv-J7W_card",
+			"libMeta": "hv-J7W_libMeta",
+			"libTitle": "hv-J7W_libTitle",
+			"warn": "hv-J7W_warn",
 			"sourcePanel": "hv-J7W_sourcePanel",
-			"contextCard": "hv-J7W_contextCard",
-			"studioTopSub": "hv-J7W_studioTopSub",
+			"brandLogo": "hv-J7W_brandLogo",
+			"overlay": "hv-J7W_overlay",
+			"panelTitle": "hv-J7W_panelTitle",
+			"msgBubble": "hv-J7W_msgBubble",
+			"bar": "hv-J7W_bar",
+			"navItem": "hv-J7W_navItem",
+			"draftEditor": "hv-J7W_draftEditor",
 			"topbar": "hv-J7W_topbar",
 			"thumb": "hv-J7W_thumb",
-			"textarea": "hv-J7W_textarea",
-			"overview": "hv-J7W_overview",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"chip": "hv-J7W_chip",
-			"view": "hv-J7W_view",
 			"topicTitle": "hv-J7W_topicTitle",
-			"personaItem": "hv-J7W_personaItem",
-			"accountAdd": "hv-J7W_accountAdd",
-			"card": "hv-J7W_card",
+			"messages": "hv-J7W_messages",
+			"weightBadge": "hv-J7W_weightBadge",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"overview": "hv-J7W_overview",
+			"chips": "hv-J7W_chips",
+			"source": "hv-J7W_source",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"navIcon": "hv-J7W_navIcon",
+			"on": "hv-J7W_on",
+			"postBody": "hv-J7W_postBody",
+			"postMeta": "hv-J7W_postMeta",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"rowActions": "hv-J7W_rowActions",
+			"personaDesc": "hv-J7W_personaDesc",
+			"dangerBtn": "hv-J7W_dangerBtn",
+			"filterRow": "hv-J7W_filterRow",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"topicReason": "hv-J7W_topicReason",
+			"studioLayout": "hv-J7W_studioLayout",
 			"idle": "hv-J7W_idle",
 			"post": "hv-J7W_post",
+			"accountName": "hv-J7W_accountName",
+			"msgAvatar": "hv-J7W_msgAvatar",
 			"draftLayout": "hv-J7W_draftLayout",
-			"statusDot": "hv-J7W_statusDot",
-			"chips": "hv-J7W_chips",
-			"libTitle": "hv-J7W_libTitle",
-			"personaName": "hv-J7W_personaName",
-			"source": "hv-J7W_source",
-			"topbarRight": "hv-J7W_topbarRight",
-			"studioSend": "hv-J7W_studioSend",
-			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"metrics": "hv-J7W_metrics",
-			"primary": "hv-J7W_primary",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"dialogClose": "hv-J7W_dialogClose",
-			"brand": "hv-J7W_brand",
-			"error": "hv-J7W_error",
-			"tag": "hv-J7W_tag",
-			"personaDesc": "hv-J7W_personaDesc",
-			"pillWarn": "hv-J7W_pillWarn",
-			"meter": "hv-J7W_meter",
-			"libRow": "hv-J7W_libRow",
-			"chatSend": "hv-J7W_chatSend",
-			"on": "hv-J7W_on",
-			"tabActive": "hv-J7W_tabActive",
-			"postTitle": "hv-J7W_postTitle",
-			"success": "hv-J7W_success",
-			"miniThumb": "hv-J7W_miniThumb",
-			"badgeGray": "hv-J7W_badgeGray",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"accountItem": "hv-J7W_accountItem",
-			"panelTitle": "hv-J7W_panelTitle",
-			"input": "hv-J7W_input",
-			"warn": "hv-J7W_warn",
-			"content": "hv-J7W_content",
-			"chathead": "hv-J7W_chathead",
+			"badgeGreen": "hv-J7W_badgeGreen",
 			"pill": "hv-J7W_pill",
-			"navIcon": "hv-J7W_navIcon",
-			"filterRow": "hv-J7W_filterRow",
-			"tabs": "hv-J7W_tabs",
-			"personaList": "hv-J7W_personaList",
-			"dialog": "hv-J7W_dialog",
-			"postMeta": "hv-J7W_postMeta",
-			"studioTop": "hv-J7W_studioTop",
-			"postBody": "hv-J7W_postBody",
-			"chipInput": "hv-J7W_chipInput",
-			"empty": "hv-J7W_empty",
-			"topicReason": "hv-J7W_topicReason",
-			"tab": "hv-J7W_tab",
-			"bubble": "hv-J7W_bubble",
-			"badge": "hv-J7W_badge",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"me": "hv-J7W_me",
-			"contextLine": "hv-J7W_contextLine",
-			"topicLayout": "hv-J7W_topicLayout",
-			"libBody": "hv-J7W_libBody",
+			"weight": "hv-J7W_weight",
+			"success": "hv-J7W_success",
+			"content": "hv-J7W_content",
+			"libRow": "hv-J7W_libRow",
 			"metric": "hv-J7W_metric",
-			"brandLogo": "hv-J7W_brandLogo",
-			"active": "hv-J7W_active",
-			"field": "hv-J7W_field",
-			"sidebar": "hv-J7W_sidebar"
+			"chatSend": "hv-J7W_chatSend",
+			"topicLayout": "hv-J7W_topicLayout",
+			"group": "hv-J7W_group",
+			"libBody": "hv-J7W_libBody",
+			"input": "hv-J7W_input",
+			"studioTop": "hv-J7W_studioTop",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"chatInput": "hv-J7W_chatInput",
+			"score": "hv-J7W_score",
+			"sidebar": "hv-J7W_sidebar",
+			"error": "hv-J7W_error",
+			"me": "hv-J7W_me",
+			"topbarRight": "hv-J7W_topbarRight",
+			"accountItem": "hv-J7W_accountItem",
+			"statusDot": "hv-J7W_statusDot",
+			"tabActive": "hv-J7W_tabActive",
+			"topicItem": "hv-J7W_topicItem",
+			"metrics": "hv-J7W_metrics",
+			"tag": "hv-J7W_tag",
+			"muted": "hv-J7W_muted",
+			"contextline": "hv-J7W_contextline",
+			"dialogClose": "hv-J7W_dialogClose",
+			"meter": "hv-J7W_meter",
+			"badgeGray": "hv-J7W_badgeGray",
+			"postTitle": "hv-J7W_postTitle",
+			"ok": "hv-J7W_ok",
+			"spacer": "hv-J7W_spacer",
+			"chat": "hv-J7W_chat",
+			"miniThumb": "hv-J7W_miniThumb",
+			"dialog": "hv-J7W_dialog",
+			"msg": "hv-J7W_msg",
+			"empty": "hv-J7W_empty",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"pillWarn": "hv-J7W_pillWarn",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"primary": "hv-J7W_primary",
+			"filter": "hv-J7W_filter",
+			"face": "hv-J7W_face",
+			"contextCard": "hv-J7W_contextCard",
+			"personaList": "hv-J7W_personaList",
+			"tabs": "hv-J7W_tabs",
+			"badge": "hv-J7W_badge",
+			"studioComposer": "hv-J7W_studioComposer",
+			"chathead": "hv-J7W_chathead",
+			"dialogRow": "hv-J7W_dialogRow",
+			"brand": "hv-J7W_brand",
+			"view": "hv-J7W_view",
+			"panel": "hv-J7W_panel",
+			"studioMain": "hv-J7W_studioMain",
+			"workspace": "hv-J7W_workspace",
+			"chip": "hv-J7W_chip",
+			"chipInput": "hv-J7W_chipInput",
+			"contextLine": "hv-J7W_contextLine",
+			"danger": "hv-J7W_danger",
+			"bubble": "hv-J7W_bubble",
+			"topbarSub": "hv-J7W_topbarSub",
+			"personaLayout": "hv-J7W_personaLayout",
+			"field": "hv-J7W_field"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -964,7 +964,7 @@ window.__ModuleLoader__.load({
 		* 草稿箱：列表 + 展开编辑（DraftEditor 双栏）+ 标记 published/dropped + 录入指标。
 		* 草稿保持「草稿」状态，发布由人工在端内完成。
 		*/
-		function DraftsTab({ api, onOpenStudio }) {
+		function DraftsTab({ api, accountId, onOpenStudio }) {
 			const [drafts, setDrafts] = (0, react.useState)([]);
 			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [error, setError] = (0, react.useState)("");
@@ -983,6 +983,7 @@ window.__ModuleLoader__.load({
 				refresh();
 			}, [refresh]);
 			const accountName = (id) => accounts.find((a) => a.id === id)?.name ?? id;
+			const visibleDrafts = accountId === "" ? drafts : drafts.filter((d) => d.accountId === accountId);
 			const toggleExpand = (id) => {
 				setExpandedId((prev) => prev === id ? null : id);
 			};
@@ -1022,11 +1023,15 @@ window.__ModuleLoader__.load({
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				drafts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.muted,
-					children: "暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。"
+				accountId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "请先在左侧选择账号，草稿箱按账号隔离。"
 				}),
-				drafts.map((draft) => {
+				accountId !== "" && visibleDrafts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.muted,
+					children: "该账号暂无草稿。在「创作台」中生成，或让助手为你撰写后保存。"
+				}),
+				visibleDrafts.map((draft) => {
 					const expanded = expandedId === draft.id;
 					return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default.libRow,
@@ -1339,73 +1344,54 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/panel/OverviewTab.tsx
 		/**
-		* 运营总览（设计稿 content/hybrid-layout.html）：
-		* 账号表现指标卡 + 高权重历史内容 + 专属创作台摘要 + 今日趋势选题。
+		* 运营总览（设计稿 content/hybrid-layout.html + 设计文档 §8.2）：
+		* 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现、草稿摘要与
+		* 今日趋势选题；点击任意账号卡片进入该账号的独立工作区。
 		*/
-		function OverviewTab({ api, accountId, accounts, onOpenStudio }) {
-			const [notes, setNotes] = (0, react.useState)([]);
-			const [metrics, setMetrics] = (0, react.useState)([]);
+		function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio }) {
+			const [summaries, setSummaries] = (0, react.useState)([]);
 			const [trends, setTrends] = (0, react.useState)([]);
-			const [draftsCount, setDraftsCount] = (0, react.useState)(0);
-			const [personaName, setPersonaName] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
-			const [collecting, setCollecting] = (0, react.useState)(false);
 			const [manualTopic, setManualTopic] = (0, react.useState)("");
-			const account = accounts.find((item) => item.id === accountId);
 			const refresh = (0, react.useCallback)(async () => {
-				if (accountId === "") {
-					setNotes([]);
-					setMetrics([]);
+				if (accounts.length === 0) {
+					setSummaries([]);
 					setTrends([]);
-					setDraftsCount(0);
-					setPersonaName("");
 					return;
 				}
 				try {
-					const [noteList, metricList, trendList, draftList, personaList] = await Promise.all([
-						api.listNotes(accountId),
-						api.listMetrics(accountId),
-						api.listTrends(accountId),
-						api.listDrafts(),
-						api.listPersonas()
-					]);
-					setNotes(noteList);
-					setMetrics(metricList);
-					setTrends(trendList);
-					setDraftsCount(draftList.filter((d) => d.accountId === accountId && d.status === "generated").length);
-					const persona = personaList.find((p) => p.id === accounts.find((a) => a.id === accountId)?.personaId);
-					setPersonaName(persona?.name ?? "");
+					const [personaList, draftList] = await Promise.all([api.listPersonas(), api.listDrafts()]);
+					const rows = await Promise.all(accounts.map(async (account) => {
+						const [noteList, metricList] = await Promise.all([api.listNotes(account.id), api.listMetrics(account.id)]);
+						const latestByNote = /* @__PURE__ */ new Map();
+						for (const m of metricList) {
+							const prev = latestByNote.get(m.noteId);
+							if (prev === void 0 || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m);
+						}
+						const reads = [...latestByNote.values()].reduce((sum, m) => sum + m.reads, 0);
+						return {
+							account,
+							personaName: personaList.find((p) => p.id === account.personaId)?.name ?? "未分配",
+							noteCount: noteList.length,
+							highWeightCount: noteList.filter((n) => n.weight >= 3).length,
+							reads,
+							draftCount: draftList.filter((d) => d.accountId === account.id && d.status === "generated").length
+						};
+					}));
+					setSummaries(rows);
+					const allTrends = await Promise.all(accounts.map((account) => api.listTrends(account.id).then((list) => list.map((t) => ({
+						...t,
+						accountId: account.id
+					})))));
+					setTrends(allTrends.flat());
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [
-				api,
-				accountId,
-				accounts
-			]);
+			}, [api, accounts]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
-			const latestByNote = /* @__PURE__ */ new Map();
-			for (const m of metrics) {
-				const prev = latestByNote.get(m.noteId);
-				if (prev === void 0 || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m);
-			}
-			const weekReads = [...latestByNote.values()].reduce((sum, m) => sum + m.reads, 0);
-			const highWeight = [...notes].filter((n) => n.weight >= 3).sort((a, b) => b.weight - a.weight).slice(0, 5);
-			const collect = async () => {
-				if (accountId === "") return;
-				setCollecting(true);
-				try {
-					await api.collectTrends(accountId, void 0, 10);
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				} finally {
-					setCollecting(false);
-				}
-			};
 			const addManualTopic = async () => {
 				const title = manualTopic.trim();
 				if (title === "") return;
@@ -1416,170 +1402,176 @@ window.__ModuleLoader__.load({
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			if (accountId === "") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: panel_module_css_default.empty,
-				children: "还没有选择账号。先在左侧「我的账号」选择一个账号，或点击右上角「＋ 添加账号」创建。"
-			}) });
+			const totalNotes = summaries.reduce((sum, row) => sum + row.noteCount, 0);
+			summaries.reduce((sum, row) => sum + row.draftCount, 0);
+			const totalReads = summaries.reduce((sum, row) => sum + row.reads, 0);
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.overview,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
+				accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "还没有账号。点击右上角「＋ 添加账号」创建第一个矩阵账号，开始建立独立工作区。"
+				}),
+				accounts.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.metrics,
+						style: { marginBottom: 14 },
 						children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["账号表现 · ", account?.name ?? ""] }), account?.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: account.connection.status })]
+								className: panel_module_css_default.metric,
+								children: ["矩阵账号", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: accounts.length })]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.metrics,
+								className: panel_module_css_default.metric,
+								children: ["累计已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalNotes })]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.metric,
+								children: ["累计浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalReads.toLocaleString() })]
+							})
+						]
+					}),
+					summaries.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.libRow,
+						style: { flexDirection: "column" },
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									width: "100%",
+									display: "flex",
+									alignItems: "center",
+									gap: 10
+								},
 								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: notes.length })]
+										style: { minWidth: 0 },
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											style: {
+												fontWeight: 700,
+												fontSize: 14
+											},
+											children: row.account.name
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.muted,
+											style: { fontSize: 11 },
+											children: ["人设：", row.personaName]
+										})]
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["最近浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: weekReads.toLocaleString() })]
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(row.account)]}` }),
+									row.account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: row.account.connection.status }),
+									row.account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.badgeGreen,
+										children: "启用"
+									}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.badgeGray,
+										children: "停用"
 									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["待处理草稿", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: String(draftsCount).padStart(2, "0") })]
+										className: panel_module_css_default.rowActions,
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => onOpenAccount(row.account.id, "knowledge"),
+												children: "知识库"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => onOpenAccount(row.account.id, "topics"),
+												children: "选题"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => onOpenAccount(row.account.id, "drafts"),
+												children: "草稿"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.primary,
+												onClick: () => onOpenStudio(row.account.id),
+												children: "进入创作台"
+											})
+										]
 									})
 								]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.panelTitle,
-								style: { marginTop: 16 },
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "高权重历史内容" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.muted,
-									children: "权重 ≥ 3 优先进入创作上下文"
-								})]
-							}),
-							highWeight.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.muted,
-								children: "还没有高权重笔记。在「已发布知识库」中给笔记打权重。"
-							}),
-							highWeight.map((note) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.post,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: panel_module_css_default.thumb }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.postBody,
-									children: [
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: panel_module_css_default.postTitle,
-											children: note.title
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-											className: panel_module_css_default.postMeta,
-											children: [
-												"浏览 ",
-												latestByNote.get(note.id)?.reads?.toLocaleString() ?? "—",
-												" · 权重 ",
-												note.weight
-											]
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: panel_module_css_default.bar,
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", { style: { width: `${note.weight * 20}%` } })
-										})
-									]
-								})]
-							}, note.id))
-						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: `${panel_module_css_default.panel} ${panel_module_css_default.chat}`,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.chathead,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "专属创作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.pill,
-									children: "百万上下文"
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.bubble,
+								className: panel_module_css_default.metrics,
+								style: { marginTop: 10 },
 								children: [
-									"已加载本账号人设、",
-									notes.length,
-									" 篇已发布笔记（含 ",
-									highWeight.length,
-									" 篇高权重）和 ",
-									trends.length,
-									" 个外部趋势样本。"
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.noteCount })]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["最近浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.reads.toLocaleString() })]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.metric,
+										children: ["高权重样本", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.highWeightCount })]
+									})
 								]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.bubble,
-								style: {
-									alignSelf: "flex-end",
-									background: "var(--xhs-red)",
-									color: "#fff"
-								},
-								children: "先给我 3 个今天适合写的选题"
+							row.account.connection?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.muted,
+								style: { marginTop: 6 },
+								children: ["连接：", row.account.connection.lastError]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.bubble,
-								children: "正在按人设标准筛选……点击「专属创作台」可进入完整对话。"
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.chatInput,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "输入创作指令……" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.chatSend,
-									onClick: () => onOpenStudio(accountId),
-									children: "进入创作台"
-								})]
+							row.account.collectionStatus?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.muted,
+								style: { marginTop: 4 },
+								children: ["采集：", row.account.collectionStatus.lastError]
 							})
 						]
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.below,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.panelTitle,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "今日趋势选题" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.ghostBtn,
-								onClick: () => void collect(),
-								disabled: collecting,
-								children: collecting ? "采集中…" : "获取最新候选"
+					}, row.account.id)),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.below,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+							className: panel_module_css_default.panel,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "今日趋势选题" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+									className: panel_module_css_default.muted,
+									children: [trends.length, " 个外部样本"]
+								})]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.chips,
+								children: [trends.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.muted,
+									children: "暂无趋势样本。进入各账号「趋势选题」页从 Apify 采集。"
+								}), trends.slice(0, 12).map((trend) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.chip,
+									title: trend.title,
+									children: trend.title.length > 14 ? `${trend.title.slice(0, 14)}…` : trend.title
+								}, trend.id))]
 							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.chips,
-							children: [trends.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.muted,
-								children: "暂无趋势样本，点击「获取最新候选」从 Apify 采集。"
-							}), trends.slice(0, 12).map((trend) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.chip,
-								children: trend.title.length > 14 ? `${trend.title.slice(0, 14)}…` : trend.title
-							}, trend.id))]
-						})]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: panel_module_css_default.panelTitle,
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "手动添加选题" })
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							style: {
-								display: "flex",
-								gap: 8
-							},
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								className: panel_module_css_default.chipInput,
-								value: manualTopic,
-								onChange: (e) => setManualTopic(e.target.value),
-								placeholder: "输入一个选题标题"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.primary,
-								onClick: () => void addManualTopic(),
-								children: "加入选题池"
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+							className: panel_module_css_default.panel,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.panelTitle,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "手动添加选题" })
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									display: "flex",
+									gap: 8
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.chipInput,
+									value: manualTopic,
+									onChange: (e) => setManualTopic(e.target.value),
+									placeholder: "输入一个选题标题"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void addManualTopic(),
+									children: "加入选题池"
+								})]
 							})]
 						})]
-					})]
-				})
+					})
+				] })
 			] });
 		}
 		//#endregion
@@ -2610,11 +2602,14 @@ window.__ModuleLoader__.load({
 		};
 		/**
 		* 矩阵工作台（依据设计稿 content/hybrid-layout.html 的混合布局）：
-		* 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前页面工作区。
+		* 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
+		*
+		* 每个账号拥有独立的工作区：页面位置（pageByAccount）、创作台对话、筛选
+		* 与草稿均按账号隔离；切换账号后各自状态保留，切回即恢复。
 		*/
 		function XhsPanel(props) {
 			const { api } = props;
-			const [page, setPage] = (0, react.useState)("overview");
+			const [pageByAccount, setPageByAccount] = (0, react.useState)({});
 			const [accountId, setAccountId] = (0, react.useState)("");
 			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [dialogOpen, setDialogOpen] = (0, react.useState)(false);
@@ -2630,134 +2625,156 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refreshAccounts();
 			}, [refreshAccounts]);
+			(0, react.useEffect)(() => {
+				if (accounts.length === 0) {
+					setAccountId("");
+					return;
+				}
+				if (!accounts.some((item) => item.id === accountId)) setAccountId(accounts[0].id);
+			}, [accounts, accountId]);
 			const current = accounts.find((item) => item.id === accountId);
-			const openStudio = (id) => {
-				setAccountId(id);
-				setPage("studio");
+			const currentPage = accountId === "" ? "overview" : pageByAccount[accountId] ?? "overview";
+			/** 记录当前账号所在的页面位置。 */
+			const rememberPage = (next) => {
+				if (accountId !== "") setPageByAccount((prev) => ({
+					...prev,
+					[accountId]: next
+				}));
 			};
-			const openDrafts = () => setPage("drafts");
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: panel_module_css_default.view,
-				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
-						className: panel_module_css_default.sidebar,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.brand,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.brandLogo,
-									children: "薯"
-								}), "矩阵工作台"]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.group,
-								children: "我的账号"
-							}),
-							accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								className: accountId === account.id ? `${panel_module_css_default.accountItem} ${panel_module_css_default.active}` : panel_module_css_default.accountItem,
-								onClick: () => setAccountId(account.id),
-								title: account.name,
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: panel_module_css_default.accountName,
-										children: account.name
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(account)]}` })
-								]
-							}, account.id)),
-							accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.empty,
-								children: "还没有账号，点击下方添加。"
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.accountAdd,
+			/** 导航点击：只在当前账号的工作区里切换页面。 */
+			const navigate = (page) => rememberPage(page);
+			/** 切换到指定账号并打开其工作区中的某个页面。 */
+			const openAccountPage = (id, page) => {
+				setAccountId(id);
+				setPageByAccount((prev) => ({
+					...prev,
+					[id]: page
+				}));
+			};
+			/** 进入某账号的创作台（总览/草稿入口）。 */
+			const openStudio = (id) => openAccountPage(id, "studio");
+			const openDrafts = () => rememberPage("drafts");
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+					className: panel_module_css_default.sidebar,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.brand,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.brandLogo,
+								children: "薯"
+							}), "矩阵工作台"]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.group,
+							children: "我的账号"
+						}),
+						accounts.map((account) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							className: accountId === account.id ? `${panel_module_css_default.accountItem} ${panel_module_css_default.active}` : panel_module_css_default.accountItem,
+							onClick: () => setAccountId(account.id),
+							title: account.name,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.accountName,
+									children: account.name
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(account)]}` })
+							]
+						}, account.id)),
+						accounts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.empty,
+							children: "还没有账号，点击下方添加。"
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							className: panel_module_css_default.accountAdd,
+							onClick: () => setDialogOpen(true),
+							children: "＋ 添加账号"
+						}),
+						NAV_GROUPS.map((group) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.group,
+							children: group.group
+						}), group.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							className: currentPage === item.id ? `${panel_module_css_default.navItem} ${panel_module_css_default.active}` : panel_module_css_default.navItem,
+							onClick: () => navigate(item.id),
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.navIcon,
+								children: item.icon
+							}), item.label]
+						}, item.id))] }, group.group))
+					]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("main", {
+					className: panel_module_css_default.workspace,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.topbar,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: currentPage === "overview" && current !== void 0 ? `${current.name} · ${PAGE_TITLES.overview}` : currentPage === "studio" && current !== void 0 ? `${PAGE_TITLES.studio} · ${current.name}` : PAGE_TITLES[currentPage] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.topbarSub,
+							children: currentPage === "studio" && current !== void 0 ? "人设、知识库、Apify 趋势已隔离加载 · 仅矩阵内容" : "小红书矩阵内容管理"
+						})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.topbarRight,
+							children: [currentPage === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.modeSwitch,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.on,
+									onClick: () => rememberPage("overview"),
+									children: "运营总览"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									onClick: () => {
+										if (accountId !== "") openStudio(accountId);
+									},
+									children: "专属创作台"
+								})]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
 								onClick: () => setDialogOpen(true),
 								children: "＋ 添加账号"
-							}),
-							NAV_GROUPS.map((group) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.group,
-								children: group.group
-							}), group.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								className: page === item.id ? `${panel_module_css_default.navItem} ${panel_module_css_default.active}` : panel_module_css_default.navItem,
-								onClick: () => setPage(item.id),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: panel_module_css_default.navIcon,
-									children: item.icon
-								}), item.label]
-							}, item.id))] }, group.group))
-						]
-					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("main", {
-						className: panel_module_css_default.workspace,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.topbar,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: page === "overview" && current !== void 0 ? `${current.name} · ${PAGE_TITLES.overview}` : PAGE_TITLES[page] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.topbarSub,
-								children: page === "studio" && current !== void 0 ? "人设、知识库、Apify 趋势已隔离加载 · 仅矩阵内容" : "小红书矩阵内容管理"
-							})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.topbarRight,
-								children: [page === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.modeSwitch,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: panel_module_css_default.on,
-										onClick: () => setPage("overview"),
-										children: "运营总览"
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										onClick: () => {
-											if (accountId !== "") openStudio(accountId);
-										},
-										children: "专属创作台"
-									})]
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.primary,
-									onClick: () => setDialogOpen(true),
-									children: "＋ 添加账号"
-								})]
 							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.content,
-							children: [
-								error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: panel_module_css_default.danger,
-									children: error
-								}),
-								page === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(OverviewTab, {
-									api,
-									accountId,
-									accounts,
-									onOpenStudio: openStudio
-								}),
-								page === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
-									api,
-									accountId
-								}),
-								page === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, {
-									api,
-									accountId
-								}),
-								page === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
-									api,
-									accountId,
-									onOpenDraft: openDrafts
-								}),
-								page === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, {
-									api,
-									onOpenStudio: openStudio
-								}),
-								page === "personas" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonasTab, { api })
-							]
 						})]
-					}),
-					dialogOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsDialog, {
-						api,
-						onClose: () => setDialogOpen(false),
-						onSaved: () => {
-							refreshAccounts();
-						}
-					})
-				]
-			});
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.content,
+						children: [
+							error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.danger,
+								children: error
+							}),
+							currentPage === "overview" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(OverviewTab, {
+								api,
+								accounts,
+								onOpenAccount: openAccountPage,
+								onOpenStudio: openStudio
+							}),
+							currentPage === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
+								api,
+								accountId
+							}, `kb-${accountId}`),
+							currentPage === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, {
+								api,
+								accountId
+							}, `tp-${accountId}`),
+							currentPage === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
+								api,
+								accountId,
+								onOpenDraft: openDrafts
+							}, `st-${accountId}`),
+							currentPage === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, {
+								api,
+								accountId,
+								onOpenStudio: openStudio
+							}, `df-${accountId}`),
+							currentPage === "personas" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonasTab, { api })
+						]
+					})]
+				}),
+				dialogOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsDialog, {
+					api,
+					onClose: () => setDialogOpen(false),
+					onSaved: (createdId) => {
+						if (createdId !== void 0) setAccountId(createdId);
+						refreshAccounts();
+					}
+				})
+			] });
 		}
 		//#endregion
 		//#region src/client/mount.tsx
@@ -2805,8 +2822,11 @@ window.__ModuleLoader__.load({
 			const applyPanelStyle = () => {
 				if (container === void 0) return;
 				const open = controller.getSnapshot().panelOpen;
-				container.style.display = open ? "grid" : "none";
-				container.style.gridTemplateColumns = "188px 1fr";
+				container.style.setProperty("display", open ? "grid" : "none", "important");
+				container.style.setProperty("grid-template-columns", "188px minmax(0, 1fr)", "important");
+				container.style.setProperty("grid-template-rows", "minmax(0, 1fr)", "important");
+				container.style.setProperty("width", "100%", "important");
+				container.style.setProperty("height", "100%", "important");
 			};
 			const applyActive = () => {
 				if (controller.getSnapshot().panelOpen) {

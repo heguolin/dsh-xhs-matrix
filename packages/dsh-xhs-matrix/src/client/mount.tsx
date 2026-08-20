@@ -49,8 +49,11 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
     // 布局与显隐依然由宿主元素自身保证，不依赖任何外部样式表。
     if (container === undefined) return
     const open = controller.getSnapshot().panelOpen
-    container.style.display = open ? 'grid' : 'none'
-    container.style.gridTemplateColumns = '188px 1fr'
+    container.style.setProperty('display', open ? 'grid' : 'none', 'important')
+    container.style.setProperty('grid-template-columns', '188px minmax(0, 1fr)', 'important')
+    container.style.setProperty('grid-template-rows', 'minmax(0, 1fr)', 'important')
+    container.style.setProperty('width', '100%', 'important')
+    container.style.setProperty('height', '100%', 'important')
   }
 
   const applyActive = (): void => {

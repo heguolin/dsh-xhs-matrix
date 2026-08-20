@@ -22,7 +22,10 @@ export interface XhsPanelProps {
 }
 /**
  * 矩阵工作台（依据设计稿 content/hybrid-layout.html 的混合布局）：
- * 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前页面工作区。
+ * 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
+ *
+ * 每个账号拥有独立的工作区：页面位置（pageByAccount）、创作台对话、筛选
+ * 与草稿均按账号隔离；切换账号后各自状态保留，切回即恢复。
  */
 export declare function XhsPanel(props: XhsPanelProps): import("react").JSX.Element;
 export {};

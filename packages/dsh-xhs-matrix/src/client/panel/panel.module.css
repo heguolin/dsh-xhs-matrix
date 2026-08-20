@@ -86,6 +86,7 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   inset: 0;
   /* display 由 [data-dsh-xhsmatrix-view] 的显隐规则控制（none / grid） */
   grid-template-columns: 188px 1fr;
+  grid-template-rows: minmax(0, 1fr);
   background: var(--xhs-bg);
   color: var(--xhs-text);
   overflow: hidden;
@@ -93,6 +94,8 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 
 /* --- 左侧导航 --- */
 .sidebar {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -254,6 +257,8 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 
 /* --- 主工作区 --- */
 .workspace {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
