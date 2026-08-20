@@ -1,5 +1,5 @@
-/** Apify Actor Run/Dataset 的 Host 适配器。 */
-import { type CollectionResult, type TrendProvider, type TrendProviderRequest } from './trends.ts';
+/** Apify Actor Run/Dataset 的 Host 适配器（v3 爆款采集）。 */
+import { type ViralCollectionResult, type ViralProvider, type ViralProviderRequest } from './provider.ts';
 export interface ApifyConfig {
     actorId: string;
     apiToken: string;
@@ -11,11 +11,11 @@ export interface ApifyClientOptions {
     fetcher?: typeof fetch;
     sleep?: (ms: number) => Promise<void>;
 }
-/** 通过 Apify API 搜索公开趋势样本；凭据只在 Host 端使用。 */
-export declare class ApifyTrendProvider implements TrendProvider {
+/** 通过 Apify API 搜索公开爆款样本；凭据只在 Host 端使用。 */
+export declare class ApifyViralProvider implements ViralProvider {
     private readonly config;
     private readonly fetcher;
     private readonly sleep;
     constructor(config: ApifyConfig, options?: ApifyClientOptions);
-    search(request: TrendProviderRequest): Promise<CollectionResult>;
+    search(request: ViralProviderRequest): Promise<ViralCollectionResult>;
 }

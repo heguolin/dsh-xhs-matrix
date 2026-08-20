@@ -2,10 +2,25 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 //#region src/migration.ts
-/** 将 version 1 存储迁移到 version 2；旧版独立约束不会迁移。 */
+/** 运行时设置默认值（存于 migration 模块，避免 store↔migration 循环依赖）。 */
+function defaultMatrixSettings() {
+	return { apify: {
+		actorId: "",
+		apiToken: "",
+		maxItems: 10,
+		requestTimeoutMs: 3e4,
+		maxPolls: 120
+	} };
+}
+/** 生成迁移条目 id（时间戳 + 随机后缀）。 */
+function nextId$1() {
+	return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+/** 将 v1/v2 存储迁移到 v3：trendSamples 转为爆款池 pending 条目、topics/negatives 丢弃、draft 去 topicId。 */
 function migrateStoreFile(file) {
+	const defaults = defaultMatrixSettings();
 	return {
-		version: 2,
+		version: 3,
 		accounts: (file.accounts ?? []).map((account) => ({
 			...account,
 			connection: account.connection ?? { status: "unbound" },
@@ -20,12 +35,27 @@ function migrateStoreFile(file) {
 			}
 		})),
 		personas: file.personas ?? [],
-		topics: file.topics ?? [],
-		drafts: file.drafts ?? [],
-		publishedNotes: [],
-		metricSnapshots: [],
-		trendSamples: [],
-		studioMessages: []
+		drafts: (file.drafts ?? []).map(({ topicId: _topicId, ...draft }) => draft),
+		publishedNotes: file.version === 2 ? file.publishedNotes ?? [] : [],
+		metricSnapshots: file.version === 2 ? file.metricSnapshots ?? [] : [],
+		viralItems: (file.version === 2 ? file.trendSamples ?? [] : []).map((sample) => ({
+			id: nextId$1(),
+			accountId: sample.accountId,
+			title: sample.title,
+			body: sample.summary ?? sample.desc ?? "",
+			sourceUrl: sample.sourceUrl,
+			source: sample.source === "manual" ? "manual" : "apify",
+			status: "pending",
+			score: 0,
+			reasons: ["历史趋势样本迁移"],
+			publishedAt: sample.publishedAt,
+			collectedAt: sample.collectedAt
+		})),
+		studioMessages: file.version === 2 ? file.studioMessages ?? [] : [],
+		settings: { apify: {
+			...defaults.apify,
+			...file.version === 2 ? file.settings?.apify ?? {} : {}
+		} }
 	};
 }
 /** 存储文件默认位置。 */
@@ -41,15 +71,15 @@ var MatrixStoreError = class extends Error {
 };
 function empty() {
 	return {
-		version: 2,
+		version: 3,
 		accounts: [],
 		personas: [],
-		topics: [],
 		drafts: [],
 		publishedNotes: [],
 		metricSnapshots: [],
-		trendSamples: [],
-		studioMessages: []
+		viralItems: [],
+		studioMessages: [],
+		settings: defaultMatrixSettings()
 	};
 }
 function nextId() {
@@ -105,18 +135,21 @@ var MatrixStore = class MatrixStore {
 		}
 		const file = parsed;
 		if (typeof file !== "object" || file === null || typeof file.version !== "number") throw new MatrixStoreError(`存储文件形状非法：${this.filePath}`);
-		if (file.version === 1) {
+		const rawVersion = file.version;
+		if (rawVersion === 1 || rawVersion === 2) {
 			this.data = migrateStoreFile(file);
 			this.save();
 			return this.data;
 		}
-		if (file.version !== 2) throw new MatrixStoreError(`存储文件 version 不匹配：期望 2，实际 ${file.version}`);
+		if (rawVersion !== 3) throw new MatrixStoreError(`存储文件 version 不匹配：期望 3，实际 ${rawVersion}`);
 		const now = (/* @__PURE__ */ new Date()).toISOString();
 		const accounts = Array.isArray(file.accounts) ? file.accounts : [];
 		const publishedNotes = Array.isArray(file.publishedNotes) ? file.publishedNotes : [];
 		const studioMessages = Array.isArray(file.studioMessages) ? file.studioMessages : [];
+		const fileApify = (file.settings ?? {}).apify ?? {};
+		const defaults = defaultMatrixSettings();
 		this.data = {
-			version: 2,
+			version: 3,
 			accounts: accounts.map((account) => ({
 				...account,
 				connection: account.connection ?? { status: "unbound" },
@@ -131,18 +164,24 @@ var MatrixStore = class MatrixStore {
 				}
 			})),
 			personas: Array.isArray(file.personas) ? file.personas : [],
-			topics: Array.isArray(file.topics) ? file.topics : [],
 			drafts: Array.isArray(file.drafts) ? file.drafts : [],
 			publishedNotes: publishedNotes.map((note) => ({
 				...note,
 				updatedAt: note.updatedAt ?? note.createdAt ?? now
 			})),
 			metricSnapshots: Array.isArray(file.metricSnapshots) ? file.metricSnapshots : [],
-			trendSamples: Array.isArray(file.trendSamples) ? file.trendSamples : [],
+			viralItems: Array.isArray(file.viralItems) ? file.viralItems : [],
 			studioMessages: studioMessages.map((message) => ({
 				...message,
 				read: message.read ?? false
-			}))
+			})),
+			settings: { apify: {
+				actorId: typeof fileApify.actorId === "string" ? fileApify.actorId : defaults.apify.actorId,
+				apiToken: typeof fileApify.apiToken === "string" ? fileApify.apiToken : defaults.apify.apiToken,
+				maxItems: typeof fileApify.maxItems === "number" ? fileApify.maxItems : defaults.apify.maxItems,
+				requestTimeoutMs: typeof fileApify.requestTimeoutMs === "number" ? fileApify.requestTimeoutMs : defaults.apify.requestTimeoutMs,
+				maxPolls: typeof fileApify.maxPolls === "number" ? fileApify.maxPolls : defaults.apify.maxPolls
+			} }
 		};
 		return this.data;
 	}
@@ -152,6 +191,51 @@ var MatrixStore = class MatrixStore {
 		const tmp = this.filePath + ".tmp";
 		writeFileSync(tmp, JSON.stringify(this.data, null, 2), "utf8");
 		renameSync(tmp, this.filePath);
+	}
+	/** 按账号与审核状态列出爆款池条目。 */
+	listViralItems(accountId, status) {
+		let items = this.data.viralItems;
+		if (accountId !== void 0) items = items.filter((i) => i.accountId === accountId);
+		if (status !== void 0) items = items.filter((i) => i.status === status);
+		return items;
+	}
+	/** 新增爆款池条目（默认 pending）；账号必须存在。 */
+	saveViralItem(payload) {
+		this.requireAccount(payload.accountId);
+		const item = {
+			id: nextId(),
+			...payload,
+			status: payload.status ?? "pending",
+			collectedAt: (/* @__PURE__ */ new Date()).toISOString()
+		};
+		this.data.viralItems.push(item);
+		this.save();
+		return item;
+	}
+	/** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
+	reviewViralItem(accountId, itemId, status) {
+		this.requireAccount(accountId);
+		const item = this.data.viralItems.find((i) => i.id === itemId && i.accountId === accountId);
+		if (item === void 0) throw new MatrixStoreError(`爆款不存在或不属于该账号：${itemId}`);
+		item.status = status;
+		this.save();
+		return item;
+	}
+	/** 读取运行时设置（apify 等）。 */
+	getSettings() {
+		return this.data.settings;
+	}
+	/** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
+	updateApifySettings(payload) {
+		this.data.settings = {
+			...this.data.settings,
+			apify: {
+				...this.data.settings.apify,
+				...payload
+			}
+		};
+		this.save();
+		return this.data.settings;
 	}
 	listAccounts() {
 		return this.data.accounts;
@@ -262,45 +346,12 @@ var MatrixStore = class MatrixStore {
 		for (const account of this.data.accounts) if (account.personaId === id) account.personaId = "";
 		this.save();
 	}
-	listTopics() {
-		return this.data.topics;
-	}
-	addTopics(titles) {
-		const created = [];
-		for (const title of titles) {
-			const trimmed = title.trim();
-			if (trimmed === "") continue;
-			const topic = {
-				id: nextId(),
-				title: trimmed,
-				source: "manual",
-				status: "open",
-				createdAt: (/* @__PURE__ */ new Date()).toISOString()
-			};
-			this.data.topics.push(topic);
-			created.push(topic);
-		}
-		this.save();
-		return created;
-	}
-	retireTopic(id) {
-		const topic = this.data.topics.find((t) => t.id === id);
-		if (topic === void 0) throw new MatrixStoreError(`选题不存在：${id}`);
-		topic.status = "retired";
-		this.save();
-	}
-	markTopicUsed(id, draftId) {
-		const topic = this.data.topics.find((t) => t.id === id);
-		if (topic === void 0) throw new MatrixStoreError(`选题不存在：${id}`);
-		topic.status = "used";
-		topic.usedByDraftId = draftId;
-		this.save();
-	}
 	listDrafts() {
 		return this.data.drafts;
 	}
-	findDraft(accountId, date, topicId) {
-		return this.data.drafts.find((d) => d.accountId === accountId && d.date === date && d.topicId === topicId);
+	/** v3 草稿独立于选题，去重键为账号 + 日期（无 topicId 残留）。 */
+	findDraft(accountId, date) {
+		return this.data.drafts.find((d) => d.accountId === accountId && d.date === date);
 	}
 	saveDraft(payload) {
 		const draft = {
@@ -389,20 +440,6 @@ var MatrixStore = class MatrixStore {
 		this.data.metricSnapshots.push(snapshot);
 		this.save();
 		return snapshot;
-	}
-	listTrendSamples(accountId) {
-		return accountId === void 0 ? this.data.trendSamples : this.data.trendSamples.filter((sample) => sample.accountId === accountId);
-	}
-	saveTrendSample(payload) {
-		this.requireAccount(payload.accountId);
-		const sample = {
-			id: nextId(),
-			...payload,
-			collectedAt: (/* @__PURE__ */ new Date()).toISOString()
-		};
-		this.data.trendSamples.push(sample);
-		this.save();
-		return sample;
 	}
 	listStudioMessages(accountId) {
 		return accountId === void 0 ? this.data.studioMessages : this.data.studioMessages.filter((message) => message.accountId === accountId);

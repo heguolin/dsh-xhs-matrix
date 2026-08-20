@@ -54,16 +54,6 @@ export interface Persona {
     defaultHashtags?: string[];
     createdAt: string;
 }
-export type TopicStatus = 'open' | 'used' | 'retired';
-/** 选题。 */
-export interface Topic {
-    id: string;
-    title: string;
-    source: 'manual' | 'import';
-    status: TopicStatus;
-    usedByDraftId?: string;
-    createdAt: string;
-}
 /** 发布笔记的人工知识库权重。 */
 export type NoteWeight = 0 | 1 | 2 | 3 | 4 | 5;
 /** 已发布笔记。 */
@@ -96,25 +86,21 @@ export interface MetricSnapshot {
     status: 'success' | 'failed';
     error?: string;
 }
-/** 外部趋势样本；只保存分析所需字段。 */
-export interface TrendSample {
+/** 爆款池审核状态。 */
+export type ViralStatus = 'pending' | 'accepted' | 'ignored';
+/** 爆款池条目；收集到的外部内容与审核结果。 */
+export interface ViralItem {
     id: string;
     accountId: string;
     title: string;
-    summary?: string;
+    body: string;
     sourceUrl?: string;
-    source: 'apify' | 'manual';
-    actorId?: string;
+    source: 'apify' | 'manual' | 'import';
+    status: ViralStatus;
+    score: number;
+    reasons: string[];
     publishedAt?: string;
-    reads?: number;
-    likes?: number;
-    favorites?: number;
-    comments?: number;
-    keywords?: string[];
-    contentType?: string;
     collectedAt: string;
-    status: 'success' | 'failed';
-    error?: string;
 }
 /** 创作会话消息。 */
 export interface StudioMessage {
@@ -145,7 +131,6 @@ export interface DraftMetrics {
 export interface Draft {
     id: string;
     accountId: string;
-    topicId: string;
     date: string;
     copy: string;
     coverPrompt: string;
@@ -158,14 +143,13 @@ export interface Draft {
 }
 /** 存储文件整体形状。 */
 export interface StoreFile {
-    version: number;
+    version: 3;
     accounts: Account[];
     personas: Persona[];
-    topics: Topic[];
     drafts: Draft[];
     publishedNotes: PublishedNote[];
     metricSnapshots: MetricSnapshot[];
-    trendSamples: TrendSample[];
+    viralItems: ViralItem[];
     studioMessages: StudioMessage[];
     /** 插件运行时设置（面板可配置，与 Cordis 配置并存、面板写入优先）。 */
     settings: MatrixSettings;

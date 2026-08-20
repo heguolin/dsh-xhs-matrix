@@ -1,14 +1,10 @@
 //#region src/importer.ts
-const REQUIRED = [
-	"title",
-	"copy",
-	"publishedAt"
-];
+const REQUIRED = ["title", "copy"];
 function validateRecord(value, index) {
 	if (typeof value !== "object" || value === null) throw new Error(`第 ${index + 1} 条记录必须是对象`);
 	const record = value;
 	for (const field of REQUIRED) if (typeof record[field] !== "string" || record[field].trim() === "") throw new Error(`第 ${index + 1} 条记录 ${field} 必填`);
-	const publishedAt = record.publishedAt;
+	const publishedAt = record.publishedAt === void 0 ? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) : record.publishedAt;
 	if (Number.isNaN(Date.parse(publishedAt))) throw new Error(`第 ${index + 1} 条记录 publishedAt 无效`);
 	const weight = record.weight === void 0 ? 0 : Number(record.weight);
 	if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new Error(`第 ${index + 1} 条记录 weight 必须是 0-5 的整数`);

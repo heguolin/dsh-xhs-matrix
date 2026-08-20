@@ -36,9 +36,8 @@ export declare class StudioService {
         evidence: DraftEvidence;
         warning?: string;
     }>;
-    /** 保存一条草稿（可带生成依据），不发布。 */
+    /** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
     saveDraft(accountId: string, payload: {
-        topicId: string;
         copy: string;
         coverPrompt: string;
         evidence?: DraftEvidence;

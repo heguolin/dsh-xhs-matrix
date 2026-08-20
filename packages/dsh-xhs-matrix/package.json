@@ -1,6 +1,6 @@
 {
   "name": "dsh-xhs-matrix",
-  "description": "小红书矩阵内容管理系统（dsh 双半插件）：多账号人设、已发布知识库与权重、Apify 外部趋势、指标采集、专属创作台与草稿。",
+  "description": "小红书矩阵内容管理系统（dsh 双半插件）：多账号人设、已发布知识库与权重、Apify 爆款池、指标采集、专属创作台与草稿。",
   "version": "0.1.0",
   "type": "module",
   "engines": { "node": "^22.19.0 || >=24.0.0" },

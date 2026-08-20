@@ -14,11 +14,10 @@ window.__ModuleLoader__.load({
 			accountImport: "/api/dsh-xhs-matrix/accounts/import",
 			personas: "/api/dsh-xhs-matrix/personas",
 			notes: "/api/dsh-xhs-matrix/notes",
-			trends: "/api/dsh-xhs-matrix/trends",
+			viral: "/api/dsh-xhs-matrix/viral",
 			metrics: "/api/dsh-xhs-matrix/metrics",
 			studio: "/api/dsh-xhs-matrix/studio",
 			studioMessages: "/api/dsh-xhs-matrix/studio/messages",
-			topics: "/api/dsh-xhs-matrix/topics",
 			drafts: "/api/dsh-xhs-matrix/drafts"
 		};
 		//#endregion
@@ -100,25 +99,35 @@ window.__ModuleLoader__.load({
 			async deletePersona(id) {
 				await readJson(await fetch(XHS_API.personas + query({ persona: id }), { method: "DELETE" }));
 			}
-			async listTopics() {
-				return (await readJson(await fetch(XHS_API.topics))).topics;
+			/** 按账号与审核状态列出爆款池条目。 */
+			async listViralItems(accountId, status) {
+				return (await readJson(await fetch(XHS_API.viral + query({
+					account: accountId,
+					status
+				})))).items;
 			}
-			async addTopic(title) {
-				await readJson(await fetch(XHS_API.topics, {
+			/** 采集爆款入库（query/maxItems 缺省时由后端按人设方向降级生成搜索词与条数）。 */
+			async collectViral(accountId, query, maxItems) {
+				return (await readJson(await fetch(XHS_API.viral, {
 					method: "POST",
 					headers: { "content-type": "application/json" },
-					body: JSON.stringify({ title })
-				}));
+					body: JSON.stringify({
+						accountId,
+						query,
+						maxItems
+					})
+				}))).items;
 			}
-			async importTopics(titles) {
-				return (await readJson(await fetch(XHS_API.topics, {
-					method: "POST",
+			/** 审核爆款条目为 accepted / ignored。 */
+			async reviewViralItem(accountId, itemId, status) {
+				return (await readJson(await fetch(XHS_API.viral + query({
+					account: accountId,
+					item: itemId
+				}), {
+					method: "PATCH",
 					headers: { "content-type": "application/json" },
-					body: JSON.stringify({ titles })
-				}))).topics.length;
-			}
-			async retireTopic(id) {
-				await readJson(await fetch(XHS_API.topics + query({ topic: id }), { method: "PATCH" }));
+					body: JSON.stringify({ status })
+				}))).item;
 			}
 			async listNotes(accountId) {
 				return (await readJson(await fetch(XHS_API.notes + query({ account: accountId })))).notes;
@@ -132,19 +141,6 @@ window.__ModuleLoader__.load({
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({ weight })
 				}));
-			}
-			async listTrends(accountId) {
-				return (await readJson(await fetch(XHS_API.trends + query({ account: accountId })))).trends;
-			}
-			async collectTrends(accountId, searchQuery, maxItems) {
-				return (await readJson(await fetch(XHS_API.trends + query({ account: accountId }), {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify({
-						query: searchQuery,
-						maxItems
-					})
-				}))).trends;
 			}
 			async listMetrics(accountId, noteId) {
 				return (await readJson(await fetch(XHS_API.metrics + query({
@@ -175,13 +171,13 @@ window.__ModuleLoader__.load({
 					})
 				}));
 			}
-			async studioSaveDraft(accountId, topicId, copy, coverPrompt) {
+			/** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
+			async studioSaveDraft(accountId, copy, coverPrompt) {
 				return (await readJson(await fetch(XHS_API.studio + "/draft", {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({
 						accountId,
-						topicId,
 						copy,
 						coverPrompt
 					})
@@ -263,7 +259,6 @@ window.__ModuleLoader__.load({
 			"panel.title": "小红书矩阵",
 			"tab.accounts": "账号",
 			"tab.personas": "人设",
-			"tab.topics": "选题",
 			"tab.drafts": "草稿"
 		};
 		/** 英文字典（键对齐）。 */
@@ -273,13 +268,12 @@ window.__ModuleLoader__.load({
 			"panel.title": "XHS Matrix",
 			"tab.accounts": "Accounts",
 			"tab.personas": "Personas",
-			"tab.topics": "Topics",
 			"tab.drafts": "Drafts"
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.hv-J7W_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.hv-J7W_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.hv-J7W_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.hv-J7W_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.hv-J7W_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.hv-J7W_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.hv-J7W_accountItem:hover{border-color:var(--xhs-red)}.hv-J7W_accountItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.hv-J7W_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.hv-J7W_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.hv-J7W_statusDot.hv-J7W_ok{background:#31ae7e}.hv-J7W_statusDot.hv-J7W_warn{background:#f2a43e}.hv-J7W_statusDot.hv-J7W_error{background:#e25662}.hv-J7W_statusDot.hv-J7W_idle{background:#e4d9db}.hv-J7W_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.hv-J7W_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.hv-J7W_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_navItem.hv-J7W_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.hv-J7W_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.hv-J7W_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.hv-J7W_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.hv-J7W_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.hv-J7W_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.hv-J7W_topbarRight{align-items:center;gap:10px;display:flex}.hv-J7W_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.hv-J7W_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.hv-J7W_modeSwitch button.hv-J7W_on{background:var(--xhs-red);color:#fff;font-weight:600}.hv-J7W_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.hv-J7W_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.hv-J7W_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.hv-J7W_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.hv-J7W_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.hv-J7W_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.hv-J7W_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.hv-J7W_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_post:first-of-type{border-top:0}.hv-J7W_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.hv-J7W_postBody{flex:1;min-width:0}.hv-J7W_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.hv-J7W_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.hv-J7W_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.hv-J7W_chat{flex-direction:column;height:100%;min-height:0;display:flex}.hv-J7W_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.hv-J7W_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.hv-J7W_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_bubble.hv-J7W_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.hv-J7W_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.hv-J7W_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.hv-J7W_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.hv-J7W_chips{flex-wrap:wrap;gap:6px;display:flex}.hv-J7W_chip{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;padding:5px 10px;font-size:12px}.hv-J7W_chipInput{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:99px;width:100%;padding:5px 12px;font-size:12px}.hv-J7W_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_contextline:first-of-type{border-top:0}.hv-J7W_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.hv-J7W_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.hv-J7W_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.hv-J7W_studioTop strong{color:var(--xhs-text);font-size:14px}.hv-J7W_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.hv-J7W_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.hv-J7W_msg.hv-J7W_me{flex-direction:row-reverse;margin-left:auto}.hv-J7W_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgAvatar{background:var(--xhs-face);color:#8a3945}.hv-J7W_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.hv-J7W_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.hv-J7W_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.hv-J7W_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.hv-J7W_studioSend:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.hv-J7W_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.hv-J7W_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.hv-J7W_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.hv-J7W_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.hv-J7W_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.hv-J7W_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.hv-J7W_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.hv-J7W_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.hv-J7W_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.hv-J7W_tag.hv-J7W_on{background:var(--xhs-red);color:#fff}.hv-J7W_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.hv-J7W_filter.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.hv-J7W_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.hv-J7W_libBody{flex:1;min-width:0}.hv-J7W_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.hv-J7W_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.hv-J7W_weight{gap:4px;margin-top:8px;display:flex}.hv-J7W_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.hv-J7W_weight button:hover{border-color:var(--xhs-red)}.hv-J7W_weight button.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.hv-J7W_topicLayout{grid-template-columns:1.05fr .95fr;gap:14px;display:grid}.hv-J7W_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.hv-J7W_topicItem:first-of-type{border-top:0}.hv-J7W_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.hv-J7W_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.hv-J7W_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.hv-J7W_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.hv-J7W_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.hv-J7W_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.hv-J7W_personaItem:hover{border-color:var(--xhs-red)}.hv-J7W_personaItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.hv-J7W_personaName{font-size:13px;font-weight:700}.hv-J7W_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.hv-J7W_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.hv-J7W_draftEditor,.hv-J7W_sourcePanel{min-width:0}.hv-J7W_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.hv-J7W_source:first-of-type{border-top:0}.hv-J7W_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.hv-J7W_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.hv-J7W_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.hv-J7W_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.hv-J7W_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.hv-J7W_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.hv-J7W_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.hv-J7W_dialogClose:hover{color:var(--xhs-red)}.hv-J7W_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.hv-J7W_dialogRow .hv-J7W_face{width:28px;height:28px}.hv-J7W_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_primary:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.hv-J7W_rowActions{flex:none;align-items:center;gap:8px;display:flex}.hv-J7W_spacer{flex:1}";
-		const tagId = "dsh-xhs-matrix/panel.module.css?v=06a8e631";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.hv-J7W_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.hv-J7W_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.hv-J7W_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.hv-J7W_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.hv-J7W_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.hv-J7W_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.hv-J7W_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.hv-J7W_accountItem:hover{border-color:var(--xhs-red)}.hv-J7W_accountItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.hv-J7W_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.hv-J7W_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.hv-J7W_statusDot.hv-J7W_ok{background:#31ae7e}.hv-J7W_statusDot.hv-J7W_warn{background:#f2a43e}.hv-J7W_statusDot.hv-J7W_error{background:#e25662}.hv-J7W_statusDot.hv-J7W_idle{background:#e4d9db}.hv-J7W_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.hv-J7W_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.hv-J7W_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_navItem.hv-J7W_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.hv-J7W_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.hv-J7W_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.hv-J7W_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.hv-J7W_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.hv-J7W_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.hv-J7W_topbarRight{align-items:center;gap:10px;display:flex}.hv-J7W_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.hv-J7W_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.hv-J7W_modeSwitch button.hv-J7W_on{background:var(--xhs-red);color:#fff;font-weight:600}.hv-J7W_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.hv-J7W_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.hv-J7W_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.hv-J7W_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.hv-J7W_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.hv-J7W_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.hv-J7W_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.hv-J7W_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_post:first-of-type{border-top:0}.hv-J7W_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.hv-J7W_postBody{flex:1;min-width:0}.hv-J7W_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.hv-J7W_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.hv-J7W_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.hv-J7W_chat{flex-direction:column;height:100%;min-height:0;display:flex}.hv-J7W_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.hv-J7W_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.hv-J7W_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_bubble.hv-J7W_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.hv-J7W_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.hv-J7W_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.hv-J7W_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.hv-J7W_chips{flex-wrap:wrap;gap:6px;display:flex}.hv-J7W_chip{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;padding:5px 10px;font-size:12px}.hv-J7W_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.hv-J7W_contextline:first-of-type{border-top:0}.hv-J7W_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.hv-J7W_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.hv-J7W_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.hv-J7W_studioTop strong{color:var(--xhs-text);font-size:14px}.hv-J7W_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.hv-J7W_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.hv-J7W_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.hv-J7W_msg.hv-J7W_me{flex-direction:row-reverse;margin-left:auto}.hv-J7W_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgAvatar{background:var(--xhs-face);color:#8a3945}.hv-J7W_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.hv-J7W_msg.hv-J7W_me .hv-J7W_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.hv-J7W_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.hv-J7W_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.hv-J7W_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.hv-J7W_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.hv-J7W_studioSend:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.hv-J7W_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.hv-J7W_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.hv-J7W_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.hv-J7W_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.hv-J7W_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.hv-J7W_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.hv-J7W_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.hv-J7W_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.hv-J7W_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.hv-J7W_tag.hv-J7W_on{background:var(--xhs-red);color:#fff}.hv-J7W_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.hv-J7W_filter.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.hv-J7W_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.hv-J7W_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.hv-J7W_libBody{flex:1;min-width:0}.hv-J7W_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.hv-J7W_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.hv-J7W_weight{gap:4px;margin-top:8px;display:flex}.hv-J7W_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.hv-J7W_weight button:hover{border-color:var(--xhs-red)}.hv-J7W_weight button.hv-J7W_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.hv-J7W_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.hv-J7W_topicItem:first-of-type{border-top:0}.hv-J7W_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.hv-J7W_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.hv-J7W_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.hv-J7W_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.hv-J7W_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.hv-J7W_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.hv-J7W_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.hv-J7W_personaItem:hover{border-color:var(--xhs-red)}.hv-J7W_personaItem.hv-J7W_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.hv-J7W_personaName{font-size:13px;font-weight:700}.hv-J7W_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.hv-J7W_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.hv-J7W_draftEditor,.hv-J7W_sourcePanel{min-width:0}.hv-J7W_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.hv-J7W_source:first-of-type{border-top:0}.hv-J7W_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.hv-J7W_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.hv-J7W_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.hv-J7W_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.hv-J7W_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.hv-J7W_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.hv-J7W_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.hv-J7W_dialogClose:hover{color:var(--xhs-red)}.hv-J7W_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.hv-J7W_dialogRow .hv-J7W_face{width:28px;height:28px}.hv-J7W_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.hv-J7W_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.hv-J7W_field label{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.hv-J7W_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.hv-J7W_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.hv-J7W_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.hv-J7W_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.hv-J7W_primary:hover{background:var(--xhs-red-deep)}.hv-J7W_primary:disabled{opacity:.6;cursor:not-allowed}.hv-J7W_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.hv-J7W_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.hv-J7W_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.hv-J7W_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.hv-J7W_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.hv-J7W_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.hv-J7W_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.hv-J7W_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.hv-J7W_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.hv-J7W_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.hv-J7W_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.hv-J7W_muted{color:var(--xhs-text-sub);font-size:12px}.hv-J7W_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.hv-J7W_rowActions{flex:none;align-items:center;gap:8px;display:flex}.hv-J7W_spacer{flex:1}";
+		const tagId = "dsh-xhs-matrix/panel.module.css?v=c38c05fd";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "dsh-xhs-matrix";
@@ -288,143 +282,156 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"topbar": "hv-J7W_topbar",
-			"primary": "hv-J7W_primary",
-			"viewHost": "hv-J7W_viewHost",
-			"below": "hv-J7W_below",
-			"msg": "hv-J7W_msg",
-			"filterRow": "hv-J7W_filterRow",
-			"chatInput": "hv-J7W_chatInput",
-			"sourcePanel": "hv-J7W_sourcePanel",
-			"idle": "hv-J7W_idle",
-			"danger": "hv-J7W_danger",
-			"postBody": "hv-J7W_postBody",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"workspace": "hv-J7W_workspace",
-			"studioComposer": "hv-J7W_studioComposer",
-			"textarea": "hv-J7W_textarea",
-			"libRow": "hv-J7W_libRow",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"msgBubble": "hv-J7W_msgBubble",
-			"input": "hv-J7W_input",
-			"contextCard": "hv-J7W_contextCard",
-			"chipInput": "hv-J7W_chipInput",
-			"statusDot": "hv-J7W_statusDot",
-			"ghostBtn": "hv-J7W_ghostBtn",
-			"libMeta": "hv-J7W_libMeta",
 			"studioTop": "hv-J7W_studioTop",
-			"studioResult": "hv-J7W_studioResult",
-			"filter": "hv-J7W_filter",
-			"card": "hv-J7W_card",
-			"chat": "hv-J7W_chat",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"brandLogo": "hv-J7W_brandLogo",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"personaName": "hv-J7W_personaName",
-			"tabActive": "hv-J7W_tabActive",
-			"libBody": "hv-J7W_libBody",
-			"topicLayout": "hv-J7W_topicLayout",
-			"contextLine": "hv-J7W_contextLine",
-			"personaLayout": "hv-J7W_personaLayout",
-			"tabs": "hv-J7W_tabs",
-			"error": "hv-J7W_error",
-			"face": "hv-J7W_face",
-			"topbarSub": "hv-J7W_topbarSub",
-			"chatSend": "hv-J7W_chatSend",
-			"brand": "hv-J7W_brand",
-			"modeSwitch": "hv-J7W_modeSwitch",
-			"rowActions": "hv-J7W_rowActions",
-			"success": "hv-J7W_success",
-			"panel": "hv-J7W_panel",
-			"field": "hv-J7W_field",
-			"draftLayout": "hv-J7W_draftLayout",
-			"weightBadge": "hv-J7W_weightBadge",
-			"studioMain": "hv-J7W_studioMain",
-			"msgAvatar": "hv-J7W_msgAvatar",
-			"studioTopSub": "hv-J7W_studioTopSub",
-			"chip": "hv-J7W_chip",
-			"personaDesc": "hv-J7W_personaDesc",
-			"bubble": "hv-J7W_bubble",
-			"navItem": "hv-J7W_navItem",
-			"messages": "hv-J7W_messages",
-			"tag": "hv-J7W_tag",
-			"topicTitle": "hv-J7W_topicTitle",
-			"content": "hv-J7W_content",
-			"ok": "hv-J7W_ok",
-			"personaList": "hv-J7W_personaList",
-			"group": "hv-J7W_group",
-			"button": "hv-J7W_button",
-			"spacer": "hv-J7W_spacer",
-			"topbarRight": "hv-J7W_topbarRight",
-			"metric": "hv-J7W_metric",
-			"dangerBtn": "hv-J7W_dangerBtn",
-			"postMeta": "hv-J7W_postMeta",
-			"on": "hv-J7W_on",
-			"sidebar": "hv-J7W_sidebar",
-			"topicReason": "hv-J7W_topicReason",
-			"chips": "hv-J7W_chips",
-			"draftEditor": "hv-J7W_draftEditor",
-			"tab": "hv-J7W_tab",
-			"meter": "hv-J7W_meter",
-			"badgeGray": "hv-J7W_badgeGray",
-			"chathead": "hv-J7W_chathead",
-			"navIcon": "hv-J7W_navIcon",
-			"post": "hv-J7W_post",
 			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"miniThumb": "hv-J7W_miniThumb",
-			"overview": "hv-J7W_overview",
-			"me": "hv-J7W_me",
-			"context": "hv-J7W_context",
-			"topicItem": "hv-J7W_topicItem",
-			"overlay": "hv-J7W_overlay",
-			"dialog": "hv-J7W_dialog",
 			"score": "hv-J7W_score",
-			"personaItem": "hv-J7W_personaItem",
-			"accountName": "hv-J7W_accountName",
-			"editbar": "hv-J7W_editbar",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"weight": "hv-J7W_weight",
 			"accountAdd": "hv-J7W_accountAdd",
-			"bar": "hv-J7W_bar",
+			"chatInput": "hv-J7W_chatInput",
+			"studioResult": "hv-J7W_studioResult",
+			"ok": "hv-J7W_ok",
+			"danger": "hv-J7W_danger",
 			"postTitle": "hv-J7W_postTitle",
-			"empty": "hv-J7W_empty",
-			"metrics": "hv-J7W_metrics",
-			"warn": "hv-J7W_warn",
-			"active": "hv-J7W_active",
-			"source": "hv-J7W_source",
-			"pill": "hv-J7W_pill",
-			"viewGrid": "hv-J7W_viewGrid",
-			"studioLayout": "hv-J7W_studioLayout",
-			"pillWarn": "hv-J7W_pillWarn",
-			"libTitle": "hv-J7W_libTitle",
-			"thumb": "hv-J7W_thumb",
-			"muted": "hv-J7W_muted",
-			"contextline": "hv-J7W_contextline",
-			"panelTitle": "hv-J7W_panelTitle",
+			"topbarSub": "hv-J7W_topbarSub",
+			"brand": "hv-J7W_brand",
+			"textarea": "hv-J7W_textarea",
+			"content": "hv-J7W_content",
+			"panel": "hv-J7W_panel",
+			"face": "hv-J7W_face",
+			"weightBadge": "hv-J7W_weightBadge",
 			"accountItem": "hv-J7W_accountItem",
+			"miniThumb": "hv-J7W_miniThumb",
+			"viewHost": "hv-J7W_viewHost",
+			"active": "hv-J7W_active",
+			"draftLayout": "hv-J7W_draftLayout",
+			"chips": "hv-J7W_chips",
+			"chathead": "hv-J7W_chathead",
+			"spacer": "hv-J7W_spacer",
+			"statusDot": "hv-J7W_statusDot",
+			"metrics": "hv-J7W_metrics",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"dialogClose": "hv-J7W_dialogClose",
+			"field": "hv-J7W_field",
+			"me": "hv-J7W_me",
+			"metric": "hv-J7W_metric",
 			"studioSend": "hv-J7W_studioSend",
-			"dialogRow": "hv-J7W_dialogRow",
-			"scoreLow": "hv-J7W_scoreLow",
+			"personaList": "hv-J7W_personaList",
+			"studioLayout": "hv-J7W_studioLayout",
+			"studioMain": "hv-J7W_studioMain",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"topicReason": "hv-J7W_topicReason",
 			"badge": "hv-J7W_badge",
-			"dialogClose": "hv-J7W_dialogClose"
+			"overview": "hv-J7W_overview",
+			"messages": "hv-J7W_messages",
+			"empty": "hv-J7W_empty",
+			"topicTitle": "hv-J7W_topicTitle",
+			"error": "hv-J7W_error",
+			"msgBubble": "hv-J7W_msgBubble",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"warn": "hv-J7W_warn",
+			"personaLayout": "hv-J7W_personaLayout",
+			"badgeGray": "hv-J7W_badgeGray",
+			"libMeta": "hv-J7W_libMeta",
+			"overlay": "hv-J7W_overlay",
+			"tabs": "hv-J7W_tabs",
+			"topbarRight": "hv-J7W_topbarRight",
+			"bar": "hv-J7W_bar",
+			"libRow": "hv-J7W_libRow",
+			"chatSend": "hv-J7W_chatSend",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"input": "hv-J7W_input",
+			"rowActions": "hv-J7W_rowActions",
+			"chip": "hv-J7W_chip",
+			"accountName": "hv-J7W_accountName",
+			"pill": "hv-J7W_pill",
+			"post": "hv-J7W_post",
+			"libBody": "hv-J7W_libBody",
+			"postMeta": "hv-J7W_postMeta",
+			"contextCard": "hv-J7W_contextCard",
+			"personaName": "hv-J7W_personaName",
+			"dialogRow": "hv-J7W_dialogRow",
+			"tabActive": "hv-J7W_tabActive",
+			"contextLine": "hv-J7W_contextLine",
+			"draftEditor": "hv-J7W_draftEditor",
+			"tag": "hv-J7W_tag",
+			"msgAvatar": "hv-J7W_msgAvatar",
+			"muted": "hv-J7W_muted",
+			"topbar": "hv-J7W_topbar",
+			"panelTitle": "hv-J7W_panelTitle",
+			"workspace": "hv-J7W_workspace",
+			"below": "hv-J7W_below",
+			"contextline": "hv-J7W_contextline",
+			"thumb": "hv-J7W_thumb",
+			"dialog": "hv-J7W_dialog",
+			"tab": "hv-J7W_tab",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"navItem": "hv-J7W_navItem",
+			"postBody": "hv-J7W_postBody",
+			"pillWarn": "hv-J7W_pillWarn",
+			"primary": "hv-J7W_primary",
+			"meter": "hv-J7W_meter",
+			"card": "hv-J7W_card",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"group": "hv-J7W_group",
+			"chat": "hv-J7W_chat",
+			"studioComposer": "hv-J7W_studioComposer",
+			"success": "hv-J7W_success",
+			"source": "hv-J7W_source",
+			"context": "hv-J7W_context",
+			"filterRow": "hv-J7W_filterRow",
+			"filter": "hv-J7W_filter",
+			"editbar": "hv-J7W_editbar",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"button": "hv-J7W_button",
+			"topicItem": "hv-J7W_topicItem",
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"sidebar": "hv-J7W_sidebar",
+			"navIcon": "hv-J7W_navIcon",
+			"idle": "hv-J7W_idle",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"dangerBtn": "hv-J7W_dangerBtn",
+			"on": "hv-J7W_on",
+			"personaDesc": "hv-J7W_personaDesc",
+			"brandLogo": "hv-J7W_brandLogo",
+			"viewGrid": "hv-J7W_viewGrid",
+			"weight": "hv-J7W_weight",
+			"scoreLow": "hv-J7W_scoreLow",
+			"personaItem": "hv-J7W_personaItem",
+			"msg": "hv-J7W_msg",
+			"libTitle": "hv-J7W_libTitle",
+			"bubble": "hv-J7W_bubble"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
-		/** 后台数据导入：CSV / JSON 粘贴导入当前账号已发布笔记。 */
+		/** 后台数据导入简化版：标题（每行一个）+ 正文（与标题行号对应），构造 JSON 数组导入当前账号已发布笔记。 */
 		function ImportDialog({ api, accountId, onDone }) {
-			const [format, setFormat] = (0, react.useState)("json");
-			const [content, setContent] = (0, react.useState)("");
+			const [titles, setTitles] = (0, react.useState)("");
+			const [copies, setCopies] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
 			const [notice, setNotice] = (0, react.useState)("");
 			const run = async () => {
-				if (content.trim() === "") {
-					setError("请输入导入内容");
+				const titleRows = titles.split("\n").map((line, index) => ({
+					line: line.trim(),
+					index
+				})).filter((row) => row.line !== "");
+				if (titleRows.length === 0) {
+					setError("请输入至少一个标题");
 					return;
 				}
+				const copyLines = copies.split("\n");
+				const missing = titleRows.find((row) => (copyLines[row.index] ?? "").trim() === "");
+				if (missing !== void 0) {
+					setError(`第 ${missing.index + 1} 行缺少正文，标题与正文都必填且按行对应`);
+					return;
+				}
+				const records = titleRows.map((row) => ({
+					title: row.line,
+					copy: copyLines[row.index] ?? ""
+				}));
 				try {
-					const count = await api.importPublishedNotes(accountId, format, content);
+					const count = await api.importPublishedNotes(accountId, "json", JSON.stringify(records));
 					setNotice(`已导入 ${count} 条已发布笔记。`);
-					setContent("");
+					setTitles("");
+					setCopies("");
 					setError("");
 					onDone();
 				} catch (e) {
@@ -442,27 +449,22 @@ window.__ModuleLoader__.load({
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "格式" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题（每行一个，必填）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 						className: panel_module_css_default.input,
-						value: format,
-						onChange: (e) => setFormat(e.target.value),
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-							value: "json",
-							children: "JSON 数组"
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-							value: "csv",
-							children: "CSV（title,copy,publishedAt,...）"
-						})]
+						rows: 5,
+						value: titles,
+						onChange: (e) => setTitles(e.target.value),
+						placeholder: "标题 1\n标题 2\n标题 3"
 					})]
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default.field,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "内容" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文（按行对应，必填）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 						className: panel_module_css_default.input,
 						rows: 6,
-						value: content,
-						onChange: (e) => setContent(e.target.value),
-						placeholder: format === "json" ? "[{\"title\":\"...\",\"copy\":\"...\",\"publishedAt\":\"2026-08-01\"}]" : "title,copy,publishedAt\n..."
+						value: copies,
+						onChange: (e) => setCopies(e.target.value),
+						placeholder: "与左侧标题逐行对应的正文内容\n（标题与正文都必填，按行对应）"
 					})]
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
@@ -950,13 +952,13 @@ window.__ModuleLoader__.load({
 						draft.evidence.trendIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default.source,
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["外部趋势 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["已采纳爆款参考 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 									className: panel_module_css_default.weightBadge,
-									children: "Apify"
+									children: "外部数据"
 								})] }),
 								"引用 ",
 								draft.evidence.trendIds.length,
-								" 个趋势样本"
+								" 个爆款样本"
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1359,14 +1361,13 @@ window.__ModuleLoader__.load({
 		/**
 		* 运营总览（设计稿 content/hybrid-layout.html + 设计文档 §8.2）：
 		* 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现与草稿摘要；
-		* 趋势选题按账号隔离，每个账号卡片显示自己的外部趋势样本数，
-		* 具体候选进入该账号的「趋势选题」工作区查看。
+		* 爆款池按账号隔离，每个账号卡片显示自己的爆款条数，
+		* 具体条目进入该账号的「爆款池」工作区查看。
 		*/
 		function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAccountUpdated }) {
 			const [summaries, setSummaries] = (0, react.useState)([]);
 			const [personas, setPersonas] = (0, react.useState)([]);
 			const [error, setError] = (0, react.useState)("");
-			const [manualTopic, setManualTopic] = (0, react.useState)("");
 			const [bindingFor, setBindingFor] = (0, react.useState)(null);
 			const [bindPick, setBindPick] = (0, react.useState)("");
 			const refresh = (0, react.useCallback)(async () => {
@@ -1378,10 +1379,10 @@ window.__ModuleLoader__.load({
 					const [personaList, draftList] = await Promise.all([api.listPersonas(), api.listDrafts()]);
 					setPersonas(personaList);
 					const rows = await Promise.all(accounts.map(async (account) => {
-						const [noteList, metricList, trendList] = await Promise.all([
+						const [noteList, metricList, viralList] = await Promise.all([
 							api.listNotes(account.id),
 							api.listMetrics(account.id),
-							api.listTrends(account.id)
+							api.listViralItems(account.id)
 						]);
 						const latestByNote = /* @__PURE__ */ new Map();
 						for (const m of metricList) {
@@ -1396,7 +1397,7 @@ window.__ModuleLoader__.load({
 							highWeightCount: noteList.filter((n) => n.weight >= 3).length,
 							reads,
 							draftCount: draftList.filter((d) => d.accountId === account.id && d.status === "generated").length,
-							trendCount: trendList.length
+							viralCount: viralList.length
 						};
 					}));
 					setSummaries(rows);
@@ -1408,16 +1409,6 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
-			const addManualTopic = async () => {
-				const title = manualTopic.trim();
-				if (title === "") return;
-				try {
-					await api.addTopic(title);
-					setManualTopic("");
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
 			/** 在总览卡片上直接绑定/更换账号人设。 */
 			const bindPersona = async (account) => {
 				if (bindPick === "") {
@@ -1451,225 +1442,197 @@ window.__ModuleLoader__.load({
 					className: panel_module_css_default.empty,
 					children: "还没有账号。点击右上角「＋ 添加账号」创建第一个矩阵账号，开始建立独立工作区。"
 				}),
-				accounts.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.metrics,
-						style: { marginBottom: 14 },
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.metric,
-								children: ["矩阵账号", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: accounts.length })]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.metric,
-								children: ["累计已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalNotes })]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.metric,
-								children: ["累计浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalReads.toLocaleString() })]
-							})
-						]
-					}),
-					summaries.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.libRow,
-						style: { flexDirection: "column" },
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: {
-									width: "100%",
-									display: "flex",
-									alignItems: "center",
-									gap: 10
-								},
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										style: { minWidth: 0 },
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											style: {
-												fontWeight: 700,
-												fontSize: 14
-											},
-											children: row.account.name
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-											style: {
-												display: "flex",
-												alignItems: "center",
-												gap: 8,
-												marginTop: 2
-											},
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-												className: panel_module_css_default.muted,
-												style: { fontSize: 11 },
-												children: ["人设：", row.personaName]
-											}), bindingFor === row.account.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-													className: panel_module_css_default.input,
-													style: {
-														width: 150,
-														padding: "3px 8px",
-														fontSize: 11
-													},
-													value: bindPick,
-													onChange: (e) => setBindPick(e.target.value),
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-														value: "",
-														children: "（选择人设）"
-													}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-														value: p.id,
-														children: p.name
-													}, p.id))]
-												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-													className: panel_module_css_default.ghostBtn,
-													style: {
-														padding: "3px 10px",
-														fontSize: 11
-													},
-													onClick: () => void bindPersona(row.account),
-													children: "确认"
-												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-													className: panel_module_css_default.ghostBtn,
-													style: {
-														padding: "3px 10px",
-														fontSize: 11
-													},
-													onClick: () => {
-														setBindingFor(null);
-														setBindPick("");
-													},
-													children: "取消"
-												})
-											] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				accounts.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.metrics,
+					style: { marginBottom: 14 },
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.metric,
+							children: ["矩阵账号", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: accounts.length })]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.metric,
+							children: ["累计已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalNotes })]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.metric,
+							children: ["累计浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: totalReads.toLocaleString() })]
+						})
+					]
+				}), summaries.map((row) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.libRow,
+					style: { flexDirection: "column" },
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								width: "100%",
+								display: "flex",
+								alignItems: "center",
+								gap: 10
+							},
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									style: { minWidth: 0 },
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										style: {
+											fontWeight: 700,
+											fontSize: 14
+										},
+										children: row.account.name
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										style: {
+											display: "flex",
+											alignItems: "center",
+											gap: 8,
+											marginTop: 2
+										},
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: panel_module_css_default.muted,
+											style: { fontSize: 11 },
+											children: ["人设：", row.personaName]
+										}), bindingFor === row.account.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+												className: panel_module_css_default.input,
+												style: {
+													width: 150,
+													padding: "3px 8px",
+													fontSize: 11
+												},
+												value: bindPick,
+												onChange: (e) => setBindPick(e.target.value),
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+													value: "",
+													children: "（选择人设）"
+												}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+													value: p.id,
+													children: p.name
+												}, p.id))]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												style: {
+													padding: "3px 10px",
+													fontSize: 11
+												},
+												onClick: () => void bindPersona(row.account),
+												children: "确认"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												className: panel_module_css_default.ghostBtn,
 												style: {
 													padding: "3px 10px",
 													fontSize: 11
 												},
 												onClick: () => {
-													setBindingFor(row.account.id);
-													setBindPick(row.account.personaId);
+													setBindingFor(null);
+													setBindPick("");
 												},
-												children: row.personaName === "未分配" ? "绑定人设" : "更换人设"
-											})]
-										})]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(row.account)]}` }),
-									row.account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: row.account.connection.status }),
-									row.account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: panel_module_css_default.badgeGreen,
-										children: "启用"
-									}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: panel_module_css_default.badgeGray,
-										children: "停用"
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.rowActions,
-										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												className: panel_module_css_default.ghostBtn,
-												onClick: () => onOpenAccount(row.account.id, "knowledge"),
-												children: "知识库"
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												className: panel_module_css_default.ghostBtn,
-												onClick: () => onOpenAccount(row.account.id, "topics"),
-												children: "选题"
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												className: panel_module_css_default.ghostBtn,
-												onClick: () => onOpenAccount(row.account.id, "drafts"),
-												children: "草稿"
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												className: panel_module_css_default.primary,
-												onClick: () => onOpenStudio(row.account.id),
-												children: "进入创作台"
+												children: "取消"
 											})
-										]
-									})
-								]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.metrics,
-								style: { marginTop: 10 },
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.noteCount })]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["最近浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.reads.toLocaleString() })]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.metric,
-										children: ["高权重样本", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.highWeightCount })]
-									})
-								]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.muted,
+										] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											style: {
+												padding: "3px 10px",
+												fontSize: 11
+											},
+											onClick: () => {
+												setBindingFor(row.account.id);
+												setBindPick(row.account.personaId);
+											},
+											children: row.personaName === "未分配" ? "绑定人设" : "更换人设"
+										})]
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: `${panel_module_css_default.statusDot} ${panel_module_css_default[accountDot(row.account)]}` }),
+								row.account.connection !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StatusBadge, { status: row.account.connection.status }),
+								row.account.enabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.badgeGreen,
+									children: "启用"
+								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.badgeGray,
+									children: "停用"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.rowActions,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => onOpenAccount(row.account.id, "knowledge"),
+											children: "知识库"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => onOpenAccount(row.account.id, "viral"),
+											children: "爆款池"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => onOpenAccount(row.account.id, "drafts"),
+											children: "草稿"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.primary,
+											onClick: () => onOpenStudio(row.account.id),
+											children: "进入创作台"
+										})
+									]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.metrics,
+							style: { marginTop: 10 },
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.metric,
+									children: ["已发布", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.noteCount })]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.metric,
+									children: ["最近浏览", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.reads.toLocaleString() })]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.metric,
+									children: ["高权重样本", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.highWeightCount })]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.muted,
+							style: {
+								marginTop: 6,
+								display: "flex",
+								alignItems: "center",
+								gap: 8
+							},
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+								"爆款池：",
+								row.viralCount,
+								" 条"
+							] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.ghostBtn,
 								style: {
-									marginTop: 6,
-									display: "flex",
-									alignItems: "center",
-									gap: 8
+									padding: "2px 8px",
+									fontSize: 11
 								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-									"外部趋势样本：",
-									row.trendCount,
-									" 个"
-								] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.ghostBtn,
-									style: {
-										padding: "2px 8px",
-										fontSize: 11
-									},
-									onClick: () => onOpenAccount(row.account.id, "topics"),
-									children: row.trendCount > 0 ? "查看该账号选题" : "去采集选题"
-								})]
-							}),
-							row.account.connection?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.muted,
-								style: { marginTop: 4 },
-								children: ["连接：", row.account.connection.lastError]
-							}),
-							row.account.collectionStatus?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.muted,
-								style: { marginTop: 4 },
-								children: ["采集：", row.account.collectionStatus.lastError]
-							})
-						]
-					}, row.account.id)),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.below,
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-							className: panel_module_css_default.panel,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "手动添加选题" })
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: {
-									display: "flex",
-									gap: 8
-								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: panel_module_css_default.chipInput,
-									value: manualTopic,
-									onChange: (e) => setManualTopic(e.target.value),
-									placeholder: "输入一个选题标题"
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.primary,
-									onClick: () => void addManualTopic(),
-									children: "加入选题池"
-								})]
+								onClick: () => onOpenAccount(row.account.id, "viral"),
+								children: row.viralCount > 0 ? "查看该账号爆款池" : "去采集爆款"
 							})]
+						}),
+						row.account.connection?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.muted,
+							style: { marginTop: 4 },
+							children: ["连接：", row.account.connection.lastError]
+						}),
+						row.account.collectionStatus?.lastError !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.muted,
+							style: { marginTop: 4 },
+							children: ["采集：", row.account.collectionStatus.lastError]
 						})
-					})
-				] })
+					]
+				}, row.account.id))] })
 			] });
 		}
 		//#endregion
@@ -2007,7 +1970,7 @@ window.__ModuleLoader__.load({
 		//#region src/client/panel/StudioTab.tsx
 		/**
 		* 专属创作台（设计稿 content/creative-studio.html）：
-		* 对话区最大化 + 右侧本次创作上下文（人设/知识库/趋势/指标快照），
+		* 对话区最大化 + 右侧本次创作上下文（人设/知识库/已采纳爆款参考/指标快照），
 		* 上下文始终可见，生成结果通过人工操作保存为草稿。
 		*/
 		function StudioTab({ api, accountId, onOpenDraft }) {
@@ -2022,7 +1985,7 @@ window.__ModuleLoader__.load({
 				hookStyles: [],
 				noteCount: 0,
 				highCount: 0,
-				trendCount: 0,
+				viralCount: 0,
 				metricCount: 0
 			});
 			const refresh = (0, react.useCallback)(async () => {
@@ -2033,18 +1996,18 @@ window.__ModuleLoader__.load({
 						hookStyles: [],
 						noteCount: 0,
 						highCount: 0,
-						trendCount: 0,
+						viralCount: 0,
 						metricCount: 0
 					});
 					return;
 				}
 				try {
-					const [msgList, accountList, personaList, noteList, trendList, metricList] = await Promise.all([
+					const [msgList, accountList, personaList, noteList, viralList, metricList] = await Promise.all([
 						api.listStudioMessages(accountId),
 						api.listAccounts(),
 						api.listPersonas(),
 						api.listNotes(accountId),
-						api.listTrends(accountId),
+						api.listViralItems(accountId, "accepted"),
 						api.listMetrics(accountId)
 					]);
 					setMessages(msgList);
@@ -2054,7 +2017,7 @@ window.__ModuleLoader__.load({
 						hookStyles: persona?.hookStyles ?? [],
 						noteCount: noteList.length,
 						highCount: noteList.filter((n) => n.weight >= 3).length,
-						trendCount: trendList.length,
+						viralCount: viralList.length,
 						metricCount: metricList.length
 					});
 					setError("");
@@ -2085,16 +2048,8 @@ window.__ModuleLoader__.load({
 					setError("还没有生成结果可保存");
 					return;
 				}
-				const topicId = window.prompt("请输入或粘贴一个选题标题，将先加入选题池再保存草稿：", "");
-				if (topicId === null || topicId.trim() === "") return;
 				try {
-					await api.addTopic(topicId.trim());
-					const created = (await api.listTopics()).filter((t) => t.title === topicId.trim()).at(-1);
-					if (created === void 0) {
-						setError("选题创建失败");
-						return;
-					}
-					await api.studioSaveDraft(accountId, created.id, last.content, "");
+					await api.studioSaveDraft(accountId, last.content, "");
 					setError("");
 					await refresh();
 				} catch (e) {
@@ -2115,7 +2070,7 @@ window.__ModuleLoader__.load({
 							className: panel_module_css_default.studioTop,
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "专属创作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								className: panel_module_css_default.studioTopSub,
-								children: "人设、知识库、Apify 趋势已隔离加载"
+								children: "人设、知识库、已采纳爆款参考已隔离加载"
 							})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 								className: panel_module_css_default.pill,
 								children: "● 仅矩阵内容"
@@ -2135,7 +2090,7 @@ window.__ModuleLoader__.load({
 										children: "薯"
 									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: panel_module_css_default.msgBubble,
-										children: ["你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、趋势选题和草稿。", /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										children: ["你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、已采纳爆款参考和草稿。", /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: panel_module_css_default.studioResult,
 											children: [
 												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "已加载创作上下文" }),
@@ -2144,8 +2099,8 @@ window.__ModuleLoader__.load({
 												" 篇本地知识库 · ",
 												context.highCount,
 												" 篇高权重样本 · ",
-												context.trendCount,
-												" 个 Apify 趋势样本 · ",
+												context.viralCount,
+												" 个已采纳爆款参考 · ",
 												context.metricCount,
 												" 条指标历史快照"
 											]
@@ -2286,10 +2241,10 @@ window.__ModuleLoader__.load({
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default.contextCard,
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "外部趋势" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h5", { children: "已采纳爆款参考" }),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: panel_module_css_default.contextLine,
-									children: [context.trendCount, " 个 Apify 趋势样本"]
+									children: [context.viralCount, " 个已采纳爆款"]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: panel_module_css_default.contextLine,
@@ -2316,41 +2271,113 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region src/client/panel/TopicsTab.tsx
+		//#region src/client/panel/ViralTab.tsx
+		/** 正文摘要的截断长度（字符）。 */
+		const BODY_PREVIEW_LENGTH = 120;
+		/** 单条爆款的展示行：标题、正文摘要、来源链接、推荐分、匹配理由、状态与审核按钮。 */
+		function ViralRow({ item, busy, onReview }) {
+			const bodyPreview = item.body.length > BODY_PREVIEW_LENGTH ? `${item.body.slice(0, BODY_PREVIEW_LENGTH)}…` : item.body;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: panel_module_css_default.topicItem,
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: panel_module_css_default.topicTitle,
+						children: item.title
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.topicReason,
+						children: bodyPreview === "" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							className: panel_module_css_default.muted,
+							children: "（无正文摘要）"
+						}) : bodyPreview
+					}),
+					item.sourceUrl !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.topicReason,
+						style: { marginTop: 4 },
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
+							href: item.sourceUrl,
+							target: "_blank",
+							rel: "noreferrer",
+							style: { color: "var(--xhs-red)" },
+							children: "来源链接 ↗"
+						})
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.topicReason,
+						style: { marginTop: 4 },
+						children: ["匹配：", item.reasons.length > 0 ? item.reasons.join(" · ") : "未说明"]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: {
+							display: "flex",
+							alignItems: "center",
+							gap: 8,
+							marginTop: 6
+						},
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+								className: item.score >= 60 ? panel_module_css_default.score : `${panel_module_css_default.score} ${panel_module_css_default.scoreLow}`,
+								children: ["推荐分 ", item.score]
+							}),
+							item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.badgeWarn,
+								children: "待审核"
+							}),
+							item.status === "accepted" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.badgeGreen,
+								children: "已采纳（创作参考）"
+							}),
+							item.status === "ignored" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.badgeGray,
+								children: "已忽略"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
+							item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
+								disabled: busy,
+								onClick: () => onReview(item.id, "accepted"),
+								children: "采纳"
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.ghostBtn,
+								disabled: busy,
+								onClick: () => onReview(item.id, "ignored"),
+								children: "忽略"
+							})] })
+						]
+					})
+				]
+			});
+		}
 		/**
-		* 趋势选题（设计稿 content/detail-surfaces.html）：
-		* 左栏 Apify 趋势候选（推荐分 + 可解释匹配理由），右栏账号选题标准；
-		* 下部保留选题池管理（手动添加 / 批量导入 / 状态过滤）。
+		* 爆款池（v3 取代趋势选题页）：
+		* 顶部为状态筛选与「采集爆款」「配置 Apify」操作；列表按账号展示爆款条目，
+		* 待审核条目可「采纳 / 忽略」，采集与审核后自动刷新。
 		*/
-		function TopicsTab({ api, accountId }) {
-			const [candidates, setCandidates] = (0, react.useState)([]);
-			const [topics, setTopics] = (0, react.useState)([]);
-			const [persona, setPersona] = (0, react.useState)(void 0);
+		function ViralTab({ api, accountId }) {
+			const [items, setItems] = (0, react.useState)([]);
 			const [filter, setFilter] = (0, react.useState)("");
-			const [title, setTitle] = (0, react.useState)("");
-			const [bulk, setBulk] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
 			const [collecting, setCollecting] = (0, react.useState)(false);
+			const [reviewingId, setReviewingId] = (0, react.useState)("");
 			const [configOpen, setConfigOpen] = (0, react.useState)(false);
 			const [apifyConfigured, setApifyConfigured] = (0, react.useState)(false);
 			const [actorId, setActorId] = (0, react.useState)("");
 			const [apiToken, setApiToken] = (0, react.useState)("");
 			const [maxItems, setMaxItems] = (0, react.useState)("10");
 			const [savingConfig, setSavingConfig] = (0, react.useState)(false);
+			/** 按账号与当前筛选状态重新拉取爆款池。 */
 			const refresh = (0, react.useCallback)(async () => {
 				try {
-					const [topicList, accountList, personaList] = await Promise.all([
-						api.listTopics(),
-						api.listAccounts(),
-						api.listPersonas()
-					]);
-					setTopics(topicList);
-					const account = accountList.find((item) => item.id === accountId);
-					setPersona(personaList.find((p) => p.id === account?.personaId));
+					setItems(await api.listViralItems(accountId, filter === "" ? void 0 : filter));
+					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api, accountId]);
+			}, [
+				api,
+				accountId,
+				filter
+			]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
@@ -2362,6 +2389,7 @@ window.__ModuleLoader__.load({
 					setMaxItems(String(config.maxItems ?? 10));
 				}).catch(() => {});
 			}, [api]);
+			/** 打开配置弹窗，先回填当前配置。 */
 			const openConfig = () => {
 				api.getApifyConfig().then((config) => {
 					setActorId(config.actorId);
@@ -2395,6 +2423,7 @@ window.__ModuleLoader__.load({
 					setSavingConfig(false);
 				}
 			};
+			/** 采集爆款入库（query/maxItems 由后端按人设方向降级），完成后刷新列表。 */
 			const collect = async () => {
 				if (accountId === "") {
 					setError("请先在左侧选择账号");
@@ -2402,314 +2431,101 @@ window.__ModuleLoader__.load({
 				}
 				setCollecting(true);
 				try {
-					const ranked = await api.collectTrends(accountId, void 0, 10);
-					setCandidates(ranked);
+					await api.collectViral(accountId);
 					setError("");
+					await refresh();
 				} catch (e) {
 					const message = e instanceof Error ? e.message : String(e);
 					if (/\b401\b|\b403\b/.test(message)) setError(`${message}。API Token 无效或已过期：请打开 apify.com → Settings → API & Integrations，点击 API token 右侧的「复制」按钮（不要复制掩码星号），回到「配置 Apify」重新粘贴后重试。`);
 					else if (/未配置/.test(message)) setError(`${message}。请先点击「配置 Apify」填写 Actor ID 与 API Token。`);
+					else if (/尚未分配人设/.test(message)) setError(`${message}。请先到「人设配置」为该账号绑定人设后再采集。`);
 					else setError(message);
 				} finally {
 					setCollecting(false);
 				}
 			};
-			const add = async () => {
-				if (title.trim() === "") return;
+			/** 审核条目为 accepted / ignored，完成后刷新列表。 */
+			const review = async (itemId, status) => {
+				setReviewingId(itemId);
 				try {
-					await api.addTopic(title);
-					setTitle("");
+					await api.reviewViralItem(accountId, itemId, status);
+					setError("");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setReviewingId("");
 				}
 			};
-			const doImport = async () => {
-				const titles = bulk.split("\n").map((t) => t.trim()).filter((t) => t !== "");
-				if (titles.length === 0) return;
-				try {
-					await api.importTopics(titles);
-					setBulk("");
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
-			const retire = async (id) => {
-				try {
-					await api.retireTopic(id);
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
-			const visible = filter === "" ? topics : topics.filter((t) => t.status === filter);
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: panel_module_css_default.topicLayout,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Apify 趋势候选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									style: {
-										display: "flex",
-										gap: 6,
-										alignItems: "center"
-									},
-									children: [
-										!apifyConfigured && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											className: panel_module_css_default.badgeWarn,
-											children: "未配置数据源"
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: panel_module_css_default.ghostBtn,
-											onClick: openConfig,
-											children: "配置 Apify"
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: panel_module_css_default.primary,
-											onClick: () => void collect(),
-											disabled: collecting,
-											children: collecting ? "采集中…" : "开始采集"
-										})
-									]
-								})]
-							}),
-							candidates.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.muted,
-								children: ["尚未采集。点击「开始采集」拉取外部趋势并按当前人设与知识库权重排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
-							}),
-							candidates.map((candidate, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.topicItem,
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: panel_module_css_default.topicTitle,
-										children: candidate.title
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-										className: panel_module_css_default.topicReason,
-										children: candidate.reasons.length > 0 ? `匹配：${candidate.reasons.join(" · ")}` : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-											style: { color: "var(--xhs-warn)" },
-											children: [
-												"未匹配当前人设方向（推荐分 ",
-												candidate.score,
-												"，建议检查采集关键词）"
-											]
-										})
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-										className: candidate.score > 0 ? panel_module_css_default.score : `${panel_module_css_default.score} ${panel_module_css_default.scoreLow}`,
-										children: [
-											"推荐分 ",
-											candidate.score,
-											" · 来源：Apify"
-										]
-									})
-								]
-							}, `${candidate.title}-${index}`))
-						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "账号选题标准" })
-							}),
-							persona === void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.muted,
-								children: "该账号尚未分配人设，请先到「人设配置」创建并分配。"
-							}),
-							persona !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.contextLine,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
-										style: {
-											display: "block",
-											color: "var(--xhs-text)",
-											marginBottom: 4
-										},
-										children: "领域"
-									}), persona.expertise || "—"]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.contextLine,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
-										style: {
-											display: "block",
-											color: "var(--xhs-text)",
-											marginBottom: 4
-										},
-										children: "必须满足"
-									}), persona.topicCriteria || "—"]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.contextLine,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
-										style: {
-											display: "block",
-											color: "var(--xhs-text)",
-											marginBottom: 4
-										},
-										children: "优先方向"
-									}), persona.contentDirections || "—"]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.contextLine,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
-										style: {
-											display: "block",
-											color: "var(--xhs-text)",
-											marginBottom: 4
-										},
-										children: "钩子风格"
-									}), persona.hookStyles?.join("、") || "—"]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.contextLine,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", {
-										style: {
-											display: "block",
-											color: "var(--xhs-text)",
-											marginBottom: 4
-										},
-										children: "默认话题"
-									}), persona.defaultHashtags?.join("、") || "—"]
-								})
-							] })
-						]
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					style: {
-						marginTop: 14,
-						display: "grid",
-						gridTemplateColumns: "1fr 1fr",
-						gap: 14
-					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "选题池" })
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+					className: panel_module_css_default.panel,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "爆款池" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								style: {
 									display: "flex",
-									gap: 8,
-									marginBottom: 10
+									gap: 6,
+									alignItems: "center"
 								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: panel_module_css_default.input,
-									style: { flex: 1 },
-									value: title,
-									onChange: (e) => setTitle(e.target.value),
-									placeholder: "单个选题"
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.primary,
-									onClick: () => void add(),
-									children: "添加"
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "批量导入（每行一个）" }),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-										className: panel_module_css_default.textarea,
-										rows: 3,
-										value: bulk,
-										onChange: (e) => setBulk(e.target.value),
-										placeholder: "通勤穿搭\n秋季护肤"
+									!apifyConfigured && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.badgeWarn,
+										children: "未配置数据源"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+										className: panel_module_css_default.input,
+										style: { width: 130 },
+										value: filter,
+										onChange: (e) => setFilter(e.target.value),
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: "",
+												children: "全部"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: "pending",
+												children: "待审核"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: "accepted",
+												children: "已采纳"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: "ignored",
+												children: "已忽略"
+											})
+										]
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: panel_module_css_default.button,
-										onClick: () => void doImport(),
-										children: "批量导入"
+										className: panel_module_css_default.ghostBtn,
+										onClick: openConfig,
+										children: "配置 Apify"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.primary,
+										onClick: () => void collect(),
+										disabled: collecting,
+										children: collecting ? "采集中…" : "采集爆款"
 									})
 								]
-							})
-						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "选题列表" })
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.field,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-									className: panel_module_css_default.input,
-									value: filter,
-									onChange: (e) => setFilter(e.target.value),
-									children: [
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-											value: "",
-											children: "全部"
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-											value: "open",
-											children: "open（可用）"
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-											value: "used",
-											children: "used（已用）"
-										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-											value: "retired",
-											children: "retired（弃用）"
-										})
-									]
-								})
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: {
-									maxHeight: 320,
-									overflowY: "auto"
-								},
-								children: [visible.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: panel_module_css_default.muted,
-									children: "暂无选题。"
-								}), visible.map((topic) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.dialogRow,
-									children: [
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											style: {
-												flex: 1,
-												minWidth: 0,
-												overflow: "hidden",
-												textOverflow: "ellipsis",
-												whiteSpace: "nowrap"
-											},
-											children: topic.title
-										}),
-										topic.status === "open" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											className: panel_module_css_default.badgeGreen,
-											children: "可用"
-										}) : topic.status === "used" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											className: panel_module_css_default.badgeGray,
-											children: "已用"
-										}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											className: panel_module_css_default.badgeGray,
-											children: "弃用"
-										}),
-										topic.status === "open" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: panel_module_css_default.ghostBtn,
-											onClick: () => void retire(topic.id),
-											children: "弃用"
-										})
-									]
-								}, topic.id))]
-							})
-						]
-					})]
+							})]
+						}),
+						items.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.muted,
+							children: ["爆款池为空。点击「采集爆款」从外部数据源拉取内容并按当前人设与知识库排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
+						}),
+						items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralRow, {
+							item,
+							busy: reviewingId === item.id,
+							onReview: (id, status) => void review(id, status)
+						}, item.id))
+					]
 				}),
 				configOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.overlay,
@@ -2724,7 +2540,7 @@ window.__ModuleLoader__.load({
 								"aria-label": "关闭",
 								children: "×"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "配置 Apify 趋势数据源" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "配置 Apify 爆款数据源" }),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.muted,
 								style: {
@@ -2772,7 +2588,7 @@ window.__ModuleLoader__.load({
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: "kuaima/xiaohongshu-search" }),
 									"），Actor ID 即「用户名/Actor名」，取自 Actor 页面地址。",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("br", {}),
-									"4. 保存配置后点「开始采集」。采集消耗 Apify 平台额度，请按需使用。"
+									"4. 保存配置后点「采集爆款」。采集消耗 Apify 平台额度，请按需使用。"
 								]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -2839,9 +2655,9 @@ window.__ModuleLoader__.load({
 						label: "已发布知识库"
 					},
 					{
-						id: "topics",
+						id: "viral",
 						icon: "✦",
-						label: "趋势选题"
+						label: "爆款池"
 					}
 				]
 			},
@@ -2877,7 +2693,7 @@ window.__ModuleLoader__.load({
 		const PAGE_TITLES = {
 			overview: "账号运营总览",
 			knowledge: "已发布知识库",
-			topics: "趋势选题",
+			viral: "爆款池",
 			studio: "专属创作台",
 			drafts: "草稿箱",
 			personas: "人设配置"
@@ -3035,10 +2851,10 @@ window.__ModuleLoader__.load({
 									api,
 									accountId
 								}, `kb-${accountId}`),
-								currentPage === "topics" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TopicsTab, {
+								currentPage === "viral" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralTab, {
 									api,
 									accountId
-								}, `tp-${accountId}`),
+								}, `vp-${accountId}`),
 								currentPage === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
 									api,
 									accountId,

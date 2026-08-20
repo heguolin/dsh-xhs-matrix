@@ -1,7 +1,7 @@
 /** 指标快照严格校验与账号级采集调度。 */
 import { MatrixStore } from './store.ts';
 import type { DataSource, MetricSnapshot } from './types.ts';
-import type { TrendProvider } from './trends.ts';
+import type { ViralProvider } from './collector/provider.ts';
 export interface MetricSnapshotInput {
     accountId: string;
     noteId: string;
@@ -17,7 +17,7 @@ export interface MetricSnapshotInput {
 export declare function validateMetricSnapshot(input: MetricSnapshotInput): Omit<MetricSnapshot, 'id'>;
 export interface CollectionSchedulerDeps {
     store: MatrixStore;
-    provider: TrendProvider;
+    provider: ViralProvider;
     now?: () => Date;
     intervalMs?: number;
 }

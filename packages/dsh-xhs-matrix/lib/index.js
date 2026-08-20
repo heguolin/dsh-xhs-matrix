@@ -1,74 +1,32 @@
-import { t as MatrixStore } from "./store-BNH0EGiw.js";
+import { t as MatrixStore } from "./store-DNTV5dLk.js";
+import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
-import { createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { defineTool } from "@deepseek-ai/dsh-tools";
-//#region src/trends.ts
-/** 只保留 Apify 返回中可用于分析的公开字段。 */
-function normalizeApifyItem(item, actorId) {
+//#region src/collector/provider.ts
+function normalizeApifyItem(item) {
 	if (typeof item !== "object" || item === null) throw new Error("Apify item 必须是对象");
 	const value = item;
 	if (typeof value.title !== "string" || value.title.trim() === "") throw new Error("Apify item 缺少 title");
-	const numberOf = (key) => typeof value[key] === "number" && Number.isFinite(value[key]) ? value[key] : void 0;
-	const strings = (key) => Array.isArray(value[key]) ? value[key].filter((entry) => typeof entry === "string") : void 0;
+	const num = (key) => typeof value[key] === "number" && Number.isFinite(value[key]) ? value[key] : void 0;
+	const body = typeof value.body === "string" ? value.body : typeof value.content === "string" ? value.content : typeof value.desc === "string" ? value.desc : typeof value.text === "string" ? value.text : void 0;
+	const url = typeof value.url === "string" ? value.url : typeof value.noteUrl === "string" ? value.noteUrl : void 0;
 	return {
 		title: value.title.trim(),
-		summary: typeof value.summary === "string" ? value.summary : typeof value.desc === "string" ? value.desc : void 0,
-		sourceUrl: typeof value.url === "string" ? value.url : typeof value.noteUrl === "string" ? value.noteUrl : void 0,
+		body: body === void 0 ? void 0 : body.trim(),
+		sourceUrl: url,
 		source: "apify",
-		actorId,
 		publishedAt: typeof value.publishedAt === "string" ? value.publishedAt : void 0,
-		reads: numberOf("reads") ?? numberOf("viewCount"),
-		likes: numberOf("likes") ?? numberOf("likeCount"),
-		favorites: numberOf("favorites") ?? numberOf("收藏"),
-		comments: numberOf("comments") ?? numberOf("commentCount"),
-		keywords: strings("keywords"),
-		contentType: typeof value.contentType === "string" ? value.contentType : void 0
+		reads: num("reads") ?? num("viewCount"),
+		likes: num("likes") ?? num("likeCount"),
+		comments: num("comments") ?? num("commentCount")
 	};
 }
-/** 按当前账号人设、历史样本和公开互动信号排序，并返回解释。 */
-function rankTrends(account, persona, notes, trends) {
-	const terms = [
-		persona.name,
-		persona.positioning,
-		persona.expertise,
-		persona.contentDirections,
-		persona.topicCriteria,
-		persona.hookStyles?.join(" ")
-	].filter((item) => Boolean(item)).join(" ").toLowerCase();
-	return trends.map((trend) => {
-		const haystack = `${trend.title} ${trend.summary ?? ""} ${(trend.keywords ?? []).join(" ")}`.toLowerCase();
-		const reasons = [];
-		let score = 0;
-		if (terms !== "" && terms.split(/[,，、\s]+/).some((term) => term.length > 1 && haystack.includes(term))) {
-			score += 35;
-			reasons.push(`匹配${account.name}的人设方向`);
-		}
-		if (notes.some((note) => note.accountId === account.id && note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || note.topic !== void 0 && haystack.includes(note.topic.toLowerCase())))) {
-			score += 30;
-			reasons.push("与账号高权重历史内容相近");
-		}
-		const engagement = (trend.likes ?? 0) + (trend.favorites ?? 0) + (trend.comments ?? 0);
-		if (engagement > 0) {
-			score += Math.min(25, Math.log10(engagement + 1) * 8);
-			reasons.push("存在公开互动信号");
-		}
-		if (trend.publishedAt !== void 0 && Date.now() - Date.parse(trend.publishedAt) < 7 * 864e5) {
-			score += 10;
-			reasons.push("近期趋势");
-		}
-		return {
-			...trend,
-			score: Math.round(score),
-			reasons
-		};
-	}).sort((a, b) => b.score - a.score);
-}
 //#endregion
-//#region src/apify.ts
-/** Apify Actor Run/Dataset 的 Host 适配器。 */
-/** 通过 Apify API 搜索公开趋势样本；凭据只在 Host 端使用。 */
-var ApifyTrendProvider = class {
+//#region src/collector/apify.ts
+/** Apify Actor Run/Dataset 的 Host 适配器（v3 爆款采集）。 */
+/** 通过 Apify API 搜索公开爆款样本；凭据只在 Host 端使用。 */
+var ApifyViralProvider = class {
 	config;
 	fetcher;
 	sleep;
@@ -79,7 +37,7 @@ var ApifyTrendProvider = class {
 	}
 	async search(request) {
 		if (this.config.actorId.trim() === "" || this.config.apiToken.trim() === "") return {
-			samples: [],
+			items: [],
 			status: "failed",
 			error: "Apify actorId 和 apiToken 必填"
 		};
@@ -104,7 +62,7 @@ var ApifyTrendProvider = class {
 				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
 			});
 			if (!runResponse.ok) return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: `Apify Run HTTP ${runResponse.status}`
 			};
@@ -112,14 +70,14 @@ var ApifyTrendProvider = class {
 			const runId = run.data?.id;
 			const datasetId = run.data?.defaultDatasetId;
 			if (runId === void 0 || datasetId === void 0) return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: "Apify Run 响应缺少 id 或 Dataset"
 			};
 			let status = run.data?.status;
 			for (let poll = 0; poll < this.config.maxPolls && status !== "SUCCEEDED"; poll += 1) {
 				if (status === "FAILED" || status === "ABORTED" || status === "TIMED-OUT") return {
-					samples: [],
+					items: [],
 					status: "failed",
 					error: `Apify Run ${status}`
 				};
@@ -129,14 +87,14 @@ var ApifyTrendProvider = class {
 					signal: AbortSignal.timeout(this.config.requestTimeoutMs)
 				});
 				if (!stateResponse.ok) return {
-					samples: [],
+					items: [],
 					status: "failed",
 					error: `Apify 状态 HTTP ${stateResponse.status}`
 				};
 				status = (await stateResponse.json()).data?.status;
 			}
 			if (status !== "SUCCEEDED") return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: "Apify Run 等待超时"
 			};
@@ -145,23 +103,23 @@ var ApifyTrendProvider = class {
 				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
 			});
 			if (!datasetResponse.ok) return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: `Apify Dataset HTTP ${datasetResponse.status}`
 			};
 			const items = await datasetResponse.json();
 			if (!Array.isArray(items)) return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: "Apify Dataset 不是数组"
 			};
 			return {
-				samples: items.slice(0, limit).map((item) => normalizeApifyItem(item, this.config.actorId)),
+				items: items.slice(0, limit).map((item) => normalizeApifyItem(item)),
 				status: "success"
 			};
 		} catch (error) {
 			return {
-				samples: [],
+				items: [],
 				status: "failed",
 				error: error instanceof Error ? error.message : String(error)
 			};
@@ -289,13 +247,13 @@ var CollectionScheduler = class {
 			return;
 		}
 		for (const note of notes) {
-			const match = result.samples.find((sample) => sample.sourceUrl !== void 0 && note.sourceUrl !== void 0 && sample.sourceUrl === note.sourceUrl);
+			const match = result.items.find((item) => item.sourceUrl !== void 0 && note.sourceUrl !== void 0 && item.sourceUrl === note.sourceUrl);
 			this.store.saveMetricSnapshot({
 				accountId,
 				noteId: note.id,
 				reads: match?.reads ?? 0,
 				likes: match?.likes ?? 0,
-				favorites: match?.favorites ?? 0,
+				favorites: 0,
 				comments: match?.comments ?? 0,
 				source: "apify",
 				status: "success"
@@ -311,6 +269,14 @@ var CollectionScheduler = class {
 		for (const account of this.store.listAccounts()) if (account.collection?.enabled) await this.runAccount(account.id);
 	}
 };
+//#endregion
+//#region src/model-config.ts
+function resolveStudioModel(getDefaultModel, listProviders) {
+	const configured = getDefaultModel();
+	if (configured !== void 0 && configured.provider !== "" && configured.model !== "") return configured;
+	if (listProviders().length === 0) return void 0;
+	throw new Error("未配置默认模型：请在 Harness 设置 agent-default-model 的 provider 与 model");
+}
 //#endregion
 //#region src/loopback.ts
 function isIPv4Loopback(v4) {
@@ -357,17 +323,17 @@ const XHS_API = {
 	accountImport: "/api/dsh-xhs-matrix/accounts/import",
 	personas: "/api/dsh-xhs-matrix/personas",
 	notes: "/api/dsh-xhs-matrix/notes",
-	trends: "/api/dsh-xhs-matrix/trends",
+	viral: "/api/dsh-xhs-matrix/viral",
 	metrics: "/api/dsh-xhs-matrix/metrics",
 	studio: "/api/dsh-xhs-matrix/studio",
 	studioMessages: "/api/dsh-xhs-matrix/studio/messages",
-	topics: "/api/dsh-xhs-matrix/topics",
 	drafts: "/api/dsh-xhs-matrix/drafts"
 };
 //#endregion
-//#region src/routes.ts
+//#region src/routes/shared.ts
 /** JSON 请求体上限。 */
 const MAX_JSON_BODY_BYTES = 256 * 1024;
+/** 写 JSON 响应。 */
 function writeJson(res, status, body) {
 	res.writeHead(status, {
 		"content-type": "application/json; charset=utf-8",
@@ -375,6 +341,7 @@ function writeJson(res, status, body) {
 	});
 	res.end(JSON.stringify(body));
 }
+/** 读取 JSON 请求体；非法 JSON 或超限返回 undefined。 */
 async function readJsonBody(req) {
 	const chunks = [];
 	let size = 0;
@@ -393,6 +360,7 @@ async function readJsonBody(req) {
 		return;
 	}
 }
+/** 读取查询参数；缺失返回 undefined。 */
 function queryParam(url, name) {
 	const value = url.searchParams.get(name);
 	return value === null ? void 0 : value;
@@ -409,33 +377,111 @@ function guard(req, res, method) {
 	}
 	return true;
 }
-/**
-* 构建全部 /api/dsh-xhs-matrix 路由。
-* @param deps - 存储。
+/** 把错误渲染为 400 响应。 */
+function fail(res, error) {
+	writeJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+}
+//#endregion
+//#region src/routes/accounts.ts
+/** 构建账号路由。
+* @param store - 矩阵存储。
 * @returns 路由数组。
 */
-function makeRoutes(deps) {
-	const { store, trendProvider, scheduler, studio, reload } = deps;
+function makeAccountsRoutes(store) {
 	const route = (path, handler) => ({
 		kind: "exact",
 		path,
 		handler
 	});
-	const fail = (res, error) => {
-		writeJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
-	};
-	return [
-		route(XHS_API.settingsApify, async (req, res) => {
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
-				return;
-			}
-			if ((req.method ?? "GET") === "GET") {
-				writeJson(res, 200, { settings: store.getSettings().apify });
-				return;
-			}
-			if ((req.method ?? "GET") !== "PATCH") {
-				writeJson(res, 405, { error: `method not allowed: ${req.method}` });
+	return [route(XHS_API.accounts, async (req, res) => {
+		const method = req.method ?? "GET";
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if (method === "GET") {
+			writeJson(res, 200, { accounts: store.listAccounts() });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "account");
+		try {
+			if (method === "POST") writeJson(res, 201, { account: store.upsertAccount(body) });
+			else if (method === "PATCH") {
+				if (id === void 0) {
+					writeJson(res, 400, { error: "account 查询参数必填" });
+					return;
+				}
+				let account = store.upsertAccount(body, id);
+				if (body.connection !== void 0) account = store.updateAccountConnection(id, body.connection);
+				if (body.collection !== void 0) account = store.updateCollectionConfig(id, body.collection);
+				writeJson(res, 200, { account });
+			} else if (method === "DELETE") {
+				if (id === void 0) {
+					writeJson(res, 400, { error: "account 查询参数必填" });
+					return;
+				}
+				store.deleteAccount(id);
+				writeJson(res, 200, { ok: true });
+			} else writeJson(res, 405, { error: `method not allowed: ${method}` });
+		} catch (error) {
+			fail(res, error);
+		}
+	}), route(XHS_API.accountImport, async (req, res) => {
+		if (!guard(req, res, "POST")) return;
+		const body = await readJsonBody(req);
+		if (body === void 0 || typeof body.accountId !== "string" || body.format !== "csv" && body.format !== "json" || typeof body.content !== "string") {
+			writeJson(res, 400, { error: "accountId、format 和 content 必填" });
+			return;
+		}
+		try {
+			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-BNC8icWK.js");
+			const records = parsePublishedNoteImport(body.content, body.format);
+			applyPublishedNoteImport(store, body.accountId, records);
+			writeJson(res, 201, { imported: records.length });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/routes/drafts.ts
+/** 草稿创建必填字段（v3 草稿独立，不含 topicId）。 */
+const REQUIRED_DRAFT_FIELDS = [
+	"accountId",
+	"date",
+	"copy",
+	"coverPrompt"
+];
+/**
+* 构建 /drafts 草稿路由。
+* @param store - 矩阵存储。
+* @returns 路由数组。
+*/
+function makeDraftsRoutes(store) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [route(XHS_API.drafts, async (req, res) => {
+		const method = req.method ?? "GET";
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if (method === "GET") {
+			writeJson(res, 200, { drafts: store.listDrafts() });
+			return;
+		}
+		if (method === "PATCH") {
+			const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "draft");
+			if (id === void 0) {
+				writeJson(res, 400, { error: "draft 查询参数必填" });
 				return;
 			}
 			const body = await readJsonBody(req);
@@ -444,140 +490,103 @@ function makeRoutes(deps) {
 				return;
 			}
 			const payload = {};
-			if (body.actorId !== void 0) {
-				if (typeof body.actorId !== "string") {
-					writeJson(res, 400, { error: "actorId 必须是字符串" });
+			if (body.copy !== void 0) {
+				if (typeof body.copy !== "string") {
+					writeJson(res, 400, { error: "copy 必须是字符串" });
 					return;
 				}
-				payload.actorId = body.actorId;
+				payload.copy = body.copy;
 			}
-			if (body.apiToken !== void 0) {
-				if (typeof body.apiToken !== "string") {
-					writeJson(res, 400, { error: "apiToken 必须是字符串" });
+			if (body.coverPrompt !== void 0) {
+				if (typeof body.coverPrompt !== "string") {
+					writeJson(res, 400, { error: "coverPrompt 必须是字符串" });
 					return;
 				}
-				payload.apiToken = body.apiToken;
+				payload.coverPrompt = body.coverPrompt;
 			}
-			if (body.maxItems !== void 0) {
-				if (typeof body.maxItems !== "number" || !Number.isInteger(body.maxItems) || body.maxItems <= 0) {
-					writeJson(res, 400, { error: "maxItems 必须是正整数" });
+			if (body.tags !== void 0) {
+				if (typeof body.tags !== "string") {
+					writeJson(res, 400, { error: "tags 必须是字符串" });
 					return;
 				}
-				payload.maxItems = body.maxItems;
-			}
-			if (body.requestTimeoutMs !== void 0) {
-				if (typeof body.requestTimeoutMs !== "number" || body.requestTimeoutMs <= 0) {
-					writeJson(res, 400, { error: "requestTimeoutMs 必须是正数" });
-					return;
-				}
-				payload.requestTimeoutMs = body.requestTimeoutMs;
-			}
-			if (body.maxPolls !== void 0) {
-				if (typeof body.maxPolls !== "number" || !Number.isInteger(body.maxPolls) || body.maxPolls <= 0) {
-					writeJson(res, 400, { error: "maxPolls 必须是正整数" });
-					return;
-				}
-				payload.maxPolls = body.maxPolls;
+				payload.tags = body.tags;
 			}
 			try {
-				const settings = store.updateApifySettings(payload);
-				reload?.();
-				writeJson(res, 200, { settings: settings.apify });
+				writeJson(res, 200, { draft: store.updateDraft(id, payload) });
 			} catch (error) {
 				fail(res, error);
 			}
-		}),
-		route(XHS_API.accounts, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if (method !== "POST") {
+			writeJson(res, 405, { error: `method not allowed: ${method}` });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		for (const field of REQUIRED_DRAFT_FIELDS) {
+			const value = body[field];
+			if (typeof value !== "string" || value.trim() === "") {
+				writeJson(res, 400, { error: `草稿字段 ${field} 必填` });
 				return;
 			}
-			if (method === "GET") {
-				writeJson(res, 200, { accounts: store.listAccounts() });
+		}
+		const payload = {
+			accountId: body.accountId,
+			date: body.date,
+			copy: body.copy,
+			coverPrompt: body.coverPrompt
+		};
+		try {
+			writeJson(res, 201, { draft: store.saveDraft(payload) });
+		} catch (error) {
+			fail(res, error);
+		}
+	}), route(XHS_API.drafts + "/status", async (req, res) => {
+		if (!guard(req, res, "POST")) return;
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const draftId = typeof body.draftId === "string" ? body.draftId : "";
+		const status = body.status;
+		const metrics = body.metrics;
+		if (draftId === "" || status !== "generated" && status !== "published" && status !== "dropped") {
+			writeJson(res, 400, { error: "draftId 与合法 status 必填" });
+			return;
+		}
+		if (body.metrics !== void 0) {
+			const m = body.metrics;
+			if (typeof m !== "object" || m === null || typeof m.reads !== "number" || typeof m.likes !== "number" || typeof m.comments !== "number" || typeof m.collected !== "string") {
+				writeJson(res, 400, { error: "metrics 需含数值 reads/likes/comments 与字符串 collected" });
 				return;
 			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "account");
-			try {
-				if (method === "POST") writeJson(res, 201, { account: store.upsertAccount(body) });
-				else if (method === "PATCH") {
-					if (id === void 0) {
-						writeJson(res, 400, { error: "account 查询参数必填" });
-						return;
-					}
-					let account = store.upsertAccount(body, id);
-					if (body.connection !== void 0) account = store.updateAccountConnection(id, body.connection);
-					if (body.collection !== void 0) account = store.updateCollectionConfig(id, body.collection);
-					writeJson(res, 200, { account });
-				} else if (method === "DELETE") {
-					if (id === void 0) {
-						writeJson(res, 400, { error: "account 查询参数必填" });
-						return;
-					}
-					store.deleteAccount(id);
-					writeJson(res, 200, { ok: true });
-				} else writeJson(res, 405, { error: `method not allowed: ${method}` });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.accountImport, async (req, res) => {
-			if (!guard(req, res, "POST")) return;
-			const body = await readJsonBody(req);
-			if (body === void 0 || typeof body.accountId !== "string" || body.format !== "csv" && body.format !== "json" || typeof body.content !== "string") {
-				writeJson(res, 400, { error: "accountId、format 和 content 必填" });
-				return;
-			}
-			try {
-				const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-CuSzPn0g.js");
-				const records = parsePublishedNoteImport(body.content, body.format);
-				applyPublishedNoteImport(store, body.accountId, records);
-				writeJson(res, 201, { imported: records.length });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.personas, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
-				return;
-			}
-			if (method === "GET") {
-				writeJson(res, 200, { personas: store.listPersonas() });
-				return;
-			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "persona");
-			try {
-				if (method === "POST") writeJson(res, 201, { persona: store.upsertPersona(body) });
-				else if (method === "PATCH") {
-					if (id === void 0) {
-						writeJson(res, 400, { error: "persona 查询参数必填" });
-						return;
-					}
-					writeJson(res, 200, { persona: store.upsertPersona(body, id) });
-				} else if (method === "DELETE") {
-					if (id === void 0) {
-						writeJson(res, 400, { error: "persona 查询参数必填" });
-						return;
-					}
-					store.deletePersona(id);
-					writeJson(res, 200, { ok: true });
-				} else writeJson(res, 405, { error: `method not allowed: ${method}` });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
+		}
+		try {
+			writeJson(res, 200, { draft: store.setDraftStatus(draftId, status, metrics) });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/routes/knowledge.ts
+/** 构建知识库与指标路由。
+* @param store - 矩阵存储。
+* @param scheduler - 指标采集调度器（未配置时 collect 返回 400）。
+* @returns 路由数组。
+*/
+function makeKnowledgeRoutes(store, scheduler) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [
 		route(XHS_API.notes, async (req, res) => {
 			const method = req.method ?? "GET";
 			if (!isLoopbackRequest(req)) {
@@ -615,223 +624,6 @@ function makeRoutes(deps) {
 			}
 			try {
 				writeJson(res, 200, { note: store.setNoteWeight(accountId, noteId, weight) });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.topics, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
-				return;
-			}
-			if (method === "GET") {
-				writeJson(res, 200, { topics: store.listTopics() });
-				return;
-			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "topic");
-			try {
-				if (method === "POST") if (typeof body.title === "string") writeJson(res, 201, { topics: store.addTopics([body.title]) });
-				else if (Array.isArray(body.titles) && body.titles.every((t) => typeof t === "string")) writeJson(res, 201, { topics: store.addTopics(body.titles) });
-				else writeJson(res, 400, { error: "body 需含 title 字符串或 titles 字符串数组" });
-				else if (method === "PATCH") {
-					if (id === void 0) {
-						writeJson(res, 400, { error: "topic 查询参数必填" });
-						return;
-					}
-					store.retireTopic(id);
-					writeJson(res, 200, { ok: true });
-				} else if (method === "DELETE") writeJson(res, 405, { error: "选题不支持删除，请用 PATCH 标记弃用" });
-				else writeJson(res, 405, { error: `method not allowed: ${method}` });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.drafts, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
-				return;
-			}
-			if (method === "GET") {
-				writeJson(res, 200, { drafts: store.listDrafts() });
-				return;
-			}
-			if (method === "PATCH") {
-				const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "draft");
-				if (id === void 0) {
-					writeJson(res, 400, { error: "draft 查询参数必填" });
-					return;
-				}
-				const body = await readJsonBody(req);
-				if (body === void 0) {
-					writeJson(res, 400, { error: "invalid JSON body" });
-					return;
-				}
-				const payload = {};
-				if (body.copy !== void 0) {
-					if (typeof body.copy !== "string") {
-						writeJson(res, 400, { error: "copy 必须是字符串" });
-						return;
-					}
-					payload.copy = body.copy;
-				}
-				if (body.coverPrompt !== void 0) {
-					if (typeof body.coverPrompt !== "string") {
-						writeJson(res, 400, { error: "coverPrompt 必须是字符串" });
-						return;
-					}
-					payload.coverPrompt = body.coverPrompt;
-				}
-				if (body.tags !== void 0) {
-					if (typeof body.tags !== "string") {
-						writeJson(res, 400, { error: "tags 必须是字符串" });
-						return;
-					}
-					payload.tags = body.tags;
-				}
-				try {
-					writeJson(res, 200, { draft: store.updateDraft(id, payload) });
-				} catch (error) {
-					fail(res, error);
-				}
-				return;
-			}
-			if (method !== "POST") {
-				writeJson(res, 405, { error: `method not allowed: ${method}` });
-				return;
-			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			for (const field of [
-				"accountId",
-				"topicId",
-				"date",
-				"copy",
-				"coverPrompt"
-			]) {
-				const value = body[field];
-				if (typeof value !== "string" || value.trim() === "") {
-					writeJson(res, 400, { error: `草稿字段 ${field} 必填` });
-					return;
-				}
-			}
-			const topicId = body.topicId;
-			if (!store.listTopics().some((topic) => topic.id === topicId)) {
-				writeJson(res, 400, { error: "选题不存在" });
-				return;
-			}
-			try {
-				const draft = store.saveDraft(body);
-				store.markTopicUsed(draft.topicId, draft.id);
-				writeJson(res, 201, { draft });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.drafts + "/status", async (req, res) => {
-			if (!guard(req, res, "POST")) return;
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const draftId = typeof body.draftId === "string" ? body.draftId : "";
-			const status = body.status;
-			const metrics = body.metrics;
-			if (draftId === "" || status !== "generated" && status !== "published" && status !== "dropped") {
-				writeJson(res, 400, { error: "draftId 与合法 status 必填" });
-				return;
-			}
-			if (body.metrics !== void 0) {
-				const m = body.metrics;
-				if (typeof m !== "object" || m === null || typeof m.reads !== "number" || typeof m.likes !== "number" || typeof m.comments !== "number" || typeof m.collected !== "string") {
-					writeJson(res, 400, { error: "metrics 需含数值 reads/likes/comments 与字符串 collected" });
-					return;
-				}
-			}
-			try {
-				writeJson(res, 200, { draft: store.setDraftStatus(draftId, status, metrics) });
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.trends, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
-				return;
-			}
-			const accountId = queryParam(new URL(req.url ?? "/", "http://localhost"), "account");
-			if (accountId === void 0) {
-				writeJson(res, 400, { error: "account 查询参数必填" });
-				return;
-			}
-			if (method === "GET") {
-				writeJson(res, 200, { trends: store.listTrendSamples(accountId) });
-				return;
-			}
-			if (method !== "POST") {
-				writeJson(res, 405, { error: `method not allowed: ${method}` });
-				return;
-			}
-			if (trendProvider === void 0) {
-				writeJson(res, 400, { error: "未配置趋势数据源" });
-				return;
-			}
-			const account = store.listAccounts().find((item) => item.id === accountId);
-			if (account === void 0) {
-				writeJson(res, 400, { error: `账号不存在：${accountId}` });
-				return;
-			}
-			const persona = store.listPersonas().find((item) => item.id === account.personaId);
-			if (persona === void 0) {
-				writeJson(res, 400, { error: "该账号尚未分配人设" });
-				return;
-			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const query = typeof body.query === "string" && body.query.trim() !== "" ? body.query.trim() : persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name;
-			const maxItems = typeof body.maxItems === "number" && body.maxItems > 0 ? body.maxItems : 10;
-			try {
-				const result = await trendProvider.search({
-					accountId,
-					query,
-					maxItems
-				});
-				if (result.status === "failed") {
-					writeJson(res, 502, { error: result.error ?? "趋势采集失败" });
-					return;
-				}
-				const ranked = rankTrends(account, persona, store.listPublishedNotes(accountId), result.samples);
-				for (const item of ranked) store.saveTrendSample({
-					accountId,
-					title: item.title,
-					summary: item.summary,
-					sourceUrl: item.sourceUrl,
-					source: item.source,
-					actorId: item.actorId,
-					publishedAt: item.publishedAt,
-					reads: item.reads,
-					likes: item.likes,
-					favorites: item.favorites,
-					comments: item.comments,
-					keywords: item.keywords,
-					contentType: item.contentType,
-					status: "success"
-				});
-				writeJson(res, 201, { trends: ranked });
 			} catch (error) {
 				fail(res, error);
 			}
@@ -901,56 +693,311 @@ function makeRoutes(deps) {
 			} catch (error) {
 				fail(res, error);
 			}
-		}),
-		route(XHS_API.studioMessages, async (req, res) => {
-			const method = req.method ?? "GET";
-			if (!isLoopbackRequest(req)) {
-				writeJson(res, 403, { error: "forbidden: loopback-only" });
+		})
+	];
+}
+//#endregion
+//#region src/routes/personas.ts
+/** 构建人设路由。
+* @param store - 矩阵存储。
+* @returns 路由数组。
+*/
+function makePersonasRoutes(store) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [route(XHS_API.personas, async (req, res) => {
+		const method = req.method ?? "GET";
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if (method === "GET") {
+			writeJson(res, 200, { personas: store.listPersonas() });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const id = queryParam(new URL(req.url ?? "/", "http://localhost"), "persona");
+		try {
+			if (method === "POST") writeJson(res, 201, { persona: store.upsertPersona(body) });
+			else if (method === "PATCH") {
+				if (id === void 0) {
+					writeJson(res, 400, { error: "persona 查询参数必填" });
+					return;
+				}
+				writeJson(res, 200, { persona: store.upsertPersona(body, id) });
+			} else if (method === "DELETE") {
+				if (id === void 0) {
+					writeJson(res, 400, { error: "persona 查询参数必填" });
+					return;
+				}
+				store.deletePersona(id);
+				writeJson(res, 200, { ok: true });
+			} else writeJson(res, 405, { error: `method not allowed: ${method}` });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/routes/settings.ts
+/** 构建运行时设置路由。
+* @param store - 矩阵存储。
+* @param reload - Apify 配置更新后重建数据源/调度器/路由的回调。
+* @returns 路由数组。
+*/
+function makeSettingsRoutes(store, reload) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [route(XHS_API.settingsApify, async (req, res) => {
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if ((req.method ?? "GET") === "GET") {
+			writeJson(res, 200, { settings: store.getSettings().apify });
+			return;
+		}
+		if ((req.method ?? "GET") !== "PATCH") {
+			writeJson(res, 405, { error: `method not allowed: ${req.method}` });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const payload = {};
+		if (body.actorId !== void 0) {
+			if (typeof body.actorId !== "string") {
+				writeJson(res, 400, { error: "actorId 必须是字符串" });
 				return;
 			}
-			const accountId = queryParam(new URL(req.url ?? "/", "http://localhost"), "account");
+			payload.actorId = body.actorId;
+		}
+		if (body.apiToken !== void 0) {
+			if (typeof body.apiToken !== "string") {
+				writeJson(res, 400, { error: "apiToken 必须是字符串" });
+				return;
+			}
+			payload.apiToken = body.apiToken;
+		}
+		if (body.maxItems !== void 0) {
+			if (typeof body.maxItems !== "number" || !Number.isInteger(body.maxItems) || body.maxItems <= 0) {
+				writeJson(res, 400, { error: "maxItems 必须是正整数" });
+				return;
+			}
+			payload.maxItems = body.maxItems;
+		}
+		if (body.requestTimeoutMs !== void 0) {
+			if (typeof body.requestTimeoutMs !== "number" || body.requestTimeoutMs <= 0) {
+				writeJson(res, 400, { error: "requestTimeoutMs 必须是正数" });
+				return;
+			}
+			payload.requestTimeoutMs = body.requestTimeoutMs;
+		}
+		if (body.maxPolls !== void 0) {
+			if (typeof body.maxPolls !== "number" || !Number.isInteger(body.maxPolls) || body.maxPolls <= 0) {
+				writeJson(res, 400, { error: "maxPolls 必须是正整数" });
+				return;
+			}
+			payload.maxPolls = body.maxPolls;
+		}
+		try {
+			const settings = store.updateApifySettings(payload);
+			reload?.();
+			writeJson(res, 200, { settings: settings.apify });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/routes/studio.ts
+/**
+* 构建 /studio 创作台路由。
+* @param store - 矩阵存储。
+* @param studio - 创作会话服务；未配置时发送/保存请求返回 400。
+* @returns 路由数组。
+*/
+function makeStudioRoutes(store, studio) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [route(XHS_API.studioMessages, async (req, res) => {
+		const method = req.method ?? "GET";
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		const accountId = queryParam(new URL(req.url ?? "/", "http://localhost"), "account");
+		if (accountId === void 0) {
+			writeJson(res, 400, { error: "account 查询参数必填" });
+			return;
+		}
+		if (method === "GET") {
+			writeJson(res, 200, { messages: store.listStudioMessages(accountId) });
+			return;
+		}
+		if (method !== "POST") {
+			writeJson(res, 405, { error: `method not allowed: ${method}` });
+			return;
+		}
+		if (studio === void 0) {
+			writeJson(res, 400, { error: "创作台未就绪" });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const input = typeof body.input === "string" && body.input.trim() !== "" ? body.input.trim() : "";
+		const mode = body.mode === "full" ? "full" : "creative";
+		if (input === "") {
+			writeJson(res, 400, { error: "input 必填" });
+			return;
+		}
+		try {
+			const result = await studio.send(accountId, input, mode);
+			writeJson(res, 201, {
+				message: result.message,
+				evidence: result.evidence,
+				warning: result.warning
+			});
+		} catch (error) {
+			fail(res, error);
+		}
+	}), route(XHS_API.studio + "/draft", async (req, res) => {
+		if (!guard(req, res, "POST")) return;
+		if (studio === void 0) {
+			writeJson(res, 400, { error: "创作台未就绪" });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const accountId = typeof body.accountId === "string" ? body.accountId : "";
+		const copy = typeof body.copy === "string" && body.copy.trim() !== "" ? body.copy : "";
+		const coverPrompt = typeof body.coverPrompt === "string" ? body.coverPrompt : "";
+		if (accountId === "" || copy === "") {
+			writeJson(res, 400, { error: "accountId、copy 必填" });
+			return;
+		}
+		try {
+			writeJson(res, 201, { draft: studio.saveDraft(accountId, {
+				copy,
+				coverPrompt,
+				evidence: body.evidence
+			}) });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/collector/rank.ts
+function rankViralItems(account, persona, notes, items) {
+	const terms = [
+		persona.name,
+		persona.positioning,
+		persona.expertise,
+		persona.contentDirections,
+		persona.topicCriteria,
+		persona.hookStyles?.join(" ")
+	].filter((item) => Boolean(item)).join(" ").toLowerCase();
+	return items.map((item) => {
+		const haystack = `${item.title} ${item.body ?? ""}`.toLowerCase();
+		const reasons = [];
+		let score = 0;
+		if (terms !== "" && terms.split(/[,，、\s]+/).some((term) => term.length > 1 && haystack.includes(term))) {
+			score += 35;
+			reasons.push(`匹配${account.name}的人设方向`);
+		}
+		if (notes.some((note) => note.accountId === account.id && note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || note.topic !== void 0 && haystack.includes(note.topic.toLowerCase())))) {
+			score += 30;
+			reasons.push("与账号高权重历史内容相近");
+		}
+		const engagement = (item.likes ?? 0) + (item.comments ?? 0);
+		if (engagement > 0) {
+			score += Math.min(25, Math.log10(engagement + 1) * 8);
+			reasons.push("存在公开互动信号");
+		}
+		if (item.publishedAt !== void 0 && Date.now() - Date.parse(item.publishedAt) < 7 * 864e5) {
+			score += 10;
+			reasons.push("近期趋势");
+		}
+		return {
+			...item,
+			score: Math.round(score),
+			reasons
+		};
+	}).sort((a, b) => b.score - a.score);
+}
+//#endregion
+//#region src/routes/viral.ts
+/** 合法审核状态。 */
+const VIRAL_STATUSES$1 = [
+	"pending",
+	"accepted",
+	"ignored"
+];
+/** 采集失败时的兜底错误文案。 */
+const COLLECT_FAILED_MESSAGE = "爆款采集失败";
+/**
+* 构建 /viral 爆款池路由。
+* @param store - 矩阵存储。
+* @param provider - 爆款数据源；未配置时采集请求返回 400。
+* @returns 路由数组。
+*/
+function makeViralRoutes(store, provider) {
+	const route = (path, handler) => ({
+		kind: "exact",
+		path,
+		handler
+	});
+	return [route(XHS_API.viral, async (req, res) => {
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		const method = req.method ?? "GET";
+		const url = new URL(req.url ?? "/", "http://localhost");
+		const accountId = queryParam(url, "account");
+		if (method === "GET") {
 			if (accountId === void 0) {
 				writeJson(res, 400, { error: "account 查询参数必填" });
 				return;
 			}
-			if (method === "GET") {
-				writeJson(res, 200, { messages: store.listStudioMessages(accountId) });
-				return;
+			let status;
+			const statusRaw = queryParam(url, "status");
+			if (statusRaw !== void 0) {
+				if (!VIRAL_STATUSES$1.includes(statusRaw)) {
+					writeJson(res, 400, { error: "status 必须是 pending/accepted/ignored" });
+					return;
+				}
+				status = statusRaw;
 			}
-			if (method !== "POST") {
-				writeJson(res, 405, { error: `method not allowed: ${method}` });
-				return;
-			}
-			if (studio === void 0) {
-				writeJson(res, 400, { error: "创作台未就绪" });
-				return;
-			}
-			const body = await readJsonBody(req);
-			if (body === void 0) {
-				writeJson(res, 400, { error: "invalid JSON body" });
-				return;
-			}
-			const input = typeof body.input === "string" && body.input.trim() !== "" ? body.input.trim() : "";
-			const mode = body.mode === "full" ? "full" : "creative";
-			if (input === "") {
-				writeJson(res, 400, { error: "input 必填" });
-				return;
-			}
-			try {
-				const result = await studio.send(accountId, input, mode);
-				writeJson(res, 201, {
-					message: result.message,
-					evidence: result.evidence,
-					warning: result.warning
-				});
-			} catch (error) {
-				fail(res, error);
-			}
-		}),
-		route(XHS_API.studio + "/draft", async (req, res) => {
-			if (!guard(req, res, "POST")) return;
-			if (studio === void 0) {
-				writeJson(res, 400, { error: "创作台未就绪" });
+			writeJson(res, 200, { items: store.listViralItems(accountId, status) });
+			return;
+		}
+		if (method === "PATCH") {
+			const itemId = queryParam(url, "item");
+			if (accountId === void 0 || itemId === void 0) {
+				writeJson(res, 400, { error: "account 与 item 查询参数必填" });
 				return;
 			}
 			const body = await readJsonBody(req);
@@ -958,25 +1005,94 @@ function makeRoutes(deps) {
 				writeJson(res, 400, { error: "invalid JSON body" });
 				return;
 			}
-			const accountId = typeof body.accountId === "string" ? body.accountId : "";
-			const topicId = typeof body.topicId === "string" ? body.topicId : "";
-			const copy = typeof body.copy === "string" && body.copy.trim() !== "" ? body.copy : "";
-			const coverPrompt = typeof body.coverPrompt === "string" ? body.coverPrompt : "";
-			if (accountId === "" || topicId === "" || copy === "") {
-				writeJson(res, 400, { error: "accountId、topicId、copy 必填" });
+			const status = body.status;
+			if (status !== "accepted" && status !== "ignored") {
+				writeJson(res, 400, { error: "status 必须是 accepted 或 ignored" });
 				return;
 			}
 			try {
-				writeJson(res, 201, { draft: studio.saveDraft(accountId, {
-					topicId,
-					copy,
-					coverPrompt,
-					evidence: body.evidence
-				}) });
+				writeJson(res, 200, { item: store.reviewViralItem(accountId, itemId, status) });
 			} catch (error) {
 				fail(res, error);
 			}
-		})
+			return;
+		}
+		if (method !== "POST") {
+			writeJson(res, 405, { error: `method not allowed: ${method}` });
+			return;
+		}
+		if (provider === void 0) {
+			writeJson(res, 400, { error: "未配置趋势数据源" });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const targetAccountId = typeof body.accountId === "string" && body.accountId.trim() !== "" ? body.accountId : "";
+		if (targetAccountId === "") {
+			writeJson(res, 400, { error: "accountId 必填" });
+			return;
+		}
+		const account = store.listAccounts().find((item) => item.id === targetAccountId);
+		if (account === void 0) {
+			writeJson(res, 400, { error: `账号不存在：${targetAccountId}` });
+			return;
+		}
+		const persona = store.listPersonas().find((item) => item.id === account.personaId);
+		if (persona === void 0) {
+			writeJson(res, 400, { error: "该账号尚未分配人设" });
+			return;
+		}
+		const query = typeof body.query === "string" && body.query.trim() !== "" ? body.query.trim() : persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name;
+		const maxItems = typeof body.maxItems === "number" && body.maxItems > 0 ? body.maxItems : 10;
+		try {
+			const result = await provider.search({
+				accountId: targetAccountId,
+				query,
+				maxItems
+			});
+			if (result.status === "failed") {
+				writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE });
+				return;
+			}
+			writeJson(res, 201, { items: rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), result.items).map((item) => {
+				const payload = {
+					accountId: targetAccountId,
+					title: item.title,
+					body: item.body ?? "",
+					sourceUrl: item.sourceUrl,
+					source: item.source === "manual" ? "manual" : "apify",
+					publishedAt: item.publishedAt,
+					score: item.score,
+					reasons: item.reasons,
+					status: "pending"
+				};
+				return store.saveViralItem(payload);
+			}) });
+		} catch (error) {
+			fail(res, error);
+		}
+	})];
+}
+//#endregion
+//#region src/routes/index.ts
+/**
+* 构建 /api/dsh-xhs-matrix 路由。
+* @param deps - 存储与可选依赖。
+* @returns 路由数组。
+*/
+function makeRoutes(deps) {
+	const { store, scheduler, reload, viralProvider, studio } = deps;
+	return [
+		...makeSettingsRoutes(store, reload),
+		...makeAccountsRoutes(store),
+		...makePersonasRoutes(store),
+		...makeKnowledgeRoutes(store, scheduler),
+		...makeViralRoutes(store, viralProvider),
+		...makeDraftsRoutes(store),
+		...makeStudioRoutes(store, studio)
 	];
 }
 //#endregion
@@ -991,7 +1107,7 @@ function buildStudioContext(store, accountId, mode, maxInputChars) {
 	if (persona === void 0) throw new Error("该账号尚未分配人设");
 	const notes = store.listPublishedNotes(accountId);
 	const snapshots = store.listMetricSnapshots(accountId);
-	const trends = store.listTrendSamples(accountId);
+	const viralItems = store.listViralItems(accountId, "accepted");
 	const personaLines = [
 		`【人设名称】${persona.name}`,
 		persona.positioning !== void 0 ? `【账号定位】${persona.positioning}` : "",
@@ -1011,7 +1127,7 @@ function buildStudioContext(store, accountId, mode, maxInputChars) {
 		const metricText = metric === void 0 ? "暂无指标" : `阅读 ${metric.reads} / 点赞 ${metric.likes} / 收藏 ${metric.favorites} / 评论 ${metric.comments}`;
 		return `- 权重 ${note.weight} | ${note.title} | ${metricText}${note.sourceUrl !== void 0 ? ` | ${note.sourceUrl}` : ""}\n  ${note.copy.slice(0, 200)}`;
 	});
-	const trendLines = trends.slice(0, 20).map((trend) => `- ${trend.title}（${trend.summary ?? ""}）`);
+	const viralLines = viralItems.slice(0, 20).map((item) => `- ${item.title}（${item.reasons.join("、")}）`);
 	const positiveNotes = notes.filter((note) => note.weight >= 3);
 	const negativeNotes = notes.filter((note) => note.weight === 0);
 	const context = [
@@ -1023,8 +1139,8 @@ function buildStudioContext(store, accountId, mode, maxInputChars) {
 		mode === "full" ? "## 已发布笔记知识库（完整）" : `## 已发布笔记知识库（${notes.length} 篇，优先高权重）`,
 		noteLines.join("\n"),
 		"",
-		"## 外部趋势样本",
-		trendLines.join("\n") || "（暂无外部趋势样本）",
+		"## 已采纳爆款参考",
+		viralLines.join("\n") || "（暂无已采纳爆款参考）",
 		"",
 		negativeNotes.length > 0 ? `## 负向经验（权重 0，应尽量避免同类型方向）\n${negativeNotes.map((note) => `- ${note.title}`).join("\n")}` : "",
 		positiveNotes.length > 0 ? `## 高权重参考（权重 ≥3，优先借鉴其成功规律）\n${positiveNotes.map((note) => `- ${note.title}`).join("\n")}` : ""
@@ -1090,21 +1206,19 @@ var StudioService = class {
 			evidence: {
 				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
 				noteIds: this.store.listPublishedNotes(accountId).filter((note) => note.weight >= 3).map((note) => note.id),
-				trendIds: this.store.listTrendSamples(accountId).slice(0, 20).map((trend) => trend.id),
-				reasons: [`基于账号人设、高权重历史内容与外部趋势生成；使用模型：${this.modelLabel}`]
+				trendIds: this.store.listViralItems(accountId, "accepted").slice(0, 20).map((item) => item.id),
+				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
 			}
 		};
 	}
-	/** 保存一条草稿（可带生成依据），不发布。 */
+	/** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
 	saveDraft(accountId, payload) {
 		this.store.listAccounts().find((item) => item.id === accountId) ?? (() => {
 			throw new Error(`账号不存在：${accountId}`);
 		})();
-		if (this.store.listTopics().find((item) => item.id === payload.topicId) === void 0) throw new Error("选题不存在");
 		const date = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
 		const draft = this.store.saveDraft({
 			accountId,
-			topicId: payload.topicId,
 			date,
 			copy: payload.copy,
 			coverPrompt: payload.coverPrompt
@@ -1126,50 +1240,19 @@ const DEFAULT_TECHNIQUES = [
 * 拼接创作简报 markdown。
 * @param account - 目标账号。
 * @param persona - 账号人设。
-* @param topic - 选中选题。
+* @param viralItems - 该账号爆款池参考条目（pending/accepted），作为素材来源。
 * @returns 简报文本。
 */
-function composeBrief(account, persona, topic) {
+function composeBrief(account, persona, viralItems) {
+	const viralLines = viralItems.length === 0 ? ["（该账号暂无爆款池参考）"] : viralItems.map((item) => `- ${item.title}（推荐分 ${item.score}；理由：${item.reasons.join("、")}）${item.sourceUrl !== void 0 ? `｜${item.sourceUrl}` : ""}`);
 	return [
 		`【账号】${account.name}（${persona.name}）`,
 		`【人设】${persona.prompt}`,
 		`【风格】严格按「${persona.name}」人设的风格撰写（${persona.prompt}）；默认爆款技巧框架（人设未另行规定时）：${DEFAULT_TECHNIQUES}。`,
-		`【选题】${topic.title}`,
+		`【爆款池参考】`,
+		...viralLines,
 		`【任务】按以上人设撰写小红书文案（标题 + 正文 + 话题标签），并给出封面提示词（coverPrompt）。`
 	].join("\n");
-}
-//#endregion
-//#region src/decision.ts
-/** 该账号今日已用过的选题 id 集合。 */
-function usedTodayIds(accountId, todayDrafts) {
-	return new Set(todayDrafts.filter((d) => d.accountId === accountId).map((d) => d.topicId));
-}
-/**
-* 按账号过滤选题：剔除已用 / 今日已为该账号生成。
-* @param topics - 全部选题。
-* @param accountId - 目标账号。
-* @param todayDrafts - 今日草稿。
-* @returns 候选选题。
-*/
-function filterTopics(topics, accountId, todayDrafts) {
-	const usedToday = usedTodayIds(accountId, todayDrafts);
-	return topics.filter((topic) => {
-		if (topic.status !== "open") return false;
-		if (usedToday.has(topic.id)) return false;
-		return true;
-	});
-}
-/**
-* 从候选中选择一个选题。
-* @param candidates - 候选选题。
-* @param strategy - fifo（最旧未用优先，按 createdAt 排序）/ random。
-* @param rand - 随机源，测试注入固定值。
-* @returns 选中选题，候选为空时 undefined。
-*/
-function selectTopic(candidates, strategy, rand = Math.random) {
-	if (candidates.length === 0) return void 0;
-	if (strategy === "random") return candidates[Math.floor(rand() * candidates.length)];
-	return [...candidates].sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
 }
 //#endregion
 //#region src/events.ts
@@ -1191,18 +1274,24 @@ function render(result) {
 	if (result.ok && result.message !== "") lines[0] = result.message;
 	return text(lines.join("\n"));
 }
+/** 今日日期（YYYY-MM-DD，本地时区）。 */
+function today() {
+	const now = /* @__PURE__ */ new Date();
+	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+/** 合法爆款审核状态。 */
+const VIRAL_STATUSES = [
+	"pending",
+	"accepted",
+	"ignored"
+];
 /**
-* 构建 8 个模型工具。
+* 构建 7 个模型工具。
 * @param deps - 存储与上下文。
 * @returns 工具定义数组。
 */
 function makeTools(deps) {
-	const { store, ctx, selectionStrategy } = deps;
-	/** 今日日期（YYYY-MM-DD，本地时区）。 */
-	const today = () => {
-		const now = /* @__PURE__ */ new Date();
-		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-	};
+	const { store, ctx } = deps;
 	const accountsOf = () => {
 		return store.listAccounts().filter((a) => a.enabled);
 	};
@@ -1210,7 +1299,7 @@ function makeTools(deps) {
 	return [
 		defineTool({
 			name: "xhs_today",
-			description: "今日决策：为每个（或指定）未发账号生成创作简报（人设 + 选题约束）。简报返回后，直接按简报撰写小红书文案（标题 + 正文 + 话题标签）与封面提示词，再用 xhs_draft_save 保存。触发词：今天要发什么、选题、小红书矩阵。",
+			description: "今日决策：为每个（或指定）未发账号生成创作简报（人设 + 爆款池参考）。简报返回后，直接按简报撰写小红书文案（标题 + 正文 + 话题标签）与封面提示词，再用 xhs_draft_save 保存。触发词：今天要发什么、选题、小红书矩阵。",
 			parameters: { account: {
 				type: "string",
 				description: "账号 id（省略则处理全部启用账号）"
@@ -1254,16 +1343,20 @@ function makeTools(deps) {
 						skipped.push(`${account.name}（未分配人设）`);
 						continue;
 					}
-					const topic = selectTopic(filterTopics(store.listTopics(), account.id, todayDrafts), selectionStrategy);
-					if (topic === void 0) {
-						skipped.push(`${account.name}（选题池为空或全部被已用/今日已发排除）`);
+					if (todayDrafts.some((d) => d.accountId === account.id)) {
+						skipped.push(`${account.name}（今日已生成）`);
 						continue;
 					}
-					briefs.push(composeBrief(account, persona, topic));
+					const viralItems = store.listViralItems(account.id).filter((item) => item.status === "pending" || item.status === "accepted");
+					if (viralItems.length === 0) {
+						skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`);
+						continue;
+					}
+					briefs.push(composeBrief(account, persona, viralItems));
 				}
 				if (briefs.length === 0) return {
 					ok: false,
-					message: `今日无可生成内容${skipped.length > 0 ? `：${skipped.join("，")}` : ""}。请补充选题或检查账号选题标准。`,
+					message: `今日无可生成内容${skipped.length > 0 ? `：${skipped.join("，")}` : ""}。请采集爆款或检查账号人设。`,
 					briefs: []
 				};
 				return {
@@ -1275,17 +1368,12 @@ function makeTools(deps) {
 		}),
 		defineTool({
 			name: "xhs_draft_save",
-			description: "保存草稿：按 xhs_today 简报撰写的文案与封面提示词落库，并把选题标记为已用。同账号 + 当日 + 同选题已存在时拒绝（除非 force: true 覆盖）。",
+			description: "保存草稿：按 xhs_today 简报撰写的文案与封面提示词落库。同账号 + 当日已存在草稿时拒绝（除非 force: true 覆盖）。",
 			parameters: {
 				accountId: {
 					type: "string",
 					required: true,
 					description: "账号 id"
-				},
-				topicId: {
-					type: "string",
-					required: true,
-					description: "选题 id"
 				},
 				copy: {
 					type: "string",
@@ -1299,7 +1387,7 @@ function makeTools(deps) {
 				},
 				force: {
 					type: "boolean",
-					description: "同账号当日同选题已存在时强制覆盖"
+					description: "同账号当日已存在草稿时强制覆盖"
 				}
 			},
 			output: {
@@ -1326,7 +1414,6 @@ function makeTools(deps) {
 			async execute(args, _exec) {
 				for (const field of [
 					"accountId",
-					"topicId",
 					"copy",
 					"coverPrompt"
 				]) {
@@ -1337,32 +1424,25 @@ function makeTools(deps) {
 						draftId: ""
 					};
 				}
-				if (!store.listTopics().some((t) => t.id === args.topicId)) return {
-					ok: false,
-					message: `选题不存在：${args.topicId}`,
-					draftId: ""
-				};
 				if (!store.listAccounts().some((a) => a.id === args.accountId)) return {
 					ok: false,
 					message: `账号不存在：${args.accountId}`,
 					draftId: ""
 				};
 				const date = today();
-				const existing = store.findDraft(args.accountId, date, args.topicId);
+				const existing = store.findDraft(args.accountId, date);
 				if (existing !== void 0 && args.force !== true) return {
 					ok: false,
-					message: `该账号当日已存在同选题草稿（${existing.id}），如确需覆盖请传 force: true。`,
+					message: `该账号当日已存在草稿（${existing.id}），如确需覆盖请传 force: true。`,
 					draftId: existing.id
 				};
 				if (existing !== void 0) store.deleteDraft(existing.id);
 				const draft = store.saveDraft({
 					accountId: args.accountId,
-					topicId: args.topicId,
 					date,
 					copy: args.copy,
 					coverPrompt: args.coverPrompt
 				});
-				store.markTopicUsed(args.topicId, draft.id);
 				return {
 					ok: true,
 					message: `草稿已保存：${draft.id}（${date}）`,
@@ -1371,57 +1451,17 @@ function makeTools(deps) {
 			}
 		}),
 		defineTool({
-			name: "xhs_topics",
-			description: "查询选题池（按状态过滤：open/used/retired）。",
-			parameters: { status: {
-				type: "string",
-				description: "选题状态过滤"
-			} },
-			output: {
-				schema: {
-					type: "object",
-					additionalProperties: false,
-					properties: {
-						ok: {
-							type: "boolean",
-							required: true
-						},
-						message: {
-							type: "string",
-							required: true
-						},
-						topics: {
-							type: "array",
-							required: true,
-							items: { type: "string" }
-						}
-					}
-				},
-				render: (_args, value) => render(value)
-			},
-			isConcurrencySafe: () => true,
-			async execute(args, _exec) {
-				const topics = store.listTopics().filter((t) => args.status === void 0 || t.status === args.status);
-				const lines = topics.length === 0 ? ["选题池为空"] : topics.map((t) => `${t.id}\t${t.status}\t${t.title}`);
-				return {
-					ok: true,
-					message: lines.join("\n"),
-					topics: lines
-				};
-			}
-		}),
-		defineTool({
-			name: "xhs_topic_add",
-			description: "向选题池添加选题（单个 title 或批量 titles）。手动选题是感知层的模拟入口。",
+			name: "xhs_virals",
+			description: "查询指定账号的爆款池条目（标题/正文/来源链接/审核状态/推荐分/理由），可按审核状态过滤。爆款池是创作简报的素材来源。",
 			parameters: {
-				title: {
+				accountId: {
 					type: "string",
-					description: "单个选题标题"
+					required: true,
+					description: "账号 id"
 				},
-				titles: {
-					type: "array",
-					items: { type: "string" },
-					description: "批量选题标题"
+				status: {
+					type: "string",
+					description: "审核状态过滤：pending/accepted/ignored"
 				}
 			},
 			output: {
@@ -1437,27 +1477,56 @@ function makeTools(deps) {
 							type: "string",
 							required: true
 						},
-						topics: {
+						items: {
 							type: "array",
 							required: true,
-							items: { type: "string" }
+							items: {
+								type: "object",
+								additionalProperties: false,
+								properties: {
+									id: { type: "string" },
+									title: { type: "string" },
+									body: { type: "string" },
+									sourceUrl: { type: "string" },
+									status: { type: "string" },
+									score: { type: "number" },
+									reasons: {
+										type: "array",
+										items: { type: "string" }
+									}
+								}
+							}
 						}
 					}
 				},
 				render: (_args, value) => render(value)
 			},
+			isConcurrencySafe: () => true,
 			async execute(args, _exec) {
-				const titles = args.titles !== void 0 ? args.titles : args.title !== void 0 ? [args.title] : [];
-				if (titles.length === 0) return {
+				if (!store.listAccounts().some((account) => account.id === args.accountId)) return {
 					ok: false,
-					message: "请提供 title 或 titles。",
-					topics: []
+					message: `账号不存在：${args.accountId}`,
+					items: []
 				};
-				const created = store.addTopics(titles);
+				if (args.status !== void 0 && !VIRAL_STATUSES.includes(args.status)) return {
+					ok: false,
+					message: `status 必须是 pending/accepted/ignored：${args.status}`,
+					items: []
+				};
+				const status = args.status;
+				const items = store.listViralItems(args.accountId, status).map((item) => ({
+					id: item.id,
+					title: item.title,
+					body: item.body,
+					sourceUrl: item.sourceUrl,
+					status: item.status,
+					score: item.score,
+					reasons: item.reasons
+				}));
 				return {
 					ok: true,
-					message: `已添加 ${created.length} 个选题`,
-					topics: created.map((t) => `${t.id}\t${t.title}`)
+					message: (items.length === 0 ? ["该账号爆款池为空"] : items.map((item) => `${item.id}\t${item.status}\t分数 ${item.score}\t${item.title}${item.sourceUrl !== void 0 ? `\t${item.sourceUrl}` : ""}`)).join("\n"),
+					items
 				};
 			}
 		}),
@@ -1653,52 +1722,6 @@ function makeTools(deps) {
 			}
 		}),
 		defineTool({
-			name: "xhs_trends",
-			description: "查询指定账号已保存的外部趋势样本（Apify 采集，公开数据）。",
-			parameters: { accountId: {
-				type: "string",
-				required: true,
-				description: "账号 id"
-			} },
-			output: {
-				schema: {
-					type: "object",
-					additionalProperties: false,
-					properties: {
-						ok: {
-							type: "boolean",
-							required: true
-						},
-						message: {
-							type: "string",
-							required: true
-						},
-						trends: {
-							type: "array",
-							required: true,
-							items: { type: "string" }
-						}
-					}
-				},
-				render: (_args, value) => render(value)
-			},
-			isConcurrencySafe: () => true,
-			async execute(args, _exec) {
-				if (!store.listAccounts().some((account) => account.id === args.accountId)) return {
-					ok: false,
-					message: `账号不存在：${args.accountId}`,
-					trends: []
-				};
-				const trends = store.listTrendSamples(args.accountId);
-				const lines = trends.length === 0 ? ["暂无趋势样本，请在「矩阵」面板触发采集"] : trends.slice(0, 20).map((trend) => `${trend.id}\t${trend.title}${trend.likes !== void 0 ? `\t点赞 ${trend.likes}` : ""}`);
-				return {
-					ok: true,
-					message: lines.join("\n"),
-					trends: lines
-				};
-			}
-		}),
-		defineTool({
 			name: "xhs_collection_status",
 			description: "查询指定账号的指标采集状态（running/success/failed、最近成功时间、错误）。",
 			parameters: { accountId: {
@@ -1765,36 +1788,23 @@ const inject = [
 /** 设置命名空间。 */
 const XHS_SETTINGS_NAMESPACE = settingsNamespace("dsh-xhs-matrix");
 const Config = z.object({
-	selectionStrategy: z.union(["fifo", "random"]).default("fifo"),
 	locale: z.string().default("zh-CN"),
 	announceToAgent: z.boolean().default(true),
-	enabled: z.boolean().default(true),
-	apifyActorId: z.string().default(""),
-	apifyApiToken: z.string().default(""),
-	apifyMaxItems: z.number().default(10),
-	apifyRequestTimeoutMs: z.number().default(3e4),
-	apifyMaxPolls: z.number().default(120)
+	enabled: z.boolean().default(true)
 });
-const DEFAULT_SELECTION = "fifo";
 /** 模型可见公告。 */
-const XHS_GUIDANCE = "本机已安装 dsh-xhs-matrix 插件（小红书矩阵内容管理）：侧边栏「矩阵」入口管理账号、人设、已发布知识库、选题、草稿与专属创作台。能力：xhs_today 按账号人设生成创作简报供你撰写文案；xhs_notes 查询账号已发布笔记知识库；xhs_trends 查询外部趋势样本；xhs_collection_status 查询指标采集状态；xhs_draft_save 持久化草稿（同账号当日同选题去重）；xhs_topic_add 管理选题池；xhs_accounts 查询账号与人设；xhs_draft_status 回填发布状态与阅读量指标（触发 xhs/feedback 事件）。用户提到「今天要发什么 / 小红书 / 矩阵 / 选题」时即指本插件。";
+const XHS_GUIDANCE = "本机已安装 dsh-xhs-matrix 插件（小红书矩阵内容管理）：侧边栏「矩阵」入口管理账号、人设、已发布知识库、爆款池、草稿与专属创作台。能力：xhs_today 按账号人设与爆款池生成创作简报供你撰写文案；xhs_notes 查询账号已发布笔记知识库；xhs_virals 查询账号爆款池条目与审核状态；xhs_collection_status 查询指标采集状态；xhs_draft_save 持久化草稿（同账号当日去重）；xhs_accounts 查询账号与人设；xhs_draft_status 回填发布状态与阅读量指标（触发 xhs/feedback 事件）。用户提到「今天要发什么 / 小红书 / 矩阵 / 选题 / 爆款」时即指本插件。";
 /**
 * 挂载存储、路由、工具与公告。
-* @param ctx - host 上下文（webServer/tools/systemPrompt）。
+* @param ctx - host 上下文（webServer/tools/systemPrompt/llm）。
 * @param config - 插件配置。
 */
 function apply(ctx, config) {
 	let current = () => config ?? {};
 	const resolve = () => ({
-		selectionStrategy: current().selectionStrategy ?? DEFAULT_SELECTION,
 		locale: current().locale ?? "zh-CN",
 		announceToAgent: current().announceToAgent ?? true,
-		enabled: current().enabled ?? true,
-		apifyActorId: current().apifyActorId ?? "",
-		apifyApiToken: current().apifyApiToken ?? "",
-		apifyMaxItems: current().apifyMaxItems ?? 10,
-		apifyRequestTimeoutMs: current().apifyRequestTimeoutMs ?? 3e4,
-		apifyMaxPolls: current().apifyMaxPolls ?? 120
+		enabled: current().enabled ?? true
 	});
 	const store = new MatrixStore();
 	store.load();
@@ -1826,61 +1836,72 @@ function apply(ctx, config) {
 			order: 150,
 			text: XHS_GUIDANCE
 		});
+		const modelRoute = resolveStudioModel(() => {
+			try {
+				const m = ctx.settings.get(settingsNamespace("agent-default-model"));
+				return m !== void 0 && m.provider !== void 0 && m.model !== void 0 ? {
+					provider: m.provider,
+					model: m.model
+				} : void 0;
+			} catch {
+				return;
+			}
+		}, () => ctx.llm.listProviders().map((p) => ({ id: p.id })));
+		const studio = new StudioService(store, modelRoute === void 0 ? { complete: async () => {
+			throw new Error("未配置创作台模型：请在 Harness 设置 agent-default-model");
+		} } : { async complete(request) {
+			const messages = request.messages.map((message) => message.role === "assistant" ? createAssistantMessage({
+				content: [{
+					type: "text",
+					text: message.content
+				}],
+				source: {
+					provider: modelRoute.provider,
+					model: modelRoute.model
+				}
+			}) : createUserMessage({
+				content: [{
+					type: "text",
+					text: message.content
+				}],
+				source: {
+					kind: "plugin",
+					plugin: "dsh-xhs-matrix"
+				}
+			}));
+			const options = {
+				provider: modelRoute.provider,
+				model: modelRoute.model,
+				messages,
+				system: request.system,
+				maxTokens: request.maxTokens
+			};
+			const assembler = new BlockAssembler();
+			for await (const chunk of ctx.llm.stream(options)) assembler.push(chunk);
+			if (assembler.finish.kind !== "stop") throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`);
+			return { text: assembler.blocks().filter((block) => block.type === "text").map((block) => block.text).join("") };
+		} }, modelRoute === void 0 ? "未配置" : `${modelRoute.provider}/${modelRoute.model}`);
 		const apifyStore = store.getSettings().apify;
-		const actorId = apifyStore.actorId !== "" ? apifyStore.actorId : value.apifyActorId;
-		const apiToken = apifyStore.apiToken !== "" ? apifyStore.apiToken : value.apifyApiToken;
-		const trendProvider = actorId !== "" && apiToken !== "" ? new ApifyTrendProvider({
-			actorId,
-			apiToken,
-			maxItems: apifyStore.maxItems ?? value.apifyMaxItems ?? 10,
-			requestTimeoutMs: apifyStore.requestTimeoutMs ?? value.apifyRequestTimeoutMs ?? 3e4,
-			maxPolls: apifyStore.maxPolls ?? value.apifyMaxPolls ?? 120
+		const viralProvider = apifyStore.actorId !== "" && apifyStore.apiToken !== "" ? new ApifyViralProvider({
+			actorId: apifyStore.actorId,
+			apiToken: apifyStore.apiToken,
+			maxItems: apifyStore.maxItems,
+			requestTimeoutMs: apifyStore.requestTimeoutMs,
+			maxPolls: apifyStore.maxPolls
 		}) : void 0;
 		let scheduler;
-		if (trendProvider !== void 0) {
+		if (viralProvider !== void 0) {
 			scheduler = new CollectionScheduler({
 				store,
-				provider: trendProvider
+				provider: viralProvider
 			});
 			scheduler.start();
 		}
-		const studio = new StudioService(store, { async complete(request) {
-			const messages = request.messages.map((entry) => {
-				const content = [{
-					type: "text",
-					text: entry.content
-				}];
-				return entry.role === "user" ? createUserMessage({
-					content,
-					source: { kind: "user" }
-				}) : createAssistantMessage({
-					content,
-					source: {
-						provider: "deepseek",
-						model: "deepseek-chat"
-					}
-				});
-			});
-			const text = [];
-			let failed;
-			for await (const chunk of ctx.llm.stream({
-				provider: "deepseek",
-				model: "deepseek-chat",
-				system: request.system,
-				messages,
-				maxTokens: request.maxTokens ?? 4e3
-			})) {
-				if (chunk.type === "text-delta") text.push(chunk.text);
-				if (chunk.type === "finish" && chunk.reason.kind === "error") failed = chunk.reason.failure.message;
-			}
-			if (failed !== void 0) throw new Error(failed);
-			return { text: text.join("") };
-		} });
 		disposeScheduler = () => scheduler?.stop();
 		disposeRoutes = ctx.effect(() => {
 			const disposers = makeRoutes({
 				store,
-				trendProvider,
+				viralProvider,
 				scheduler,
 				studio,
 				reload: sync
@@ -1892,8 +1913,7 @@ function apply(ctx, config) {
 		disposeTools = ctx.effect(() => {
 			const disposers = makeTools({
 				store,
-				ctx,
-				selectionStrategy: resolve().selectionStrategy
+				ctx
 			}).map((tool) => ctx.tools.register(tool));
 			return () => {
 				for (const dispose of disposers) dispose();

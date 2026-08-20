@@ -1,5 +1,5 @@
 /** 浏览器侧 API 客户端：面板组件唯一的数据通道（同源 fetch）。 */
-import type { DraftMetrics, DraftStatus } from '../types.ts';
+import type { DraftMetrics, DraftStatus, ViralItem, ViralStatus } from '../types.ts';
 import type { AccountPayload, PersonaPayload } from '../store.ts';
 /** 携带路由 JSON 错误消息的客户端错误。 */
 export declare class XhsApiError extends Error {
@@ -72,15 +72,12 @@ export declare class XhsApi {
         id: string;
     }>;
     deletePersona(id: string): Promise<void>;
-    listTopics(): Promise<Array<{
-        id: string;
-        title: string;
-        status: string;
-        createdAt: string;
-    }>>;
-    addTopic(title: string): Promise<void>;
-    importTopics(titles: string[]): Promise<number>;
-    retireTopic(id: string): Promise<void>;
+    /** 按账号与审核状态列出爆款池条目。 */
+    listViralItems(accountId: string, status?: ViralStatus): Promise<ViralItem[]>;
+    /** 采集爆款入库（query/maxItems 缺省时由后端按人设方向降级生成搜索词与条数）。 */
+    collectViral(accountId: string, query?: string, maxItems?: number): Promise<ViralItem[]>;
+    /** 审核爆款条目为 accepted / ignored。 */
+    reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): Promise<ViralItem>;
     listNotes(accountId?: string): Promise<Array<{
         id: string;
         accountId: string;
@@ -96,21 +93,6 @@ export declare class XhsApi {
         updatedAt: string;
     }>>;
     setNoteWeight(accountId: string, noteId: string, weight: number): Promise<void>;
-    listTrends(accountId: string): Promise<Array<{
-        id: string;
-        title: string;
-        summary?: string;
-        sourceUrl?: string;
-        likes?: number;
-        favorites?: number;
-        comments?: number;
-        collectedAt: string;
-    }>>;
-    collectTrends(accountId: string, searchQuery?: string, maxItems?: number): Promise<Array<{
-        title: string;
-        score: number;
-        reasons: string[];
-    }>>;
     listMetrics(accountId: string, noteId?: string): Promise<Array<{
         id: string;
         noteId: string;
@@ -161,13 +143,13 @@ export declare class XhsApi {
         };
         warning?: string;
     }>;
-    studioSaveDraft(accountId: string, topicId: string, copy: string, coverPrompt: string): Promise<{
+    /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
+    studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{
         id: string;
     }>;
     listDrafts(): Promise<Array<{
         id: string;
         accountId: string;
-        topicId: string;
         date: string;
         copy: string;
         coverPrompt: string;

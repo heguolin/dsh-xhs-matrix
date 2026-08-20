@@ -7,7 +7,6 @@ export declare const zh: {
     readonly 'panel.title': "小红书矩阵";
     readonly 'tab.accounts': "账号";
     readonly 'tab.personas': "人设";
-    readonly 'tab.topics': "选题";
     readonly 'tab.drafts': "草稿";
 };
 /** 英文字典（键对齐）。 */

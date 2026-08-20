@@ -9,7 +9,6 @@ export const zh = {
   'panel.title': '小红书矩阵',
   'tab.accounts': '账号',
   'tab.personas': '人设',
-  'tab.topics': '选题',
   'tab.drafts': '草稿',
 } as const
 
@@ -20,7 +19,6 @@ export const en: Record<keyof typeof zh, string> = {
   'panel.title': 'XHS Matrix',
   'tab.accounts': 'Accounts',
   'tab.personas': 'Personas',
-  'tab.topics': 'Topics',
   'tab.drafts': 'Drafts',
 }
 

@@ -1,6 +1,6 @@
 import type { XhsApi } from '../api.ts';
 import type { PanelController } from '../controller.ts';
-export type PageId = 'overview' | 'knowledge' | 'topics' | 'studio' | 'drafts' | 'personas';
+export type PageId = 'overview' | 'knowledge' | 'viral' | 'studio' | 'drafts' | 'personas';
 interface AccountRow {
     id: string;
     name: string;

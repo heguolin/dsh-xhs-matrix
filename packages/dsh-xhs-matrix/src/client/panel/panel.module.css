@@ -538,16 +538,6 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   border-radius: 99px;
 }
 
-.chipInput {
-  border: 1px solid var(--xhs-border);
-  border-radius: 99px;
-  padding: 5px 12px;
-  font-size: 12px;
-  background: var(--xhs-card);
-  color: var(--xhs-text);
-  width: 100%;
-}
-
 .contextline {
   display: flex;
   align-items: center;
@@ -897,14 +887,8 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 }
 
 /* ==========================================================================
-   趋势选题（双栏）
+   爆款条目（列表）
    ========================================================================== */
-.topicLayout {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 14px;
-}
-
 .topicItem {
   border-top: 1px solid var(--xhs-border-soft);
   padding: 11px 0;

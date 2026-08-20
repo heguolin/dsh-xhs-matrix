@@ -1,7 +1,7 @@
 /** 私有 JSON 文件存储（~/.dsh/dsh-xhs-matrix.json），原子写 + 格式版本。 */
-import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample } from './types.ts';
+import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, ViralItem, ViralStatus } from './types.ts';
 /** 存储文件格式版本。 */
-export declare const MATRIX_STORE_VERSION = 2;
+export declare const MATRIX_STORE_VERSION = 3;
 /** 存储文件默认位置。 */
 export declare function matrixStorePath(): string;
 /** 存储错误：介质损坏 / version 不匹配 / 校验失败。 */
@@ -31,7 +31,6 @@ export interface PersonaPayload {
 }
 export interface DraftPayload {
     accountId: string;
-    topicId: string;
     date: string;
     copy: string;
     coverPrompt: string;
@@ -60,22 +59,16 @@ export interface MetricSnapshotPayload {
     status: 'success' | 'failed';
     error?: string;
 }
-export interface TrendSamplePayload {
+export interface ViralItemPayload {
     accountId: string;
     title: string;
-    summary?: string;
+    body: string;
     sourceUrl?: string;
-    source: 'apify' | 'manual';
-    actorId?: string;
+    source: 'apify' | 'manual' | 'import';
+    score: number;
+    reasons: string[];
     publishedAt?: string;
-    reads?: number;
-    likes?: number;
-    favorites?: number;
-    comments?: number;
-    keywords?: string[];
-    contentType?: string;
-    status: 'success' | 'failed';
-    error?: string;
+    status?: ViralStatus;
 }
 export interface StudioMessagePayload {
     accountId: string;
@@ -99,6 +92,12 @@ export declare class MatrixStore {
     load(): StoreFile;
     /** 原子落盘（tmp + rename）。 */
     save(): void;
+    /** 按账号与审核状态列出爆款池条目。 */
+    listViralItems(accountId?: string, status?: ViralStatus): ViralItem[];
+    /** 新增爆款池条目（默认 pending）；账号必须存在。 */
+    saveViralItem(payload: ViralItemPayload): ViralItem;
+    /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
+    reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem;
     /** 读取运行时设置（apify 等）。 */
     getSettings(): MatrixSettings;
     /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
@@ -112,12 +111,9 @@ export declare class MatrixStore {
     listPersonas(): Persona[];
     upsertPersona(payload: PersonaPayload, id?: string): Persona;
     deletePersona(id: string): void;
-    listTopics(): Topic[];
-    addTopics(titles: string[]): Topic[];
-    retireTopic(id: string): void;
-    markTopicUsed(id: string, draftId: string): void;
     listDrafts(): Draft[];
-    findDraft(accountId: string, date: string, topicId: string): Draft | undefined;
+    /** v3 草稿独立于选题，去重键为账号 + 日期（无 topicId 残留）。 */
+    findDraft(accountId: string, date: string): Draft | undefined;
     saveDraft(payload: DraftPayload): Draft;
     deleteDraft(id: string): void;
     setDraftStatus(id: string, status: DraftStatus, metrics?: DraftMetrics): Draft;
@@ -133,8 +129,6 @@ export declare class MatrixStore {
     setNoteWeight(accountId: string, noteId: string, weight: number): PublishedNote;
     listMetricSnapshots(accountId?: string, noteId?: string): MetricSnapshot[];
     saveMetricSnapshot(payload: MetricSnapshotPayload): MetricSnapshot;
-    listTrendSamples(accountId?: string): TrendSample[];
-    saveTrendSample(payload: TrendSamplePayload): TrendSample;
     listStudioMessages(accountId?: string): StudioMessage[];
     saveStudioMessage(payload: StudioMessagePayload): StudioMessage;
     markStudioMessageRead(id: string): void;

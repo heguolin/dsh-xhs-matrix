@@ -27,24 +27,19 @@ export const XHS_SETTINGS_NAMESPACE = settingsNamespace('dsh-xhs-matrix')
 
 /** 插件配置（Apify 数据源配置唯一来源为 store 运行时设置，不再放插件 Config）。 */
 export interface Config {
-  selectionStrategy?: 'fifo' | 'random'
   locale?: string
   announceToAgent?: boolean
   enabled?: boolean
 }
 
 export const Config: z<Config> = z.object({
-  selectionStrategy: z.union(['fifo', 'random']).default('fifo'),
   locale: z.string().default('zh-CN'),
   announceToAgent: z.boolean().default(true),
   enabled: z.boolean().default(true),
 })
 
-const DEFAULT_SELECTION = 'fifo'
-
 /** 解析后的生效配置（默认值已填充，全字段必填）。 */
 interface ResolvedConfig {
-  selectionStrategy: 'fifo' | 'random'
   locale: string
   announceToAgent: boolean
   enabled: boolean
@@ -61,7 +56,6 @@ export const XHS_GUIDANCE = '本机已安装 dsh-xhs-matrix 插件（小红书�
 export function apply(ctx: Context, config?: Config): void {
   let current: () => Config = () => config ?? {}
   const resolve = (): ResolvedConfig => ({
-    selectionStrategy: current().selectionStrategy ?? DEFAULT_SELECTION,
     locale: current().locale ?? 'zh-CN',
     announceToAgent: current().announceToAgent ?? true,
     enabled: current().enabled ?? true,
