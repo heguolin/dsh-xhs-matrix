@@ -1,4 +1,4 @@
-import { t as MatrixStore } from "./store-D_cUcyBm.js";
+import { t as MatrixStore } from "./store-BGCxtNyN.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -655,7 +655,27 @@ function makeDraftsRoutes(store) {
 			}
 		}
 		try {
-			writeJson(res, 200, { draft: store.setDraftStatus(draftId, status, metrics) });
+			const wasPublished = store.listDrafts().find((d) => d.id === draftId)?.status === "published";
+			const draft = store.setDraftStatus(draftId, status, metrics);
+			let note;
+			if (status === "published" && !wasPublished) {
+				const lines = draft.copy.split("\n");
+				const title = (lines[0] ?? "").trim().slice(0, 60) || "未命名笔记";
+				const body = lines.slice(1).join("\n").trim() || draft.copy;
+				note = store.savePublishedNote({
+					accountId: draft.accountId,
+					title,
+					copy: body,
+					topic: draft.tags !== void 0 && draft.tags !== "" ? draft.tags.replace(/#/g, " ").trim().slice(0, 100) : void 0,
+					publishedAt: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+					source: "manual",
+					weight: 0
+				});
+			}
+			writeJson(res, 200, {
+				draft,
+				note
+			});
 		} catch (error) {
 			fail(res, error);
 		}

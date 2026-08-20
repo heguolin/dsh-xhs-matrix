@@ -96,9 +96,10 @@ describe('/api/dsh-xhs-matrix 路由', () => {
   })
 
   it('草稿状态回填后存储可见', async () => {
+    const accountId = await seedAccount()
     const draftRes = await json('/api/dsh-xhs-matrix/drafts', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId: 'acc-a', date: '2026-08-18', copy: 'c', coverPrompt: 'p' }),
+      body: JSON.stringify({ accountId, date: '2026-08-18', copy: '标题\n正文', coverPrompt: 'p' }),
     })
     const draftId = (draftRes.body as { draft: { id: string } }).draft.id
     const statusRes = await json('/api/dsh-xhs-matrix/drafts/status', {
@@ -107,6 +108,33 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(statusRes.status).toBe(200)
     expect(store.listDrafts()[0].metrics?.reads).toBe(50)
+  })
+
+  it('发布草稿自动进入知识库：标题取首行、权重默认 0、可重复回填指标', async () => {
+    const accountId = await seedAccount()
+    const draftRes = await json('/api/dsh-xhs-matrix/drafts', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, date: '2026-08-21', copy: '这是标题\n正文第一行 #AI工具', coverPrompt: '红色背景' }),
+    })
+    const draftId = (draftRes.body as { draft: { id: string } }).draft.id
+    const published = await json('/api/dsh-xhs-matrix/drafts/status', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ draftId, status: 'published' }),
+    })
+    expect(published.status).toBe(200)
+    const notes = store.listPublishedNotes(accountId)
+    expect(notes).toHaveLength(1)
+    expect(notes[0].title).toBe('这是标题')
+    expect(notes[0].copy).toBe('正文第一行 #AI工具')
+    expect(notes[0].weight).toBe(0)
+    expect(notes[0].source).toBe('manual')
+    // 再次回填指标不重复入库
+    const again = await json('/api/dsh-xhs-matrix/drafts/status', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ draftId, status: 'published', metrics: { reads: 10, likes: 1, comments: 0, collected: '2026-08-22T00:00:00.000Z' } }),
+    })
+    expect(again.status).toBe(200)
+    expect(store.listPublishedNotes(accountId)).toHaveLength(1)
   })
 
   it('草稿缺失必填字段返回 400 且不落库', async () => {

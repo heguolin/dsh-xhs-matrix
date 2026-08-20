@@ -93,8 +93,26 @@ export function makeDraftsRoutes(store: MatrixStore): WebRoute[] {
         }
       }
       try {
+        const wasPublished = store.listDrafts().find(d => d.id === draftId)?.status === 'published'
         const draft = store.setDraftStatus(draftId, status, metrics)
-        writeJson(res, 200, { draft })
+        // 标记发布后自动进入该账号知识库：标题取首行，正文取其余，
+        // 权重默认 0（后续在知识库手动打分）；重复发布不重复入库。
+        let note: unknown
+        if (status === 'published' && !wasPublished) {
+          const lines = draft.copy.split('\n')
+          const title = (lines[0] ?? '').trim().slice(0, 60) || '未命名笔记'
+          const body = lines.slice(1).join('\n').trim() || draft.copy
+          note = store.savePublishedNote({
+            accountId: draft.accountId,
+            title,
+            copy: body,
+            topic: draft.tags !== undefined && draft.tags !== '' ? draft.tags.replace(/#/g, ' ').trim().slice(0, 100) : undefined,
+            publishedAt: new Date().toISOString().slice(0, 10),
+            source: 'manual',
+            weight: 0,
+          })
+        }
+        writeJson(res, 200, { draft, note })
       } catch (error) {
         fail(res, error)
       }

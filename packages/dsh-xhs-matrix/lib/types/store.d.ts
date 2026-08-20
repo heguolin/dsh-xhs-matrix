@@ -29,11 +29,14 @@ export interface PersonaPayload {
     topicCriteria?: string;
     defaultHashtags?: string[];
 }
+/** 从文案中提取话题标签（#开头，去重，空格分隔）；无标签返回 undefined。 */
+export declare function extractHashtags(text: string): string | undefined;
 export interface DraftPayload {
     accountId: string;
     date: string;
     copy: string;
     coverPrompt: string;
+    tags?: string;
 }
 export interface PublishedNotePayload {
     accountId: string;

@@ -90,6 +90,12 @@ export function DraftsTab({ api, accountId, onOpenStudio }: { api: XhsApi; accou
                 : <span className={css.badgeGray}>已弃用</span>}
               {draft.metrics !== undefined && <span className={css.badge}>阅读 {draft.metrics.reads}</span>}
               <span style={{ flex: 1 }} />
+              {draft.status === 'generated' && (
+                <>
+                  <button className={css.primary} onClick={() => void publish(draft)}>发布</button>
+                  <button className={css.dangerBtn} onClick={() => void drop(draft)}>弃用</button>
+                </>
+              )}
               <button className={css.ghostBtn} onClick={() => toggleExpand(draft.id)}>{expanded ? '收起' : '展开'}</button>
             </div>
             <button

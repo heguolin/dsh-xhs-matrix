@@ -172,4 +172,20 @@ describe('MatrixStore', () => {
     expect(store.listViralItems(account.id, 'pending')).toHaveLength(0)
     expect(() => store.reviewViralItem('a2', item.id, 'accepted')).toThrow(/账号/)
   })
+
+  it('草稿保存自动提取话题标签', () => {
+    const store = new MatrixStore(file)
+    const account = store.upsertAccount({ name: 'a', personaId: '', enabled: true })
+    const draft = store.saveDraft({ accountId: account.id, date: '2026-08-21', copy: '标题\n正文内容 #效率工具 #职场成长 #效率工具', coverPrompt: 'p' })
+    expect(draft.tags).toBe('#效率工具 #职场成长')
+  })
+
+  it('更新草稿时未传标签自动从正文提取', () => {
+    const store = new MatrixStore(file)
+    const account = store.upsertAccount({ name: 'a', personaId: '', enabled: true })
+    const draft = store.saveDraft({ accountId: account.id, date: '2026-08-21', copy: '标题\n无标签正文', coverPrompt: 'p' })
+    expect(draft.tags).toBeUndefined()
+    const updated = store.updateDraft(draft.id, { copy: '新正文 #打工人 #效率' })
+    expect(updated.tags).toBe('#打工人 #效率')
+  })
 })

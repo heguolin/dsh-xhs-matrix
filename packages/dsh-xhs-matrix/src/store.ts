@@ -42,7 +42,14 @@ export interface PersonaPayload {
   topicCriteria?: string
   defaultHashtags?: string[]
 }
-export interface DraftPayload { accountId: string; date: string; copy: string; coverPrompt: string }
+/** 从文案中提取话题标签（#开头，去重，空格分隔）；无标签返回 undefined。 */
+export function extractHashtags(text: string): string | undefined {
+  const tags = text.match(/#[^\s#，,。.!！?？]+/g)
+  if (tags === null || tags.length === 0) return undefined
+  return [...new Set(tags)].join(' ')
+}
+
+export interface DraftPayload { accountId: string; date: string; copy: string; coverPrompt: string; tags?: string }
 
 export interface PublishedNotePayload {
   accountId: string
@@ -377,7 +384,7 @@ export class MatrixStore {
     return this.data.drafts.find(d => d.accountId === accountId && d.date === date)
   }
   saveDraft(payload: DraftPayload): Draft {
-    const draft: Draft = { id: nextId(), ...payload, status: 'generated', createdAt: new Date().toISOString() }
+    const draft: Draft = { id: nextId(), ...payload, tags: payload.tags ?? extractHashtags(payload.copy), status: 'generated', createdAt: new Date().toISOString() }
     this.data.drafts.push(draft)
     this.save()
     return draft
@@ -399,7 +406,9 @@ export class MatrixStore {
     if (draft === undefined) throw new MatrixStoreError(`草稿不存在：${id}`)
     if (payload.copy !== undefined) draft.copy = payload.copy
     if (payload.coverPrompt !== undefined) draft.coverPrompt = payload.coverPrompt
+    // 未显式传标签时，若当前无标签则从正文自动提取，避免手工填写。
     if (payload.tags !== undefined) draft.tags = payload.tags
+    else if (draft.tags === undefined || draft.tags === '') draft.tags = extractHashtags(draft.copy)
     draft.updatedAt = new Date().toISOString()
     this.save()
     return draft
