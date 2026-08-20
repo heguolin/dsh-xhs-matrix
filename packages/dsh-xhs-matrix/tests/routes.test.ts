@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { ViralProvider } from '../src/collector/provider.ts'
 import { makeRoutes } from '../src/routes/index.ts'
 import { MatrixStore } from '../src/store.ts'
+import { StudioService, type StudioLlmClient } from '../src/studio.ts'
 
 let server: Server
 let base: string
@@ -17,8 +18,8 @@ let viralProvider: ViralProvider
 const searchCalls: Array<{ accountId: string; query: string; maxItems: number }> = []
 
 /** 用给定依赖启动路由测试 server；返回 server 与基础 URL。 */
-async function startServer(targetStore: MatrixStore, provider?: ViralProvider): Promise<{ server: Server; base: string }> {
-  const routes = makeRoutes({ store: targetStore, viralProvider: provider })
+async function startServer(targetStore: MatrixStore, provider?: ViralProvider, studio?: StudioService): Promise<{ server: Server; base: string }> {
+  const routes = makeRoutes({ store: targetStore, viralProvider: provider, studio })
   const srv = createServer((req, res) => {
     const route = routes.find(r => r.kind === 'exact' && r.path === (new URL(req.url ?? '/', 'http://localhost').pathname))
     if (route === undefined) { res.writeHead(404); res.end('not found'); return }
@@ -97,7 +98,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
   it('草稿状态回填后存储可见', async () => {
     const draftRes = await json('/api/dsh-xhs-matrix/drafts', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId: 'acc-a', topicId: 'tp-1', date: '2026-08-18', copy: 'c', coverPrompt: 'p' }),
+      body: JSON.stringify({ accountId: 'acc-a', date: '2026-08-18', copy: 'c', coverPrompt: 'p' }),
     })
     const draftId = (draftRes.body as { draft: { id: string } }).draft.id
     const statusRes = await json('/api/dsh-xhs-matrix/drafts/status', {
@@ -111,20 +112,10 @@ describe('/api/dsh-xhs-matrix 路由', () => {
   it('草稿缺失必填字段返回 400 且不落库', async () => {
     const res = await json('/api/dsh-xhs-matrix/drafts', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId: 'acc-a', topicId: 't1', date: '2026-08-18' }),
+      body: JSON.stringify({ accountId: 'acc-a', date: '2026-08-18' }),
     })
     expect(res.status).toBe(400)
     expect((res.body as { error: string }).error).toContain('必填')
-    expect(store.listDrafts()).toHaveLength(0)
-  })
-
-  it('草稿引用不存在的选题返回 400 且不落库', async () => {
-    const res = await json('/api/dsh-xhs-matrix/drafts', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId: 'acc-a', topicId: 'no-such-topic', date: '2026-08-18', copy: 'c', coverPrompt: 'p' }),
-    })
-    expect(res.status).toBe(400)
-    expect((res.body as { error: string }).error).toContain('选题不存在')
     expect(store.listDrafts()).toHaveLength(0)
   })
 
@@ -135,6 +126,34 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(res.status).toBe(400)
     expect((res.body as { error: string }).error).toContain('metrics')
+  })
+
+  it('创作台保存草稿不要求 topicId', async () => {
+    const accountId = await seedAccount()
+    const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }) }
+    const studio = new StudioService(store, llm)
+    const { server: studioServer, base: studioBase } = await startServer(store, viralProvider, studio)
+    try {
+      const res = await json(studioBase + '/api/dsh-xhs-matrix/studio/draft', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ accountId, copy: 'c', coverPrompt: 'p' }),
+      })
+      expect(res.status).toBe(201)
+      const draft = (res.body as { draft: { id: string; accountId: string } }).draft
+      expect(draft.accountId).toBe(accountId)
+      // v3 草稿独立：落库的草稿不携带 topicId 字段。
+      expect(store.listDrafts()[0].id).toBe(draft.id)
+      expect('topicId' in store.listDrafts()[0]).toBe(false)
+      // 未装配创作台时保存请求返回 400。
+      const unready = await json('/api/dsh-xhs-matrix/studio/draft', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ accountId, copy: 'c', coverPrompt: 'p' }),
+      })
+      expect(unready.status).toBe(400)
+      expect((unready.body as { error: string }).error).toContain('创作台')
+    } finally {
+      studioServer.close()
+    }
   })
 
   it('Apify 配置 GET/PATCH：默认空，PATCH 后持久化', async () => {

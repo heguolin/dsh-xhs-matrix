@@ -38,7 +38,8 @@ export function buildStudioContext(
   if (persona === undefined) throw new Error('该账号尚未分配人设')
   const notes = store.listPublishedNotes(accountId)
   const snapshots = store.listMetricSnapshots(accountId)
-  const trends = store.listTrendSamples(accountId)
+  // v3 创作参考：该账号已采纳的爆款池条目（pending/ignored 不进入上下文）。
+  const viralItems = store.listViralItems(accountId, 'accepted')
 
   const personaLines = [
     `【人设名称】${persona.name}`,
@@ -60,7 +61,7 @@ export function buildStudioContext(
     const metricText = metric === undefined ? '暂无指标' : `阅读 ${metric.reads} / 点赞 ${metric.likes} / 收藏 ${metric.favorites} / 评论 ${metric.comments}`
     return `- 权重 ${note.weight} | ${note.title} | ${metricText}${note.sourceUrl !== undefined ? ` | ${note.sourceUrl}` : ''}\n  ${note.copy.slice(0, 200)}`
   })
-  const trendLines = trends.slice(0, 20).map(trend => `- ${trend.title}（${trend.summary ?? ''}）`)
+  const viralLines = viralItems.slice(0, 20).map(item => `- ${item.title}（${item.reasons.join('、')}）`)
   const positiveNotes = notes.filter(note => note.weight >= 3)
   const negativeNotes = notes.filter(note => note.weight === 0)
 
@@ -73,8 +74,8 @@ export function buildStudioContext(
     mode === 'full' ? '## 已发布笔记知识库（完整）' : `## 已发布笔记知识库（${notes.length} 篇，优先高权重）`,
     noteLines.join('\n'),
     '',
-    '## 外部趋势样本',
-    trendLines.join('\n') || '（暂无外部趋势样本）',
+    '## 已采纳爆款参考',
+    viralLines.join('\n') || '（暂无已采纳爆款参考）',
     '',
     negativeNotes.length > 0
       ? `## 负向经验（权重 0，应尽量避免同类型方向）\n${negativeNotes.map(note => `- ${note.title}`).join('\n')}`
@@ -122,19 +123,17 @@ export class StudioService {
     const evidence: DraftEvidence = {
       persona: `${this.store.listPersonas().find(p => p.id === this.store.listAccounts().find(a => a.id === accountId)?.personaId)?.name ?? ''}`,
       noteIds: this.store.listPublishedNotes(accountId).filter(note => note.weight >= 3).map(note => note.id),
-      trendIds: this.store.listTrendSamples(accountId).slice(0, 20).map(trend => trend.id),
-      reasons: [`基于账号人设、高权重历史内容与外部趋势生成；使用模型：${this.modelLabel}`],
+      trendIds: this.store.listViralItems(accountId, 'accepted').slice(0, 20).map(item => item.id),
+      reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`],
     }
     return { message, evidence }
   }
 
-  /** 保存一条草稿（可带生成依据），不发布。 */
-  saveDraft(accountId: string, payload: { topicId: string; copy: string; coverPrompt: string; evidence?: DraftEvidence }): Draft {
+  /** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
+  saveDraft(accountId: string, payload: { copy: string; coverPrompt: string; evidence?: DraftEvidence }): Draft {
     this.store.listAccounts().find(item => item.id === accountId) ?? (() => { throw new Error(`账号不存在：${accountId}`) })()
-    const topic = this.store.listTopics().find(item => item.id === payload.topicId)
-    if (topic === undefined) throw new Error('选题不存在')
     const date = new Date().toISOString().slice(0, 10)
-    const draft = this.store.saveDraft({ accountId, topicId: payload.topicId, date, copy: payload.copy, coverPrompt: payload.coverPrompt })
+    const draft = this.store.saveDraft({ accountId, date, copy: payload.copy, coverPrompt: payload.coverPrompt })
     draft.evidence = payload.evidence
     return draft
   }

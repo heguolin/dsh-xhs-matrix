@@ -42,7 +42,7 @@ export interface PersonaPayload {
   topicCriteria?: string
   defaultHashtags?: string[]
 }
-export interface DraftPayload { accountId: string; topicId: string; date: string; copy: string; coverPrompt: string }
+export interface DraftPayload { accountId: string; date: string; copy: string; coverPrompt: string }
 
 export interface PublishedNotePayload {
   accountId: string
