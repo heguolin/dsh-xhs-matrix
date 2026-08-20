@@ -41,4 +41,44 @@ describe('XhsApi', () => {
     expect(body.status).toBe('published')
     expect(body.metrics.reads).toBe(50)
   })
+
+  it('listViralItems 携带 account 与 status 查询参数', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ items: [{ id: 'v1', accountId: 'a1', title: '爆款A', body: '正文', source: 'apify', status: 'accepted', score: 8, reasons: ['相关性高'], collectedAt: '2026-08-20T10:00:00.000Z' }] }), { status: 200 }))
+    const api = new XhsApi()
+    const items = await api.listViralItems('a1', 'accepted')
+    expect(items[0].title).toBe('爆款A')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/dsh-xhs-matrix/viral')
+    expect(url).toContain('account=a1')
+    expect(url).toContain('status=accepted')
+    // GET 请求不携带 init，默认即 GET 方法。
+    expect(init).toBeUndefined()
+  })
+
+  it('collectViral 发送 accountId/query/maxItems 到 POST /viral', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ items: [] }), { status: 201 }))
+    const api = new XhsApi()
+    await api.collectViral('a1', '美妆测评', 5)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/dsh-xhs-matrix/viral')
+    expect(init.method).toBe('POST')
+    const body = JSON.parse((init as RequestInit).body as string)
+    expect(body.accountId).toBe('a1')
+    expect(body.query).toBe('美妆测评')
+    expect(body.maxItems).toBe(5)
+  })
+
+  it('reviewViralItem 发送 PATCH /viral 并携带 status body', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ item: { id: 'v1', accountId: 'a1', title: '爆款A', body: '正文', source: 'apify', status: 'accepted', score: 8, reasons: ['相关性高'], collectedAt: '2026-08-20T10:00:00.000Z' } }), { status: 200 }))
+    const api = new XhsApi()
+    const item = await api.reviewViralItem('a1', 'v1', 'accepted')
+    expect(item.status).toBe('accepted')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/dsh-xhs-matrix/viral')
+    expect(url).toContain('account=a1')
+    expect(url).toContain('item=v1')
+    expect(init.method).toBe('PATCH')
+    const body = JSON.parse((init as RequestInit).body as string)
+    expect(body.status).toBe('accepted')
+  })
 })

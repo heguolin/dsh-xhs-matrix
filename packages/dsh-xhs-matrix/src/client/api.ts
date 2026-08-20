@@ -1,7 +1,7 @@
 /** 浏览器侧 API 客户端：面板组件唯一的数据通道（同源 fetch）。 */
 
 import { XHS_API } from '../protocol.ts'
-import type { DraftMetrics, DraftStatus } from '../types.ts'
+import type { DraftMetrics, DraftStatus, ViralItem, ViralStatus } from '../types.ts'
 import type { AccountPayload, PersonaPayload } from '../store.ts'
 
 /** 携带路由 JSON 错误消息的客户端错误。 */
@@ -102,18 +102,27 @@ export class XhsApi {
     await readJson<{ ok: boolean }>(await fetch(XHS_API.personas + query({ persona: id }), { method: 'DELETE' }))
   }
 
-  // ------------------------------------------------------------ 选题（后端路由已移除，Task 12 迁移到爆款池；保留方法签名以免面板编译断裂）
-  async listTopics(): Promise<Array<{ id: string; title: string; status: string; createdAt: string }>> {
-    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
+  // ------------------------------------------------------------ 爆款池
+  /** 按账号与审核状态列出爆款池条目。 */
+  async listViralItems(accountId: string, status?: ViralStatus): Promise<ViralItem[]> {
+    const body = await readJson<{ items: ViralItem[] }>(await fetch(XHS_API.viral + query({ account: accountId, status })))
+    return body.items
   }
-  async addTopic(title: string): Promise<void> {
-    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
+  /** 采集爆款入库（query/maxItems 缺省时由后端按人设方向降级生成搜索词与条数）。 */
+  async collectViral(accountId: string, query?: string, maxItems?: number): Promise<ViralItem[]> {
+    const body = await readJson<{ items: ViralItem[] }>(await fetch(XHS_API.viral, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, query, maxItems }),
+    }))
+    return body.items
   }
-  async importTopics(titles: string[]): Promise<number> {
-    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
-  }
-  async retireTopic(id: string): Promise<void> {
-    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
+  /** 审核爆款条目为 accepted / ignored。 */
+  async reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): Promise<ViralItem> {
+    const body = await readJson<{ item: ViralItem }>(await fetch(XHS_API.viral + query({ account: accountId, item: itemId }), {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ status }),
+    }))
+    return body.item
   }
 
   // ------------------------------------------------------------ 已发布笔记
@@ -123,14 +132,6 @@ export class XhsApi {
   }
   async setNoteWeight(accountId: string, noteId: string, weight: number): Promise<void> {
     await readJson<{ ok: boolean }>(await fetch(XHS_API.notes + query({ account: accountId, note: noteId }), { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ weight }) }))
-  }
-
-  // ------------------------------------------------------------ 趋势（后端路由已移除，Task 12 迁移到爆款池；保留方法签名以免面板编译断裂）
-  async listTrends(accountId: string): Promise<Array<{ id: string; title: string; summary?: string; sourceUrl?: string; likes?: number; favorites?: number; comments?: number; collectedAt: string }>> {
-    throw new XhsApiError('趋势接口已下线，爆款池客户端接入见 Task 12')
-  }
-  async collectTrends(accountId: string, searchQuery?: string, maxItems?: number): Promise<Array<{ title: string; score: number; reasons: string[] }>> {
-    throw new XhsApiError('趋势接口已下线，爆款池客户端接入见 Task 12')
   }
 
   // ------------------------------------------------------------ 指标
@@ -158,14 +159,15 @@ export class XhsApi {
     const body = await readJson<{ message: { id: string; content: string }; evidence: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }; warning?: string }>(await fetch(XHS_API.studioMessages + query({ account: accountId }), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ input, mode }) }))
     return body
   }
-  async studioSaveDraft(accountId: string, topicId: string, copy: string, coverPrompt: string): Promise<{ id: string }> {
-    const body = await readJson<{ draft: { id: string } }>(await fetch(XHS_API.studio + '/draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accountId, topicId, copy, coverPrompt }) }))
+  /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
+  async studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{ id: string }> {
+    const body = await readJson<{ draft: { id: string } }>(await fetch(XHS_API.studio + '/draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accountId, copy, coverPrompt }) }))
     return body.draft
   }
 
   // ------------------------------------------------------------ 草稿
-  async listDrafts(): Promise<Array<{ id: string; accountId: string; topicId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }>> {
-    const body = await readJson<{ drafts: Array<{ id: string; accountId: string; topicId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }> }>(await fetch(XHS_API.drafts))
+  async listDrafts(): Promise<Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }>> {
+    const body = await readJson<{ drafts: Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }> }>(await fetch(XHS_API.drafts))
     return body.drafts
   }
   async setDraftStatus(draftId: string, status: 'published' | 'dropped', metrics?: DraftMetrics): Promise<void> {
