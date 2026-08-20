@@ -16,17 +16,31 @@ export interface ViralProvider { search(request: ViralProviderRequest): Promise<
 export function normalizeApifyItem(item: unknown): NormalizedViral {
   if (typeof item !== 'object' || item === null) throw new Error('Apify item 必须是对象')
   const value = item as Record<string, unknown>
-  if (typeof value.title !== 'string' || value.title.trim() === '') throw new Error('Apify item 缺少 title')
   const num = (key: string): number | undefined => typeof value[key] === 'number' && Number.isFinite(value[key]) ? value[key] as number : undefined
-  const body = typeof value.body === 'string' ? value.body : typeof value.content === 'string' ? value.content : typeof value.desc === 'string' ? value.desc : typeof value.text === 'string' ? value.text : undefined
-  const url = typeof value.url === 'string' ? value.url : typeof value.noteUrl === 'string' ? value.noteUrl : undefined
+  const firstString = (...keys: string[]): string | undefined => {
+    for (const key of keys) {
+      if (typeof value[key] === 'string' && value[key].trim() !== '') return value[key].trim()
+    }
+    return undefined
+  }
+  const body = firstString('body', 'content', 'desc', 'text', 'description')
+  // 标题字段在不同 Actor 命名不一（title/note_title/title_text/name）；
+  // 都没有时用正文首行兜底，避免整批采集因一条缺标题而失败。
+  let title = firstString('title', 'note_title', 'title_text', 'name')
+  if (title === undefined && body !== undefined) {
+    const firstLine = body.split('\n')[0].trim()
+    if (firstLine !== '') title = firstLine.slice(0, 60)
+  }
+  if (title === undefined || title === '') throw new Error('Apify item 缺少 title')
+  const url = firstString('url', 'noteUrl', 'note_url', 'link')
   return {
-    title: value.title.trim(),
-    body: body === undefined ? undefined : body.trim(),
+    title,
+    body,
     sourceUrl: url,
     source: 'apify',
-    publishedAt: typeof value.publishedAt === 'string' ? value.publishedAt : undefined,
-    reads: num('reads') ?? num('viewCount'), likes: num('likes') ?? num('likeCount'),
-    comments: num('comments') ?? num('commentCount'),
+    publishedAt: firstString('publishedAt', 'publish_time', 'created_at', 'time'),
+    reads: num('reads') ?? num('viewCount') ?? num('view_count'),
+    likes: num('likes') ?? num('likeCount') ?? num('like_count'),
+    comments: num('comments') ?? num('commentCount') ?? num('comment_count'),
   }
 }
