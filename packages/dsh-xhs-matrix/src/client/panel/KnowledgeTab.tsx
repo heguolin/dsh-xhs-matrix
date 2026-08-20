@@ -114,12 +114,19 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
                 <div className={css.miniThumb} />
                 <div className={css.libBody}>
                   <div className={css.libTitle}>{note.title}</div>
-                  <div className={css.libMeta}>
-                    发布 {note.publishedAt.slice(0, 10)}
-                    {metric !== undefined
-                      ? ` · 浏览 ${metric.reads.toLocaleString()} · 点赞 ${metric.likes} · 收藏 ${metric.favorites} · 评论 ${metric.comments}`
-                      : ' · 指标待更新'}
-                    {note.topic !== undefined && ` · ${note.topic}`}
+                  <div className={css.libMeta} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span>
+                      发布 {note.publishedAt.slice(0, 10)}
+                      {metric !== undefined
+                        ? ` · 浏览 ${metric.reads.toLocaleString()} · 点赞 ${metric.likes} · 收藏 ${metric.favorites} · 评论 ${metric.comments}`
+                        : ' · 指标待更新'}
+                      {note.topic !== undefined && ` · ${note.topic}`}
+                    </span>
+                    <button
+                      className={css.ghostBtn}
+                      style={{ padding: '2px 10px', fontSize: 11, whiteSpace: 'nowrap', flex: 'none' }}
+                      onClick={() => void recordReads(note.id)}
+                    >录入浏览量</button>
                   </div>
                   <div className={css.weight}>
                     {WEIGHTS.map(weight => (
@@ -131,9 +138,6 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
                       >{weight}</button>
                     ))}
                     <span className={css.muted} style={{ marginLeft: 8, alignSelf: 'center' }}>权重 {note.weight} / 5</span>
-                    <button className={css.ghostBtn} style={{ marginLeft: 8, padding: '2px 8px', fontSize: 11 }} onClick={() => void recordReads(note.id)}>
-                      录入浏览量
-                    </button>
                   </div>
                 </div>
               </div>
