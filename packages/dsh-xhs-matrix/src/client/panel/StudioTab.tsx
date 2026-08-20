@@ -21,18 +21,17 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
   const [streamText, setStreamText] = useState('')
   const [coverPrompt, setCoverPrompt] = useState('')
   // 创作上下文统计
-  const [context, setContext] = useState<{ personaName: string; hookStyles: string[]; noteCount: number; highCount: number; viralCount: number; metricCount: number }>({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0, metricCount: 0 })
+  const [context, setContext] = useState<{ personaName: string; hookStyles: string[]; noteCount: number; highCount: number; viralCount: number }>({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0 })
 
   const refresh = useCallback(async () => {
-    if (accountId === '') { setMessages([]); setContext({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0, metricCount: 0 }); return }
+    if (accountId === '') { setMessages([]); setContext({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0 }); return }
     try {
-      const [msgList, accountList, personaList, noteList, viralList, metricList] = await Promise.all([
+      const [msgList, accountList, personaList, noteList, viralList] = await Promise.all([
         api.listStudioMessages(accountId),
         api.listAccounts(),
         api.listPersonas(),
         api.listNotes(accountId),
         api.listViralItems(accountId, 'accepted'),
-        api.listMetrics(accountId),
       ])
       setMessages(msgList)
       const persona = personaList.find(p => p.id === accountList.find(a => a.id === accountId)?.personaId)
@@ -42,7 +41,6 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
         noteCount: noteList.length,
         highCount: noteList.filter(n => n.weight >= 3).length,
         viralCount: viralList.length,
-        metricCount: metricList.length,
       })
       setError('')
     } catch (e) {
@@ -117,7 +115,7 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
                 你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、已采纳爆款参考和草稿。
                 <div className={css.studioResult}>
                   <b>已加载创作上下文</b>
-                  人设规则 · {context.noteCount} 篇本地知识库 · {context.highCount} 篇高权重样本 · {context.viralCount} 个已采纳爆款参考 · {context.metricCount} 条指标历史快照
+                  人设规则 · {context.noteCount} 篇本地知识库 · {context.highCount} 篇高权重样本 · {context.viralCount} 个已采纳爆款参考
                 </div>
               </div>
             </div>
@@ -211,11 +209,6 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
           <h5>已采纳爆款参考</h5>
           <div className={css.contextLine}>{context.viralCount} 个已采纳爆款</div>
           <div className={css.contextLine}>仅使用公开数据，不复制原文</div>
-        </div>
-        <div className={css.contextCard}>
-          <h5>指标历史快照</h5>
-          <div className={css.contextLine}>{context.metricCount} 条采集记录</div>
-          <div className={css.contextLine}>采集任务只更新数据，不自动生成</div>
         </div>
       </aside>
     </div>
