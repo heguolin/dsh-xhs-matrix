@@ -102,20 +102,18 @@ export class XhsApi {
     await readJson<{ ok: boolean }>(await fetch(XHS_API.personas + query({ persona: id }), { method: 'DELETE' }))
   }
 
-  // ------------------------------------------------------------ 选题
+  // ------------------------------------------------------------ 选题（后端路由已移除，Task 12 迁移到爆款池；保留方法签名以免面板编译断裂）
   async listTopics(): Promise<Array<{ id: string; title: string; status: string; createdAt: string }>> {
-    const body = await readJson<{ topics: Array<{ id: string; title: string; status: string; createdAt: string }> }>(await fetch(XHS_API.topics))
-    return body.topics
+    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
   }
   async addTopic(title: string): Promise<void> {
-    await readJson<{ topics: unknown[] }>(await fetch(XHS_API.topics, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title }) }))
+    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
   }
   async importTopics(titles: string[]): Promise<number> {
-    const body = await readJson<{ topics: unknown[] }>(await fetch(XHS_API.topics, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ titles }) }))
-    return body.topics.length
+    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
   }
   async retireTopic(id: string): Promise<void> {
-    await readJson<{ ok: boolean }>(await fetch(XHS_API.topics + query({ topic: id }), { method: 'PATCH' }))
+    throw new XhsApiError('选题池接口已下线，爆款池客户端接入见 Task 12')
   }
 
   // ------------------------------------------------------------ 已发布笔记
@@ -127,14 +125,12 @@ export class XhsApi {
     await readJson<{ ok: boolean }>(await fetch(XHS_API.notes + query({ account: accountId, note: noteId }), { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ weight }) }))
   }
 
-  // ------------------------------------------------------------ 趋势
+  // ------------------------------------------------------------ 趋势（后端路由已移除，Task 12 迁移到爆款池；保留方法签名以免面板编译断裂）
   async listTrends(accountId: string): Promise<Array<{ id: string; title: string; summary?: string; sourceUrl?: string; likes?: number; favorites?: number; comments?: number; collectedAt: string }>> {
-    const body = await readJson<{ trends: Array<{ id: string; title: string; summary?: string; sourceUrl?: string; likes?: number; favorites?: number; comments?: number; collectedAt: string }> }>(await fetch(XHS_API.trends + query({ account: accountId })))
-    return body.trends
+    throw new XhsApiError('趋势接口已下线，爆款池客户端接入见 Task 12')
   }
   async collectTrends(accountId: string, searchQuery?: string, maxItems?: number): Promise<Array<{ title: string; score: number; reasons: string[] }>> {
-    const body = await readJson<{ trends: Array<{ title: string; score: number; reasons: string[] }> }>(await fetch(XHS_API.trends + query({ account: accountId }), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: searchQuery, maxItems }) }))
-    return body.trends
+    throw new XhsApiError('趋势接口已下线，爆款池客户端接入见 Task 12')
   }
 
   // ------------------------------------------------------------ 指标
