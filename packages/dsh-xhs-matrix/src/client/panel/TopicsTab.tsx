@@ -226,12 +226,16 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
           <div className={css.dialog} onClick={e => e.stopPropagation()}>
             <button className={css.dialogClose} onClick={() => setConfigOpen(false)} aria-label="关闭">×</button>
             <h3>配置 Apify 趋势数据源</h3>
-            <div className={css.muted} style={{ marginBottom: 12 }}>
-              在 apify.com 创建 Actor 并获取 API Token；配置保存后「开始采集」即可拉取外部趋势并按人设与知识库权重排序。
+            <div className={css.muted} style={{ marginBottom: 12, lineHeight: 1.7 }}>
+              <b>如何获取：</b>
+              <br />1. 打开 <a href="https://apify.com" target="_blank" rel="noreferrer" style={{ color: 'var(--xhs-red)' }}>apify.com</a> 注册账号（免费额度可用）。
+              <br />2. <b>API Token</b>：登录后进入 <a href="https://console.apify.com/settings/integrations" target="_blank" rel="noreferrer" style={{ color: 'var(--xhs-red)' }}>Settings → Integrations</a>，复制 API token（形如 <code>apify_api_xxx</code>）。
+              <br />3. <b>Actor ID</b>：在 <a href="https://apify.com/store?q=xiaohongshu" target="_blank" rel="noreferrer" style={{ color: 'var(--xhs-red)' }}>Apify Store</a> 搜索小红书相关 Actor（如 <code>kuaima/xiaohongshu-search</code>），Actor ID 即「用户名/Actor名」，取自 Actor 页面地址。
+              <br />4. 保存配置后点「开始采集」。采集消耗 Apify 平台额度，请按需使用。
             </div>
             <div className={css.field}>
               <label>Actor ID</label>
-              <input className={css.input} value={actorId} onChange={e => setActorId(e.target.value)} placeholder="apify/actor-name" />
+              <input className={css.input} value={actorId} onChange={e => setActorId(e.target.value)} placeholder="如 kuaima/xiaohongshu-search" />
             </div>
             <div className={css.field}>
               <label>API Token</label>
