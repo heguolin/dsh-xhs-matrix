@@ -4,7 +4,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { makeRoutes } from '../src/routes.ts'
+import { makeRoutes } from '../src/routes/index.ts'
 import { MatrixStore } from '../src/store.ts'
 
 let server: Server
@@ -58,15 +58,6 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(res.status).toBe(400)
     expect((res.body as { error: string }).error).toContain('账号名')
-  })
-
-  it('批量导入选题', async () => {
-    const res = await json('/api/dsh-xhs-matrix/topics', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ titles: ['通勤穿搭', '秋季护肤'] }),
-    })
-    expect(res.status).toBe(201)
-    expect((res.body as { topics: unknown[] }).topics).toHaveLength(2)
   })
 
   it('草稿状态回填后存储可见', async () => {

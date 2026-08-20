@@ -6,13 +6,10 @@ import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-system-prompt'
 import type {} from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
-import { createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { Message } from '@deepseek-ai/dsh-llm'
 import { ApifyViralProvider, type ApifyConfig } from './collector/apify.ts'
 import { CollectionScheduler } from './metrics.ts'
-import { makeRoutes } from './routes.ts'
+import { makeRoutes } from './routes/index.ts'
 import { MatrixStore } from './store.ts'
-import { StudioService, type StudioLlmClient } from './studio.ts'
 import { makeTools } from './tools.ts'
 
 /** 稳定插件名。 */
@@ -127,29 +124,10 @@ export function apply(ctx: Context, config?: Config): void {
       scheduler = new CollectionScheduler({ store, provider: trendProvider })
       scheduler.start()
     }
-    const llmClient: StudioLlmClient = {
-      async complete(request) {
-        const messages: Message[] = request.messages.map(entry => {
-          const content = [{ type: 'text' as const, text: entry.content }]
-          return entry.role === 'user'
-            ? createUserMessage({ content, source: { kind: 'user' } })
-            : createAssistantMessage({ content, source: { provider: 'deepseek', model: 'deepseek-chat' } })
-        })
-        const text: string[] = []
-        let failed: string | undefined
-        for await (const chunk of ctx.llm.stream({ provider: 'deepseek', model: 'deepseek-chat', system: request.system, messages, maxTokens: request.maxTokens ?? 4000 })) {
-          if (chunk.type === 'text-delta') text.push(chunk.text)
-          if (chunk.type === 'finish' && chunk.reason.kind === 'error') failed = chunk.reason.failure.message
-        }
-        if (failed !== undefined) throw new Error(failed)
-        return { text: text.join('') }
-      },
-    }
-    const studio = new StudioService(store, llmClient)
     disposeScheduler = () => scheduler?.stop()
     disposeRoutes = ctx.effect(
       () => {
-        const disposers = makeRoutes({ store, trendProvider, scheduler, studio, reload: sync }).map(route => ctx.webServer.register(route))
+        const disposers = makeRoutes({ store, scheduler, reload: sync }).map(route => ctx.webServer.register(route))
         return () => { for (const dispose of disposers) dispose() }
       },
       'dsh-xhs-matrix: routes',
