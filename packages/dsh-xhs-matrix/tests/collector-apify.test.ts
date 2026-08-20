@@ -51,4 +51,24 @@ describe('ApifyViralProvider', () => {
     expect(result.status).toBe('failed')
     expect(result.error).toContain('付费计划')
   })
+  it('Dataset 混有无法解析的条目时跳过坏条目而非整批失败', async () => {
+    const fetcher = async (url: string) => {
+      if (String(url).includes('/runs')) {
+        return new Response(JSON.stringify({ data: { id: 'r1', defaultDatasetId: 'd1', status: 'SUCCEEDED' } }), { status: 200 })
+      }
+      if (String(url).includes('/datasets/')) {
+        return new Response(JSON.stringify([
+          { title: '正常标题', desc: '正常正文' },
+          { note_id: 'xxx' },           // 缺标题缺正文 → 跳过
+          { title: '', content: '' },   // 空字段 → 跳过
+        ]), { status: 200 })
+      }
+      return new Response(JSON.stringify({ data: { status: 'SUCCEEDED' } }), { status: 200 })
+    }
+    const provider = new ApifyViralProvider({ actorId: 'o/a', apiToken: 'tok', maxItems: 10, requestTimeoutMs: 5000, maxPolls: 2 }, { fetcher: fetcher as typeof fetch, sleep: async () => {} })
+    const result = await provider.search({ accountId: 'a1', query: 'q', maxItems: 5 })
+    expect(result.status).toBe('success')
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0]?.title).toBe('正常标题')
+  })
 })

@@ -145,8 +145,17 @@ var ApifyViralProvider = class {
 				status: "failed",
 				error: "Apify Dataset 不是数组"
 			};
+			const normalized = [];
+			for (const raw of items.slice(0, limit)) try {
+				normalized.push(normalizeApifyItem(raw));
+			} catch {}
+			if (normalized.length === 0) return {
+				items: [],
+				status: "failed",
+				error: "Apify Dataset 条目均无法解析（缺少标题与正文）"
+			};
 			return {
-				items: items.slice(0, limit).map((item) => normalizeApifyItem(item)),
+				items: normalized,
 				status: "success"
 			};
 		} catch (error) {

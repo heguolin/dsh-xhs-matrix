@@ -89,7 +89,17 @@ export class ApifyViralProvider implements ViralProvider {
       if (!datasetResponse.ok) return { items: [], status: 'failed', error: `Apify Dataset HTTP ${datasetResponse.status}` }
       const items = await datasetResponse.json() as unknown
       if (!Array.isArray(items)) return { items: [], status: 'failed', error: 'Apify Dataset 不是数组' }
-      return { items: items.slice(0, limit).map(item => normalizeApifyItem(item)), status: 'success' }
+      // 逐条标准化，单条缺标题/正文（占位或异常条目）跳过而不使整批失败。
+      const normalized: NormalizedViral[] = []
+      for (const raw of items.slice(0, limit)) {
+        try {
+          normalized.push(normalizeApifyItem(raw))
+        } catch {
+          // 跳过无法标准化的条目。
+        }
+      }
+      if (normalized.length === 0) return { items: [], status: 'failed', error: 'Apify Dataset 条目均无法解析（缺少标题与正文）' }
+      return { items: normalized, status: 'success' }
     } catch (error) {
       return { items: [], status: 'failed', error: error instanceof Error ? error.message : String(error) }
     }
