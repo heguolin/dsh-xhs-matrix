@@ -105,9 +105,20 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
       try {
         const result = await provider.search({ accountId: targetAccountId, query, maxItems })
         if (result.status === 'failed') { writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE }); return }
+        // 搜索接口通常不含完整正文：逐条用笔记链接抓详情补全全文
+        // （并发受限避免触发数据源限流），失败的单条退回搜索结果。
+        let items = result.items
+        const fetchDetail = provider.fetchNoteDetail
+        if (fetchDetail !== undefined) {
+          items = await mapLimit(items, 3, async item => {
+            if (item.sourceUrl === undefined || (item.body ?? '') !== '') return item
+            const detail = await fetchDetail(item.sourceUrl).catch(() => undefined)
+            return detail ?? item
+          })
+        }
         const notes = store.listPublishedNotes(targetAccountId)
-        const ranked = rankViralItems(account, persona, notes, result.items)
-        const items = ranked.map(item => {
+        const ranked = rankViralItems(account, persona, notes, items)
+        const savedItems = ranked.map(item => {
           const payload: ViralItemPayload = {
             accountId: targetAccountId,
             title: item.title,
@@ -121,10 +132,24 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
           }
           return store.saveViralItem(payload)
         })
-        writeJson(res, 201, { items })
+        writeJson(res, 201, { items: savedItems })
       } catch (error) {
         fail(res, error)
       }
     }),
   ]
+}
+
+/** 并发受限的 map：同一时刻最多 limit 个异步任务，保持结果顺序。 */
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array<R>(items.length)
+  let index = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (index < items.length) {
+      const current = index++
+      results[current] = await fn(items[current])
+    }
+  })
+  await Promise.all(workers)
+  return results
 }

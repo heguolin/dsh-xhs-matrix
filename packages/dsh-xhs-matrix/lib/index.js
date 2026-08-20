@@ -1212,7 +1212,13 @@ function makeViralRoutes(store, provider) {
 				writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE });
 				return;
 			}
-			writeJson(res, 201, { items: rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), result.items).map((item) => {
+			let items = result.items;
+			const fetchDetail = provider.fetchNoteDetail;
+			if (fetchDetail !== void 0) items = await mapLimit(items, 3, async (item) => {
+				if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
+				return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
+			});
+			writeJson(res, 201, { items: rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), items).map((item) => {
 				const payload = {
 					accountId: targetAccountId,
 					title: item.title,
@@ -1230,6 +1236,19 @@ function makeViralRoutes(store, provider) {
 			fail(res, error);
 		}
 	})];
+}
+/** 并发受限的 map：同一时刻最多 limit 个异步任务，保持结果顺序。 */
+async function mapLimit(items, limit, fn) {
+	const results = new Array(items.length);
+	let index = 0;
+	const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+		while (index < items.length) {
+			const current = index++;
+			results[current] = await fn(items[current]);
+		}
+	});
+	await Promise.all(workers);
+	return results;
 }
 //#endregion
 //#region src/routes/index.ts
