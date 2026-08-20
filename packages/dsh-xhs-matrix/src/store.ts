@@ -5,12 +5,12 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type {
   Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight,
-  Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample,
+  Persona, PublishedNote, StoreFile, StudioMessage, ViralItem, ViralStatus,
 } from './types.ts'
 import { defaultMatrixSettings, migrateStoreFile } from './migration.ts'
 
 /** 存储文件格式版本。 */
-export const MATRIX_STORE_VERSION = 2
+export const MATRIX_STORE_VERSION = 3
 
 /** 存储文件默认位置。 */
 export function matrixStorePath(): string {
@@ -70,22 +70,16 @@ export interface MetricSnapshotPayload {
   error?: string
 }
 
-export interface TrendSamplePayload {
+export interface ViralItemPayload {
   accountId: string
   title: string
-  summary?: string
+  body: string
   sourceUrl?: string
-  source: 'apify' | 'manual'
-  actorId?: string
+  source: 'apify' | 'manual' | 'import'
+  score: number
+  reasons: string[]
   publishedAt?: string
-  reads?: number
-  likes?: number
-  favorites?: number
-  comments?: number
-  keywords?: string[]
-  contentType?: string
-  status: 'success' | 'failed'
-  error?: string
+  status?: ViralStatus
 }
 
 export interface StudioMessagePayload {
@@ -96,7 +90,7 @@ export interface StudioMessagePayload {
 }
 
 function empty(): StoreFile {
-  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], topics: [], drafts: [], publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [], settings: defaultMatrixSettings() }
+  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], drafts: [], publishedNotes: [], metricSnapshots: [], viralItems: [], studioMessages: [], settings: defaultMatrixSettings() }
 }
 
 function nextId(): string {
@@ -164,13 +158,14 @@ export class MatrixStore {
     if (typeof file !== 'object' || file === null || typeof file.version !== 'number') {
       throw new MatrixStoreError(`存储文件形状非法：${this.filePath}`)
     }
-    if (file.version === 1) {
-      this.data = migrateStoreFile(file as Parameters<typeof migrateStoreFile>[0])
+    const rawVersion = (file as { version?: number }).version
+    if (rawVersion === 1) {
+      this.data = migrateStoreFile(file as unknown as Parameters<typeof migrateStoreFile>[0])
       this.save()
       return this.data
     }
-    if (file.version !== MATRIX_STORE_VERSION) {
-      throw new MatrixStoreError(`存储文件 version 不匹配：期望 ${MATRIX_STORE_VERSION}，实际 ${file.version}`)
+    if (rawVersion !== MATRIX_STORE_VERSION) {
+      throw new MatrixStoreError(`存储文件 version 不匹配：期望 ${MATRIX_STORE_VERSION}，实际 ${rawVersion}`)
     }
     const now = new Date().toISOString()
     const accounts = Array.isArray(file.accounts) ? file.accounts as Account[] : []
@@ -188,11 +183,10 @@ export class MatrixStore {
         collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' },
       })),
       personas: Array.isArray(file.personas) ? file.personas as Persona[] : [],
-      topics: Array.isArray(file.topics) ? file.topics as Topic[] : [],
       drafts: Array.isArray(file.drafts) ? file.drafts as Draft[] : [],
       publishedNotes: publishedNotes.map(note => ({ ...note, updatedAt: note.updatedAt ?? note.createdAt ?? now })),
       metricSnapshots: Array.isArray(file.metricSnapshots) ? file.metricSnapshots as MetricSnapshot[] : [],
-      trendSamples: Array.isArray(file.trendSamples) ? file.trendSamples as TrendSample[] : [],
+      viralItems: Array.isArray(file.viralItems) ? file.viralItems as ViralItem[] : [],
       studioMessages: studioMessages.map(message => ({ ...message, read: message.read ?? false })),
       settings: {
         apify: {
@@ -213,6 +207,34 @@ export class MatrixStore {
     const tmp = this.filePath + '.tmp'
     writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf8')
     renameSync(tmp, this.filePath)
+  }
+
+  // ---------------------------------------------------------------- 爆款池
+  /** 按账号与审核状态列出爆款池条目。 */
+  listViralItems(accountId?: string, status?: ViralStatus): ViralItem[] {
+    let items = this.data.viralItems
+    if (accountId !== undefined) items = items.filter(i => i.accountId === accountId)
+    if (status !== undefined) items = items.filter(i => i.status === status)
+    return items
+  }
+
+  /** 新增爆款池条目（默认 pending）；账号必须存在。 */
+  saveViralItem(payload: ViralItemPayload): ViralItem {
+    this.requireAccount(payload.accountId)
+    const item: ViralItem = { id: nextId(), ...payload, status: payload.status ?? 'pending', collectedAt: new Date().toISOString() }
+    this.data.viralItems.push(item)
+    this.save()
+    return item
+  }
+
+  /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
+  reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem {
+    this.requireAccount(accountId)
+    const item = this.data.viralItems.find(i => i.id === itemId && i.accountId === accountId)
+    if (item === undefined) throw new MatrixStoreError(`爆款不存在或不属于该账号：${itemId}`)
+    item.status = status
+    this.save()
+    return item
   }
 
   // ---------------------------------------------------------------- 运行时设置
@@ -335,38 +357,10 @@ export class MatrixStore {
     this.save()
   }
 
-  // ---------------------------------------------------------------- 选题
-  listTopics(): Topic[] { return this.data.topics }
-  addTopics(titles: string[]): Topic[] {
-    const created: Topic[] = []
-    for (const title of titles) {
-      const trimmed = title.trim()
-      if (trimmed === '') continue
-      const topic: Topic = { id: nextId(), title: trimmed, source: 'manual', status: 'open', createdAt: new Date().toISOString() }
-      this.data.topics.push(topic)
-      created.push(topic)
-    }
-    this.save()
-    return created
-  }
-  retireTopic(id: string): void {
-    const topic = this.data.topics.find(t => t.id === id)
-    if (topic === undefined) throw new MatrixStoreError(`选题不存在：${id}`)
-    topic.status = 'retired'
-    this.save()
-  }
-  markTopicUsed(id: string, draftId: string): void {
-    const topic = this.data.topics.find(t => t.id === id)
-    if (topic === undefined) throw new MatrixStoreError(`选题不存在：${id}`)
-    topic.status = 'used'
-    topic.usedByDraftId = draftId
-    this.save()
-  }
-
   // ---------------------------------------------------------------- 草稿
   listDrafts(): Draft[] { return this.data.drafts }
   findDraft(accountId: string, date: string, topicId: string): Draft | undefined {
-    return this.data.drafts.find(d => d.accountId === accountId && d.date === date && d.topicId === topicId)
+    return (this.data.drafts as Array<Draft & { topicId?: string }>).find(d => d.accountId === accountId && d.date === date && d.topicId === topicId)
   }
   saveDraft(payload: DraftPayload): Draft {
     const draft: Draft = { id: nextId(), ...payload, status: 'generated', createdAt: new Date().toISOString() }
@@ -448,18 +442,6 @@ export class MatrixStore {
     this.data.metricSnapshots.push(snapshot)
     this.save()
     return snapshot
-  }
-
-  // ---------------------------------------------------------------- 趋势样本
-  listTrendSamples(accountId?: string): TrendSample[] {
-    return accountId === undefined ? this.data.trendSamples : this.data.trendSamples.filter(sample => sample.accountId === accountId)
-  }
-  saveTrendSample(payload: TrendSamplePayload): TrendSample {
-    this.requireAccount(payload.accountId)
-    const sample: TrendSample = { id: nextId(), ...payload, collectedAt: new Date().toISOString() }
-    this.data.trendSamples.push(sample)
-    this.save()
-    return sample
   }
 
   // ---------------------------------------------------------------- 创作室消息

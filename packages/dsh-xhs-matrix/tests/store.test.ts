@@ -37,7 +37,7 @@ describe('MatrixStore', () => {
     const data = store.load()
     expect(data.version).toBe(MATRIX_STORE_VERSION)
     expect(data.accounts).toEqual([])
-    expect(data.topics).toEqual([])
+    expect(data.viralItems).toEqual([])
   })
 
   it('upsert 与 roundtrip 持久化', () => {
@@ -146,5 +146,17 @@ describe('MatrixStore', () => {
     store.setNoteWeight(account.id, note.id, 5)
     expect(store.listPublishedNotes(account.id)[0].weight).toBe(5)
     expect(() => store.setNoteWeight(account.id, note.id, 6)).toThrow(MatrixStoreError)
+  })
+
+  it('爆款池 CRUD 与审核状态流转', () => {
+    const store = new MatrixStore(file)
+    const account = store.upsertAccount({ name: 'a', personaId: '', enabled: true })
+    const item = store.saveViralItem({ accountId: account.id, title: '爆款', body: '正文', sourceUrl: 'https://x.com/1', source: 'apify', score: 35, reasons: ['匹配人设方向'] })
+    expect(item.status).toBe('pending')
+    const accepted = store.reviewViralItem(account.id, item.id, 'accepted')
+    expect(accepted.status).toBe('accepted')
+    expect(store.listViralItems(account.id, 'accepted')).toHaveLength(1)
+    expect(store.listViralItems(account.id, 'pending')).toHaveLength(0)
+    expect(() => store.reviewViralItem('a2', item.id, 'accepted')).toThrow(/账号/)
   })
 })

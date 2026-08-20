@@ -1,6 +1,6 @@
 /** 存储文件版本迁移。 */
 
-import type { Account, CollectionStatus, Draft, MatrixSettings, Persona, StoreFile, Topic } from './types.ts'
+import type { Account, CollectionStatus, Draft, MatrixSettings, Persona, StoreFile } from './types.ts'
 
 /** 运行时设置默认值（存于 migration 模块，避免 store↔migration 循环依赖）。 */
 export function defaultMatrixSettings(): MatrixSettings {
@@ -27,15 +27,15 @@ export interface VersionOneStoreFile {
   version: 1
   accounts?: VersionOneAccount[]
   personas?: Persona[]
-  topics?: Topic[]
+  topics?: unknown[]
   negatives?: unknown[]
   drafts?: Draft[]
 }
 
-/** 将 version 1 存储迁移到 version 2；旧版独立约束不会迁移。 */
+/** 将 version 1 存储迁移到 version 3（v2 输入的完整迁移在后续任务实现）；旧版独立约束不会迁移。 */
 export function migrateStoreFile(file: VersionOneStoreFile): StoreFile {
   return {
-    version: 2,
+    version: 3,
     accounts: (file.accounts ?? []).map(account => ({
       ...account,
       connection: account.connection ?? { status: 'unbound' },
@@ -43,11 +43,10 @@ export function migrateStoreFile(file: VersionOneStoreFile): StoreFile {
       collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' },
     })),
     personas: file.personas ?? [],
-    topics: file.topics ?? [],
     drafts: file.drafts ?? [],
     publishedNotes: [],
     metricSnapshots: [],
-    trendSamples: [],
+    viralItems: [],
     studioMessages: [],
     settings: defaultMatrixSettings(),
   }
