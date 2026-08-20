@@ -66,6 +66,7 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
 
   const saveConfig = async (): Promise<void> => {
     if (actorId.trim() === '' || apiToken.trim() === '') { setError('Actor ID 与 API Token 必填'); return }
+    if (!actorId.includes('/')) { setError('Actor ID 格式应为「用户名/Actor名」，如 kuaima/xiaohongshu-search（不是 Apify User ID）'); return }
     setSavingConfig(true)
     try {
       await api.updateApifyConfig({
