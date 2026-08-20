@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
-import type { ViralItem, ViralStatus } from '../../types.ts'
+import type { ViralBatch, ViralItem, ViralStatus } from '../../types.ts'
 import css from './panel.module.css'
 
 /** 正文摘要的截断长度（字符）。 */
@@ -55,7 +55,7 @@ function ViralRow({ item, busy, onReview }: {
  * 待审核条目可「采纳 / 忽略」，采集与审核后自动刷新。
  */
 export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string }) {
-  const [items, setItems] = useState<ViralItem[]>([])
+  const [batches, setBatches] = useState<Array<ViralBatch & { items: ViralItem[] }>>([])
   const [filter, setFilter] = useState<'' | ViralStatus>('')
   const [error, setError] = useState('')
   const [collecting, setCollecting] = useState(false)
@@ -68,10 +68,10 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   const [maxItems, setMaxItems] = useState('10')
   const [savingConfig, setSavingConfig] = useState(false)
 
-  /** 按账号与当前筛选状态重新拉取爆款池。 */
+  /** 按账号与当前筛选状态重新拉取爆款池（按采集批次分组）。 */
   const refresh = useCallback(async () => {
     try {
-      setItems(await api.listViralItems(accountId, filter === '' ? undefined : filter))
+      setBatches(await api.listViralBatches(accountId, filter === '' ? undefined : filter))
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -161,6 +161,18 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
     }
   }
 
+  /** 删除整个采集批次（含已采纳条目），不影响其他批次。 */
+  const deleteBatch = async (batchId: string): Promise<void> => {
+    if (!window.confirm('确定删除这个采集批次？该批次的全部爆款（含已采纳）将被移除，不影响其他批次。')) return
+    try {
+      await api.deleteViralBatch(accountId, batchId)
+      setError('')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
@@ -183,14 +195,26 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
           </div>
         </div>
 
-        {items.length === 0 && (
+        {batches.length === 0 && (
           <div className={css.muted}>
             爆款池为空。点击「采集爆款」从外部数据源拉取内容并按当前人设与知识库排序；
             {!apifyConfigured && ' 先点击「配置 Apify」填写 Actor ID 与 API Token。'}
           </div>
         )}
-        {items.map(item => (
-          <ViralRow key={item.id} item={item} busy={reviewingId === item.id} onReview={(id, status) => void review(id, status)} />
+        {batches.map(batch => (
+          <div key={batch.id} className={css.panel} style={{ marginTop: 10 }}>
+            <div className={css.panelTitle}>
+              <span>批次 · {batch.collectedAt.slice(0, 16).replace('T', ' ')}{batch.id === 'legacy' ? '（历史）' : ''}</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span className={css.muted}>{batch.itemCount} 条</span>
+                <button className={css.dangerBtn} onClick={() => void deleteBatch(batch.id)}>删除该批次</button>
+              </div>
+            </div>
+            {batch.items.length === 0 && <div className={css.muted}>该批次在当前筛选下没有条目。</div>}
+            {batch.items.map(item => (
+              <ViralRow key={item.id} item={item} busy={reviewingId === item.id} onReview={(id, status) => void review(id, status)} />
+            ))}
+          </div>
         ))}
       </section>
 

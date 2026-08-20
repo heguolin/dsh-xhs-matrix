@@ -1,4 +1,4 @@
-import { t as MatrixStore } from "./store-BGCxtNyN.js";
+import { t as MatrixStore } from "./store-BqIcqIOq.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -1126,7 +1126,23 @@ function makeViralRoutes(store, provider) {
 				}
 				status = statusRaw;
 			}
-			writeJson(res, 200, { items: store.listViralItems(accountId, status) });
+			writeJson(res, 200, { batches: store.listViralBatches(accountId).map((batch) => ({
+				...batch,
+				items: store.listViralItems(accountId, status, batch.id)
+			})) });
+			return;
+		}
+		if (method === "DELETE") {
+			const batchId = queryParam(url, "batch");
+			if (accountId === void 0 || batchId === void 0) {
+				writeJson(res, 400, { error: "account 与 batch 查询参数必填" });
+				return;
+			}
+			try {
+				writeJson(res, 200, { deleted: store.deleteViralBatch(accountId, batchId) });
+			} catch (error) {
+				fail(res, error);
+			}
 			return;
 		}
 		if (method === "PATCH") {
@@ -1218,7 +1234,9 @@ function makeViralRoutes(store, provider) {
 				if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
 				return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
 			});
-			writeJson(res, 201, { items: rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), items).map((item) => {
+			const ranked = rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), items);
+			const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+			const savedItems = ranked.map((item) => {
 				const payload = {
 					accountId: targetAccountId,
 					title: item.title,
@@ -1228,10 +1246,20 @@ function makeViralRoutes(store, provider) {
 					publishedAt: item.publishedAt,
 					score: item.score,
 					reasons: item.reasons,
-					status: "pending"
+					status: "pending",
+					batchId
 				};
 				return store.saveViralItem(payload);
-			}) });
+			});
+			writeJson(res, 201, {
+				items: savedItems,
+				batch: {
+					id: batchId,
+					accountId: targetAccountId,
+					collectedAt: savedItems[0]?.collectedAt ?? (/* @__PURE__ */ new Date()).toISOString(),
+					itemCount: savedItems.length
+				}
+			});
 		} catch (error) {
 			fail(res, error);
 		}

@@ -21,10 +21,12 @@ const pendingItem: ViralItem = {
 
 /** 渲染 ViralTab 并等待异步刷新完成，返回宿主节点与 api mock。 */
 async function renderTab() {
+  const batch = { id: 'b1', accountId: 'acc-a', collectedAt: '2026-08-20T10:00:00.000Z', itemCount: 1, items: [pendingItem] }
   const apiMock = {
-    listViralItems: vi.fn(async () => [pendingItem]),
+    listViralBatches: vi.fn(async () => [batch]),
     collectViral: vi.fn(async () => []),
     reviewViralItem: vi.fn(async (_accountId: string, itemId: string, status: string) => ({ ...pendingItem, id: itemId, status })),
+    deleteViralBatch: vi.fn(async () => 1),
     getApifyConfig: vi.fn(async () => ({ actorId: 'kuaima/xiaohongshu-search', apiToken: 'apify_api_test', maxItems: 10, requestTimeoutMs: 120000, maxPolls: 60 })),
     updateApifyConfig: vi.fn(async () => ({ actorId: 'kuaima/xiaohongshu-search', apiToken: 'apify_api_test', maxItems: 10, requestTimeoutMs: 120000, maxPolls: 60 })),
   }
@@ -54,7 +56,7 @@ describe('ViralTab 爆款池', () => {
     expect(host.textContent).toContain('推荐分 86')
     expect(host.textContent).toContain('命中穿搭方向')
     expect(host.textContent).toContain('待审核')
-    expect(apiMock.listViralItems).toHaveBeenCalledWith('acc-a', undefined)
+    expect(apiMock.listViralBatches).toHaveBeenCalledWith('acc-a', undefined)
 
     // 点「采纳」→ reviewViralItem(accountId, id, 'accepted') 并刷新列表
     const adopt = findButton(host, '采纳')
@@ -62,7 +64,7 @@ describe('ViralTab 爆款池', () => {
     adopt!.click()
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(apiMock.reviewViralItem).toHaveBeenCalledWith('acc-a', 'v1', 'accepted')
-    expect(apiMock.listViralItems).toHaveBeenCalledTimes(2)
+    expect(apiMock.listViralBatches).toHaveBeenCalledTimes(2)
 
     root.unmount()
     host.remove()
@@ -76,8 +78,18 @@ describe('ViralTab 爆款池', () => {
     collect!.click()
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(apiMock.collectViral).toHaveBeenCalledWith('acc-a')
-    expect(apiMock.listViralItems).toHaveBeenCalledTimes(2)
+    expect(apiMock.listViralBatches).toHaveBeenCalledTimes(2)
 
+    root.unmount()
+    host.remove()
+  })
+
+  it('显示批次头并可删除该批次', async () => {
+    const { host, root, apiMock } = await renderTab()
+    // 批次头显示时间与条数
+    expect(host.textContent).toContain('批次 ·')
+    expect(host.textContent).toContain('1 条')
+    expect(host.textContent).toContain('删除该批次')
     root.unmount()
     host.remove()
   })

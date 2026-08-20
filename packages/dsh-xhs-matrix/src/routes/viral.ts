@@ -36,7 +36,7 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
       const url = new URL(req.url ?? '/', 'http://localhost')
       const accountId = queryParam(url, 'account')
 
-      // ------------------------------------------------------------ 爆款列表
+      // ------------------------------------------------------------ 爆款列表（按批次分组）
       if (method === 'GET') {
         if (accountId === undefined) { writeJson(res, 400, { error: 'account 查询参数必填' }); return }
         let status: ViralStatus | undefined
@@ -47,7 +47,22 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
           }
           status = statusRaw as ViralStatus
         }
-        writeJson(res, 200, { items: store.listViralItems(accountId, status) })
+        const batches = store.listViralBatches(accountId).map(batch => ({
+          ...batch,
+          items: store.listViralItems(accountId, status, batch.id),
+        }))
+        writeJson(res, 200, { batches })
+        return
+      }
+
+      // ------------------------------------------------------------ 删除整批
+      if (method === 'DELETE') {
+        const batchId = queryParam(url, 'batch')
+        if (accountId === undefined || batchId === undefined) { writeJson(res, 400, { error: 'account 与 batch 查询参数必填' }); return }
+        try {
+          const deleted = store.deleteViralBatch(accountId, batchId)
+          writeJson(res, 200, { deleted })
+        } catch (error) { fail(res, error) }
         return
       }
 
@@ -118,6 +133,8 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         }
         const notes = store.listPublishedNotes(targetAccountId)
         const ranked = rankViralItems(account, persona, notes, items)
+        // 每次采集生成独立批次：整批可单独删除，不影响其他批次。
+        const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
         const savedItems = ranked.map(item => {
           const payload: ViralItemPayload = {
             accountId: targetAccountId,
@@ -129,10 +146,11 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
             score: item.score,
             reasons: item.reasons,
             status: 'pending',
+            batchId,
           }
           return store.saveViralItem(payload)
         })
-        writeJson(res, 201, { items: savedItems })
+        writeJson(res, 201, { items: savedItems, batch: { id: batchId, accountId: targetAccountId, collectedAt: savedItems[0]?.collectedAt ?? new Date().toISOString(), itemCount: savedItems.length } })
       } catch (error) {
         fail(res, error)
       }

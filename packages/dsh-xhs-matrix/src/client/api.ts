@@ -103,10 +103,20 @@ export class XhsApi {
   }
 
   // ------------------------------------------------------------ 爆款池
-  /** 按账号与审核状态列出爆款池条目。 */
+  /** 按账号与审核状态列出爆款池条目（所有批次拍平）。 */
   async listViralItems(accountId: string, status?: ViralStatus): Promise<ViralItem[]> {
-    const body = await readJson<{ items: ViralItem[] }>(await fetch(XHS_API.viral + query({ account: accountId, status })))
-    return body.items
+    const batches = await this.listViralBatches(accountId, status)
+    return batches.flatMap(batch => batch.items)
+  }
+  /** 按采集批次列出爆款池（每批含条目）；status 过滤条目。 */
+  async listViralBatches(accountId: string, status?: ViralStatus): Promise<Array<{ id: string; accountId: string; collectedAt: string; itemCount: number; items: ViralItem[] }>> {
+    const body = await readJson<{ batches: Array<{ id: string; accountId: string; collectedAt: string; itemCount: number; items: ViralItem[] }> }>(await fetch(XHS_API.viral + query({ account: accountId, status })))
+    return body.batches
+  }
+  /** 删除整个采集批次（该批全部条目）。 */
+  async deleteViralBatch(accountId: string, batchId: string): Promise<number> {
+    const body = await readJson<{ deleted: number }>(await fetch(XHS_API.viral + query({ account: accountId, batch: batchId }), { method: 'DELETE' }))
+    return body.deleted
   }
   /** 采集爆款入库（query/maxItems 缺省时由后端按人设方向降级生成搜索词与条数）。 */
   async collectViral(accountId: string, query?: string, maxItems?: number): Promise<ViralItem[]> {

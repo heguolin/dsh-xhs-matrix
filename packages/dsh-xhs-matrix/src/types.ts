@@ -113,6 +113,17 @@ export interface ViralItem {
   reasons: string[]
   publishedAt?: string
   collectedAt: string
+  /** 采集批次 id：同一次采集的条目归入同一批次，可整批删除。 */
+  batchId?: string
+}
+
+/** 爆款采集批次：一次采集产生的条目集合。 */
+export interface ViralBatch {
+  id: string
+  accountId: string
+  query?: string
+  collectedAt: string
+  itemCount: number
 }
 
 /** 创作会话消息。 */

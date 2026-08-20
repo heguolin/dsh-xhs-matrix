@@ -248,9 +248,28 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(reviewed.status).toBe(200)
     const list = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}`)
-    expect((list.body as { items: Array<{ status: string }> }).items[0].status).toBe('accepted')
+    const batches = (list.body as { batches: Array<{ items: Array<{ status: string }> }> }).batches
+    expect(batches[0].items[0].status).toBe('accepted')
     // 入库条目可被 store 直接读到
     expect(store.listViralItems(accountId, 'accepted')).toHaveLength(1)
+  })
+
+  it('删除采集批次只删除该批，不影响其他批次', async () => {
+    const accountId = await seedAccount()
+    const first = await json('/api/dsh-xhs-matrix/viral', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, query: 'AI', maxItems: 5 }),
+    })
+    const firstBatch = (first.body as { batch: { id: string } }).batch.id
+    await json('/api/dsh-xhs-matrix/viral', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, query: '效率', maxItems: 5 }),
+    })
+    expect(store.listViralItems(accountId)).toHaveLength(2)
+    const deleted = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&batch=${firstBatch}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(200)
+    expect((deleted.body as { deleted: number }).deleted).toBe(1)
+    expect(store.listViralItems(accountId)).toHaveLength(1)
   })
 
   it('采集时自动抓详情补全完整正文，采纳后保留', async () => {

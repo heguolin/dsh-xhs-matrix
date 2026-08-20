@@ -1,5 +1,5 @@
 /** 私有 JSON 文件存储（~/.dsh/dsh-xhs-matrix.json），原子写 + 格式版本。 */
-import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, ViralItem, ViralStatus } from './types.ts';
+import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, ViralBatch, ViralItem, ViralStatus } from './types.ts';
 /** 存储文件格式版本。 */
 export declare const MATRIX_STORE_VERSION = 3;
 /** 存储文件默认位置。 */
@@ -72,6 +72,7 @@ export interface ViralItemPayload {
     reasons: string[];
     publishedAt?: string;
     status?: ViralStatus;
+    batchId?: string;
 }
 export interface StudioMessagePayload {
     accountId: string;
@@ -95,8 +96,15 @@ export declare class MatrixStore {
     load(): StoreFile;
     /** 原子落盘（tmp + rename）。 */
     save(): void;
-    /** 按账号与审核状态列出爆款池条目。 */
-    listViralItems(accountId?: string, status?: ViralStatus): ViralItem[];
+    /** 按账号与审核状态列出爆款池条目；batchId 指定时只返回该批次。 */
+    listViralItems(accountId?: string, status?: ViralStatus, batchId?: string): ViralItem[];
+    /**
+     * 按采集批次分组列出爆款池（每次采集一个批次；历史无 batchId 的归入 legacy）。
+     * 批次按最早采集时间倒序（新批次在前）。
+     */
+    listViralBatches(accountId: string): ViralBatch[];
+    /** 删除整个采集批次（该批次全部条目），返回删除条数。 */
+    deleteViralBatch(accountId: string, batchId: string): number;
     /** 新增爆款池条目（默认 pending）；账号必须存在。 */
     saveViralItem(payload: ViralItemPayload): ViralItem;
     /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */

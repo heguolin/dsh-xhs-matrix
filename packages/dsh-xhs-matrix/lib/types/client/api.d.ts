@@ -72,8 +72,18 @@ export declare class XhsApi {
         id: string;
     }>;
     deletePersona(id: string): Promise<void>;
-    /** 按账号与审核状态列出爆款池条目。 */
+    /** 按账号与审核状态列出爆款池条目（所有批次拍平）。 */
     listViralItems(accountId: string, status?: ViralStatus): Promise<ViralItem[]>;
+    /** 按采集批次列出爆款池（每批含条目）；status 过滤条目。 */
+    listViralBatches(accountId: string, status?: ViralStatus): Promise<Array<{
+        id: string;
+        accountId: string;
+        collectedAt: string;
+        itemCount: number;
+        items: ViralItem[];
+    }>>;
+    /** 删除整个采集批次（该批全部条目）。 */
+    deleteViralBatch(accountId: string, batchId: string): Promise<number>;
     /** 采集爆款入库（query/maxItems 缺省时由后端按人设方向降级生成搜索词与条数）。 */
     collectViral(accountId: string, query?: string, maxItems?: number): Promise<ViralItem[]>;
     /** 审核爆款条目为 accepted / ignored。 */

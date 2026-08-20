@@ -42,10 +42,11 @@ describe('XhsApi', () => {
     expect(body.metrics.reads).toBe(50)
   })
 
-  it('listViralItems 携带 account 与 status 查询参数', async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ items: [{ id: 'v1', accountId: 'a1', title: '爆款A', body: '正文', source: 'apify', status: 'accepted', score: 8, reasons: ['相关性高'], collectedAt: '2026-08-20T10:00:00.000Z' }] }), { status: 200 }))
+  it('listViralItems 携带 account 与 status 查询参数并拍平批次', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ batches: [{ id: 'b1', accountId: 'a1', collectedAt: '2026-08-20T10:00:00.000Z', itemCount: 1, items: [{ id: 'v1', accountId: 'a1', title: '爆款A', body: '正文', source: 'apify', status: 'accepted', score: 8, reasons: ['相关性高'], collectedAt: '2026-08-20T10:00:00.000Z' }] }] }), { status: 200 }))
     const api = new XhsApi()
     const items = await api.listViralItems('a1', 'accepted')
+    expect(items).toHaveLength(1)
     expect(items[0].title).toBe('爆款A')
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toContain('/api/dsh-xhs-matrix/viral')
@@ -53,6 +54,20 @@ describe('XhsApi', () => {
     expect(url).toContain('status=accepted')
     // GET 请求不携带 init，默认即 GET 方法。
     expect(init).toBeUndefined()
+  })
+
+  it('listViralBatches 返回按批次分组条目，deleteViralBatch 发送 DELETE', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ batches: [{ id: 'b1', accountId: 'a1', collectedAt: '2026-08-20T10:00:00.000Z', itemCount: 1, items: [] }] }), { status: 200 }))
+    const api = new XhsApi()
+    const batches = await api.listViralBatches('a1')
+    expect(batches).toHaveLength(1)
+    expect(batches[0].id).toBe('b1')
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ deleted: 3 }), { status: 200 }))
+    const deleted = await api.deleteViralBatch('a1', 'b1')
+    expect(deleted).toBe(3)
+    const [url, init] = fetchMock.mock.calls[1]
+    expect(url).toContain('batch=b1')
+    expect(init?.method).toBe('DELETE')
   })
 
   it('collectViral 发送 accountId/query/maxItems 到 POST /viral', async () => {

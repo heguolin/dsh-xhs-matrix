@@ -5,7 +5,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type {
   Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight,
-  Persona, PublishedNote, StoreFile, StudioMessage, ViralItem, ViralStatus,
+  Persona, PublishedNote, StoreFile, StudioMessage, ViralBatch, ViralItem, ViralStatus,
 } from './types.ts'
 import { defaultMatrixSettings, migrateStoreFile } from './migration.ts'
 
@@ -87,6 +87,7 @@ export interface ViralItemPayload {
   reasons: string[]
   publishedAt?: string
   status?: ViralStatus
+  batchId?: string
 }
 
 export interface StudioMessagePayload {
@@ -217,12 +218,43 @@ export class MatrixStore {
   }
 
   // ---------------------------------------------------------------- 爆款池
-  /** 按账号与审核状态列出爆款池条目。 */
-  listViralItems(accountId?: string, status?: ViralStatus): ViralItem[] {
+  /** 按账号与审核状态列出爆款池条目；batchId 指定时只返回该批次。 */
+  listViralItems(accountId?: string, status?: ViralStatus, batchId?: string): ViralItem[] {
     let items = this.data.viralItems
     if (accountId !== undefined) items = items.filter(i => i.accountId === accountId)
     if (status !== undefined) items = items.filter(i => i.status === status)
+    if (batchId !== undefined) items = items.filter(i => i.batchId === batchId)
     return items
+  }
+
+  /**
+   * 按采集批次分组列出爆款池（每次采集一个批次；历史无 batchId 的归入 legacy）。
+   * 批次按最早采集时间倒序（新批次在前）。
+   */
+  listViralBatches(accountId: string): ViralBatch[] {
+    const byBatch = new Map<string, ViralItem[]>()
+    for (const item of this.data.viralItems.filter(i => i.accountId === accountId)) {
+      const key = item.batchId ?? 'legacy'
+      const list = byBatch.get(key)
+      if (list === undefined) byBatch.set(key, [item])
+      else list.push(item)
+    }
+    return [...byBatch.entries()].map(([batchId, items]) => ({
+      id: batchId,
+      accountId,
+      collectedAt: items.map(i => i.collectedAt).sort()[0] ?? new Date().toISOString(),
+      itemCount: items.length,
+    } satisfies ViralBatch)).sort((a, b) => b.collectedAt.localeCompare(a.collectedAt))
+  }
+
+  /** 删除整个采集批次（该批次全部条目），返回删除条数。 */
+  deleteViralBatch(accountId: string, batchId: string): number {
+    this.requireAccount(accountId)
+    const before = this.data.viralItems.length
+    this.data.viralItems = this.data.viralItems.filter(i => !(i.accountId === accountId && (i.batchId ?? 'legacy') === batchId))
+    const removed = before - this.data.viralItems.length
+    if (removed > 0) this.save()
+    return removed
   }
 
   /** 新增爆款池条目（默认 pending）；账号必须存在。 */
