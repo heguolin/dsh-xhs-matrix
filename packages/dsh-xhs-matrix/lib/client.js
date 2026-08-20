@@ -159,6 +159,23 @@ window.__ModuleLoader__.load({
 					note: noteId
 				})))).metrics;
 			}
+			/** 手动录入一条指标快照（运维用，来源 manual）。 */
+			async saveMetricSnapshot(accountId, noteId, reads) {
+				await readJson(await fetch(XHS_API.metrics, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						accountId,
+						noteId,
+						reads,
+						likes: 0,
+						favorites: 0,
+						comments: 0,
+						source: "manual",
+						collectedAt: (/* @__PURE__ */ new Date()).toISOString()
+					})
+				}));
+			}
 			async getApifyConfig() {
 				return (await readJson(await fetch(XHS_API.settingsApify))).settings;
 			}
@@ -339,122 +356,122 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"accountName": "hv-J7W_accountName",
-			"textarea": "hv-J7W_textarea",
-			"topicTitle": "hv-J7W_topicTitle",
-			"dialogClose": "hv-J7W_dialogClose",
-			"personaName": "hv-J7W_personaName",
-			"navIcon": "hv-J7W_navIcon",
-			"libMeta": "hv-J7W_libMeta",
-			"error": "hv-J7W_error",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"rowActions": "hv-J7W_rowActions",
-			"metrics": "hv-J7W_metrics",
 			"success": "hv-J7W_success",
-			"topbar": "hv-J7W_topbar",
-			"msg": "hv-J7W_msg",
-			"source": "hv-J7W_source",
-			"accountItem": "hv-J7W_accountItem",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"studioLayout": "hv-J7W_studioLayout",
-			"dialogRow": "hv-J7W_dialogRow",
-			"tab": "hv-J7W_tab",
-			"score": "hv-J7W_score",
-			"card": "hv-J7W_card",
-			"contextline": "hv-J7W_contextline",
-			"ghostBtn": "hv-J7W_ghostBtn",
 			"muted": "hv-J7W_muted",
-			"topbarRight": "hv-J7W_topbarRight",
-			"me": "hv-J7W_me",
-			"topicReason": "hv-J7W_topicReason",
-			"below": "hv-J7W_below",
-			"metric": "hv-J7W_metric",
-			"chat": "hv-J7W_chat",
-			"postTitle": "hv-J7W_postTitle",
-			"draftLayout": "hv-J7W_draftLayout",
-			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"weight": "hv-J7W_weight",
-			"contextCard": "hv-J7W_contextCard",
-			"msgBubble": "hv-J7W_msgBubble",
-			"draftEditor": "hv-J7W_draftEditor",
-			"studioMain": "hv-J7W_studioMain",
-			"postMeta": "hv-J7W_postMeta",
-			"pill": "hv-J7W_pill",
-			"chips": "hv-J7W_chips",
-			"personaList": "hv-J7W_personaList",
-			"empty": "hv-J7W_empty",
-			"tabActive": "hv-J7W_tabActive",
-			"messages": "hv-J7W_messages",
-			"idle": "hv-J7W_idle",
-			"tag": "hv-J7W_tag",
-			"dialog": "hv-J7W_dialog",
-			"personaLayout": "hv-J7W_personaLayout",
-			"accountAdd": "hv-J7W_accountAdd",
-			"weightBadge": "hv-J7W_weightBadge",
-			"sourcePanel": "hv-J7W_sourcePanel",
-			"field": "hv-J7W_field",
-			"sidebar": "hv-J7W_sidebar",
-			"tabs": "hv-J7W_tabs",
-			"panelTitle": "hv-J7W_panelTitle",
-			"brand": "hv-J7W_brand",
-			"modeSwitch": "hv-J7W_modeSwitch",
-			"on": "hv-J7W_on",
-			"content": "hv-J7W_content",
-			"studioSend": "hv-J7W_studioSend",
-			"viewGrid": "hv-J7W_viewGrid",
-			"face": "hv-J7W_face",
-			"studioResult": "hv-J7W_studioResult",
-			"dangerBtn": "hv-J7W_dangerBtn",
-			"warn": "hv-J7W_warn",
-			"studioTopSub": "hv-J7W_studioTopSub",
-			"spacer": "hv-J7W_spacer",
-			"post": "hv-J7W_post",
-			"pillWarn": "hv-J7W_pillWarn",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"personaDesc": "hv-J7W_personaDesc",
-			"libRow": "hv-J7W_libRow",
-			"meter": "hv-J7W_meter",
-			"panel": "hv-J7W_panel",
-			"miniThumb": "hv-J7W_miniThumb",
-			"workspace": "hv-J7W_workspace",
-			"navItem": "hv-J7W_navItem",
-			"filterRow": "hv-J7W_filterRow",
-			"statusDot": "hv-J7W_statusDot",
-			"libBody": "hv-J7W_libBody",
-			"badgeGray": "hv-J7W_badgeGray",
-			"filter": "hv-J7W_filter",
-			"group": "hv-J7W_group",
-			"primary": "hv-J7W_primary",
-			"libTitle": "hv-J7W_libTitle",
-			"studioComposer": "hv-J7W_studioComposer",
-			"personaItem": "hv-J7W_personaItem",
-			"editbar": "hv-J7W_editbar",
-			"overlay": "hv-J7W_overlay",
-			"overview": "hv-J7W_overview",
-			"thumb": "hv-J7W_thumb",
-			"viewHost": "hv-J7W_viewHost",
-			"scoreLow": "hv-J7W_scoreLow",
-			"context": "hv-J7W_context",
-			"topbarSub": "hv-J7W_topbarSub",
-			"button": "hv-J7W_button",
-			"badge": "hv-J7W_badge",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"chathead": "hv-J7W_chathead",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"topicItem": "hv-J7W_topicItem",
-			"danger": "hv-J7W_danger",
-			"ok": "hv-J7W_ok",
-			"chatInput": "hv-J7W_chatInput",
-			"contextLine": "hv-J7W_contextLine",
-			"postBody": "hv-J7W_postBody",
-			"bar": "hv-J7W_bar",
 			"chatSend": "hv-J7W_chatSend",
+			"filterRow": "hv-J7W_filterRow",
+			"idle": "hv-J7W_idle",
+			"accountName": "hv-J7W_accountName",
+			"personaName": "hv-J7W_personaName",
+			"panel": "hv-J7W_panel",
+			"tabActive": "hv-J7W_tabActive",
+			"dialog": "hv-J7W_dialog",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"metric": "hv-J7W_metric",
+			"postBody": "hv-J7W_postBody",
+			"libBody": "hv-J7W_libBody",
+			"button": "hv-J7W_button",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"overlay": "hv-J7W_overlay",
+			"warn": "hv-J7W_warn",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"contextLine": "hv-J7W_contextLine",
+			"msgBubble": "hv-J7W_msgBubble",
+			"studioMain": "hv-J7W_studioMain",
+			"navItem": "hv-J7W_navItem",
+			"tag": "hv-J7W_tag",
+			"topicReason": "hv-J7W_topicReason",
+			"bar": "hv-J7W_bar",
+			"topbarRight": "hv-J7W_topbarRight",
+			"card": "hv-J7W_card",
+			"empty": "hv-J7W_empty",
+			"scoreLow": "hv-J7W_scoreLow",
+			"score": "hv-J7W_score",
+			"accountItem": "hv-J7W_accountItem",
+			"editbar": "hv-J7W_editbar",
+			"content": "hv-J7W_content",
+			"filter": "hv-J7W_filter",
+			"accountAdd": "hv-J7W_accountAdd",
+			"personaItem": "hv-J7W_personaItem",
+			"contextCard": "hv-J7W_contextCard",
+			"studioLayout": "hv-J7W_studioLayout",
+			"badge": "hv-J7W_badge",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"error": "hv-J7W_error",
+			"badgeGray": "hv-J7W_badgeGray",
+			"topicTitle": "hv-J7W_topicTitle",
 			"brandLogo": "hv-J7W_brandLogo",
-			"studioTop": "hv-J7W_studioTop",
-			"bubble": "hv-J7W_bubble",
+			"navIcon": "hv-J7W_navIcon",
+			"spacer": "hv-J7W_spacer",
+			"chat": "hv-J7W_chat",
+			"pillWarn": "hv-J7W_pillWarn",
+			"dialogClose": "hv-J7W_dialogClose",
+			"textarea": "hv-J7W_textarea",
+			"tab": "hv-J7W_tab",
+			"postTitle": "hv-J7W_postTitle",
+			"tabs": "hv-J7W_tabs",
 			"input": "hv-J7W_input",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"source": "hv-J7W_source",
+			"studioComposer": "hv-J7W_studioComposer",
+			"overview": "hv-J7W_overview",
+			"personaList": "hv-J7W_personaList",
+			"me": "hv-J7W_me",
+			"field": "hv-J7W_field",
+			"topicItem": "hv-J7W_topicItem",
+			"dialogRow": "hv-J7W_dialogRow",
+			"meter": "hv-J7W_meter",
+			"below": "hv-J7W_below",
+			"studioSend": "hv-J7W_studioSend",
+			"messages": "hv-J7W_messages",
+			"group": "hv-J7W_group",
+			"active": "hv-J7W_active",
+			"context": "hv-J7W_context",
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"face": "hv-J7W_face",
+			"workspace": "hv-J7W_workspace",
+			"post": "hv-J7W_post",
 			"msgAvatar": "hv-J7W_msgAvatar",
-			"active": "hv-J7W_active"
+			"ok": "hv-J7W_ok",
+			"primary": "hv-J7W_primary",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"rowActions": "hv-J7W_rowActions",
+			"sidebar": "hv-J7W_sidebar",
+			"libRow": "hv-J7W_libRow",
+			"studioTop": "hv-J7W_studioTop",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"postMeta": "hv-J7W_postMeta",
+			"viewGrid": "hv-J7W_viewGrid",
+			"viewHost": "hv-J7W_viewHost",
+			"dangerBtn": "hv-J7W_dangerBtn",
+			"chips": "hv-J7W_chips",
+			"msg": "hv-J7W_msg",
+			"weight": "hv-J7W_weight",
+			"danger": "hv-J7W_danger",
+			"miniThumb": "hv-J7W_miniThumb",
+			"libMeta": "hv-J7W_libMeta",
+			"draftEditor": "hv-J7W_draftEditor",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"panelTitle": "hv-J7W_panelTitle",
+			"statusDot": "hv-J7W_statusDot",
+			"weightBadge": "hv-J7W_weightBadge",
+			"topbarSub": "hv-J7W_topbarSub",
+			"personaLayout": "hv-J7W_personaLayout",
+			"on": "hv-J7W_on",
+			"chatInput": "hv-J7W_chatInput",
+			"metrics": "hv-J7W_metrics",
+			"contextline": "hv-J7W_contextline",
+			"brand": "hv-J7W_brand",
+			"chathead": "hv-J7W_chathead",
+			"studioResult": "hv-J7W_studioResult",
+			"bubble": "hv-J7W_bubble",
+			"pill": "hv-J7W_pill",
+			"thumb": "hv-J7W_thumb",
+			"personaDesc": "hv-J7W_personaDesc",
+			"libTitle": "hv-J7W_libTitle",
+			"draftLayout": "hv-J7W_draftLayout",
+			"topbar": "hv-J7W_topbar",
+			"studioSendGhost": "hv-J7W_studioSendGhost"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -1078,16 +1095,8 @@ window.__ModuleLoader__.load({
 				}
 			};
 			const publish = async (draft) => {
-				const reads = window.prompt(`录入「${draft.date}」草稿的阅读量（留空跳过指标）`, "");
-				if (reads === null) return;
-				const metrics = reads.trim() === "" ? void 0 : {
-					reads: Number(reads) || 0,
-					likes: 0,
-					comments: 0,
-					collected: (/* @__PURE__ */ new Date()).toISOString()
-				};
 				try {
-					await api.setDraftStatus(draft.id, "published", metrics);
+					await api.setDraftStatus(draft.id, "published");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -1311,6 +1320,23 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			/** 手动录入浏览量（运维用）：来源标记 manual，追加一条指标快照。 */
+			const recordReads = async (noteId) => {
+				const input = window.prompt("录入这篇笔记的浏览量（数字）", "");
+				if (input === null) return;
+				const reads = Number(input.trim());
+				if (!Number.isFinite(reads) || reads < 0) {
+					setError("请输入非负数字");
+					return;
+				}
+				try {
+					await api.saveMetricSnapshot(accountId, noteId, Math.round(reads));
+					setNotice(`已录入浏览量 ${Math.round(reads)}。`);
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
 			const setWeight = async (noteId, weight) => {
 				try {
 					await api.setNoteWeight(accountId, noteId, weight);
@@ -1391,23 +1417,36 @@ window.__ModuleLoader__.load({
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: panel_module_css_default.weight,
-										children: [WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: note.weight === weight ? panel_module_css_default.on : void 0,
-											onClick: () => void setWeight(note.id, weight),
-											title: `权重 ${weight}`,
-											children: weight
-										}, weight)), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-											className: panel_module_css_default.muted,
-											style: {
-												marginLeft: 8,
-												alignSelf: "center"
-											},
-											children: [
-												"权重 ",
-												note.weight,
-												" / 5"
-											]
-										})]
+										children: [
+											WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: note.weight === weight ? panel_module_css_default.on : void 0,
+												onClick: () => void setWeight(note.id, weight),
+												title: `权重 ${weight}`,
+												children: weight
+											}, weight)),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: panel_module_css_default.muted,
+												style: {
+													marginLeft: 8,
+													alignSelf: "center"
+												},
+												children: [
+													"权重 ",
+													note.weight,
+													" / 5"
+												]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												style: {
+													marginLeft: 8,
+													padding: "2px 8px",
+													fontSize: 11
+												},
+												onClick: () => void recordReads(note.id),
+												children: "录入浏览量"
+											})
+										]
 									})
 								]
 							})]

@@ -149,6 +149,13 @@ export class XhsApi {
     const body = await readJson<{ metrics: Array<{ id: string; noteId: string; reads: number; likes: number; favorites: number; comments: number; collectedAt: string; source: string; status: string }> }>(await fetch(XHS_API.metrics + query({ account: accountId, note: noteId })))
     return body.metrics
   }
+  /** 手动录入一条指标快照（运维用，来源 manual）。 */
+  async saveMetricSnapshot(accountId: string, noteId: string, reads: number): Promise<void> {
+    await readJson<{ metric: unknown }>(await fetch(XHS_API.metrics, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, noteId, reads, likes: 0, favorites: 0, comments: 0, source: 'manual', collectedAt: new Date().toISOString() }),
+    }))
+  }
 
   // ------------------------------------------------------------ Apify 配置
   async getApifyConfig(): Promise<{ actorId: string; apiToken: string; maxItems: number; requestTimeoutMs: number; maxPolls: number }> {

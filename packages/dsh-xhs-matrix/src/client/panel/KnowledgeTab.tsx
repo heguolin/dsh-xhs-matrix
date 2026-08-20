@@ -44,6 +44,21 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
 
   useEffect(() => { void refresh() }, [refresh])
 
+  /** 手动录入浏览量（运维用）：来源标记 manual，追加一条指标快照。 */
+  const recordReads = async (noteId: string): Promise<void> => {
+    const input = window.prompt('录入这篇笔记的浏览量（数字）', '')
+    if (input === null) return
+    const reads = Number(input.trim())
+    if (!Number.isFinite(reads) || reads < 0) { setError('请输入非负数字'); return }
+    try {
+      await api.saveMetricSnapshot(accountId, noteId, Math.round(reads))
+      setNotice(`已录入浏览量 ${Math.round(reads)}。`)
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   const setWeight = async (noteId: string, weight: number): Promise<void> => {
     try {
       await api.setNoteWeight(accountId, noteId, weight)
@@ -116,6 +131,9 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
                       >{weight}</button>
                     ))}
                     <span className={css.muted} style={{ marginLeft: 8, alignSelf: 'center' }}>权重 {note.weight} / 5</span>
+                    <button className={css.ghostBtn} style={{ marginLeft: 8, padding: '2px 8px', fontSize: 11 }} onClick={() => void recordReads(note.id)}>
+                      录入浏览量
+                    </button>
                   </div>
                 </div>
               </div>

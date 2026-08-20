@@ -114,6 +114,8 @@ export declare class XhsApi {
         source: string;
         status: string;
     }>>;
+    /** 手动录入一条指标快照（运维用，来源 manual）。 */
+    saveMetricSnapshot(accountId: string, noteId: string, reads: number): Promise<void>;
     getApifyConfig(): Promise<{
         actorId: string;
         apiToken: string;

@@ -51,13 +51,9 @@ export function DraftsTab({ api, accountId, onOpenStudio }: { api: XhsApi; accou
   }
 
   const publish = async (draft: DraftRow): Promise<void> => {
-    const reads = window.prompt(`录入「${draft.date}」草稿的阅读量（留空跳过指标）`, '')
-    if (reads === null) return
-    const metrics = reads.trim() === ''
-      ? undefined
-      : { reads: Number(reads) || 0, likes: 0, comments: 0, collected: new Date().toISOString() }
+    // 发布不再弹窗录入浏览量：指标改在知识库手动填写（方便运维）。
     try {
-      await api.setDraftStatus(draft.id, 'published', metrics)
+      await api.setDraftStatus(draft.id, 'published')
       await refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
