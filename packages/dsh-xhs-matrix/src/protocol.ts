@@ -3,6 +3,7 @@
 export const XHS_API_BASE = '/api/dsh-xhs-matrix' as const
 
 export const XHS_API = {
+  settingsApify: XHS_API_BASE + '/settings/apify',
   accounts: XHS_API_BASE + '/accounts',
   accountImport: XHS_API_BASE + '/accounts/import',
   personas: XHS_API_BASE + '/personas',

@@ -22,6 +22,13 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
   const [bulk, setBulk] = useState('')
   const [error, setError] = useState('')
   const [collecting, setCollecting] = useState(false)
+  // Apify 配置弹窗状态
+  const [configOpen, setConfigOpen] = useState(false)
+  const [apifyConfigured, setApifyConfigured] = useState(false)
+  const [actorId, setActorId] = useState('')
+  const [apiToken, setApiToken] = useState('')
+  const [maxItems, setMaxItems] = useState('10')
+  const [savingConfig, setSavingConfig] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
@@ -35,6 +42,46 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
   }, [api, accountId])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  // 启动时读取 Apify 配置，判断是否已配置数据源。
+  useEffect(() => {
+    api.getApifyConfig()
+      .then(config => {
+        setApifyConfigured(config.actorId !== '' && config.apiToken !== '')
+        setActorId(config.actorId)
+        setApiToken(config.apiToken)
+        setMaxItems(String(config.maxItems ?? 10))
+      })
+      .catch(() => { /* 读取失败保持未配置态 */ })
+  }, [api])
+
+  const openConfig = (): void => {
+    void api.getApifyConfig().then(config => {
+      setActorId(config.actorId)
+      setApiToken(config.apiToken)
+      setMaxItems(String(config.maxItems ?? 10))
+      setConfigOpen(true)
+    }).catch(() => setConfigOpen(true))
+  }
+
+  const saveConfig = async (): Promise<void> => {
+    if (actorId.trim() === '' || apiToken.trim() === '') { setError('Actor ID 与 API Token 必填'); return }
+    setSavingConfig(true)
+    try {
+      await api.updateApifyConfig({
+        actorId: actorId.trim(),
+        apiToken: apiToken.trim(),
+        maxItems: Number(maxItems) > 0 ? Number(maxItems) : 10,
+      })
+      setApifyConfigured(true)
+      setConfigOpen(false)
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSavingConfig(false)
+    }
+  }
 
   const collect = async (): Promise<void> => {
     if (accountId === '') { setError('请先在左侧选择账号'); return }
@@ -93,14 +140,18 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
         <section className={css.panel}>
           <div className={css.panelTitle}>
             <span>Apify 趋势候选</span>
-            <button className={css.primary} onClick={() => void collect()} disabled={collecting}>
-              {collecting ? '采集中…' : '开始采集'}
-            </button>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {!apifyConfigured && <span className={css.badgeWarn}>未配置数据源</span>}
+              <button className={css.ghostBtn} onClick={openConfig}>配置 Apify</button>
+              <button className={css.primary} onClick={() => void collect()} disabled={collecting}>
+                {collecting ? '采集中…' : '开始采集'}
+              </button>
+            </div>
           </div>
           {candidates.length === 0 && (
             <div className={css.muted}>
               尚未采集。点击「开始采集」拉取外部趋势并按当前人设与知识库权重排序；
-              未配置 Apify（apifyActorId / apifyApiToken）时会提示错误。
+              {!apifyConfigured && ' 先点击「配置 Apify」填写 Actor ID 与 API Token。'}
             </div>
           )}
           {candidates.map((candidate, index) => (
@@ -168,6 +219,37 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
           </div>
         </section>
       </div>
+
+      {/* Apify 数据源配置弹窗 */}
+      {configOpen && (
+        <div className={css.overlay} onClick={() => setConfigOpen(false)}>
+          <div className={css.dialog} onClick={e => e.stopPropagation()}>
+            <button className={css.dialogClose} onClick={() => setConfigOpen(false)} aria-label="关闭">×</button>
+            <h3>配置 Apify 趋势数据源</h3>
+            <div className={css.muted} style={{ marginBottom: 12 }}>
+              在 apify.com 创建 Actor 并获取 API Token；配置保存后「开始采集」即可拉取外部趋势并按人设与知识库权重排序。
+            </div>
+            <div className={css.field}>
+              <label>Actor ID</label>
+              <input className={css.input} value={actorId} onChange={e => setActorId(e.target.value)} placeholder="apify/actor-name" />
+            </div>
+            <div className={css.field}>
+              <label>API Token</label>
+              <input className={css.input} type="password" value={apiToken} onChange={e => setApiToken(e.target.value)} placeholder="apify_api_..." />
+            </div>
+            <div className={css.field}>
+              <label>单次最大候选数</label>
+              <input className={css.input} type="number" min={1} value={maxItems} onChange={e => setMaxItems(e.target.value)} />
+            </div>
+            <div className={css.rowActions}>
+              <button className={css.primary} onClick={() => void saveConfig()} disabled={savingConfig}>
+                {savingConfig ? '保存中…' : '保存配置'}
+              </button>
+              <button className={css.ghostBtn} onClick={() => setConfigOpen(false)}>取消</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

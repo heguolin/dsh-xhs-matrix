@@ -1,6 +1,19 @@
 /** 存储文件版本迁移。 */
 
-import type { Account, CollectionStatus, Draft, Persona, StoreFile, Topic } from './types.ts'
+import type { Account, CollectionStatus, Draft, MatrixSettings, Persona, StoreFile, Topic } from './types.ts'
+
+/** 运行时设置默认值（存于 migration 模块，避免 store↔migration 循环依赖）。 */
+export function defaultMatrixSettings(): MatrixSettings {
+  return {
+    apify: {
+      actorId: '',
+      apiToken: '',
+      maxItems: 10,
+      requestTimeoutMs: 30000,
+      maxPolls: 120,
+    },
+  }
+}
 
 /** version 1 中尚未包含连接和采集配置的账号。 */
 type VersionOneAccount = Omit<Account, 'connection' | 'collection' | 'collectionStatus'> & {
@@ -36,5 +49,6 @@ export function migrateStoreFile(file: VersionOneStoreFile): StoreFile {
     metricSnapshots: [],
     trendSamples: [],
     studioMessages: [],
+    settings: defaultMatrixSettings(),
   }
 }

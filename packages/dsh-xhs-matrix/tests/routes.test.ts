@@ -115,4 +115,32 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(res.status).toBe(400)
     expect((res.body as { error: string }).error).toContain('metrics')
   })
+
+  it('Apify 配置 GET/PATCH：默认空，PATCH 后持久化', async () => {
+    const initial = await json('/api/dsh-xhs-matrix/settings/apify')
+    expect(initial.status).toBe(200)
+    expect((initial.body as { settings: { actorId: string } }).settings.actorId).toBe('')
+
+    const saved = await json('/api/dsh-xhs-matrix/settings/apify', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ actorId: 'apify/trend', apiToken: 'tok-123', maxItems: 8 }),
+    })
+    expect(saved.status).toBe(200)
+    const apify = (saved.body as { settings: { actorId: string; apiToken: string; maxItems: number } }).settings
+    expect(apify.actorId).toBe('apify/trend')
+    expect(apify.apiToken).toBe('tok-123')
+    expect(apify.maxItems).toBe(8)
+    // 落盘后 store 可见
+    expect(store.getSettings().apify.actorId).toBe('apify/trend')
+    expect(store.getSettings().apify.apiToken).toBe('tok-123')
+  })
+
+  it('Apify 配置非法 maxItems 返回 400', async () => {
+    const res = await json('/api/dsh-xhs-matrix/settings/apify', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ actorId: 'apify/trend', maxItems: -1 }),
+    })
+    expect(res.status).toBe(400)
+    expect((res.body as { error: string }).error).toContain('maxItems')
+  })
 })

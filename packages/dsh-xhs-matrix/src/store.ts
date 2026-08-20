@@ -4,10 +4,10 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type {
-  Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MetricSnapshot, NoteWeight,
+  Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight,
   Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample,
 } from './types.ts'
-import { migrateStoreFile } from './migration.ts'
+import { defaultMatrixSettings, migrateStoreFile } from './migration.ts'
 
 /** 存储文件格式版本。 */
 export const MATRIX_STORE_VERSION = 2
@@ -96,7 +96,7 @@ export interface StudioMessagePayload {
 }
 
 function empty(): StoreFile {
-  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], topics: [], drafts: [], publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [] }
+  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], topics: [], drafts: [], publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [], settings: defaultMatrixSettings() }
 }
 
 function nextId(): string {
@@ -176,6 +176,9 @@ export class MatrixStore {
     const accounts = Array.isArray(file.accounts) ? file.accounts as Account[] : []
     const publishedNotes = Array.isArray(file.publishedNotes) ? file.publishedNotes as PublishedNote[] : []
     const studioMessages = Array.isArray(file.studioMessages) ? file.studioMessages as StudioMessage[] : []
+    const fileSettings = (file.settings ?? {}) as Partial<MatrixSettings>
+    const fileApify = (fileSettings.apify ?? {}) as Partial<MatrixSettings['apify']>
+    const defaults = defaultMatrixSettings()
     this.data = {
       version: MATRIX_STORE_VERSION,
       accounts: accounts.map(account => ({
@@ -191,6 +194,15 @@ export class MatrixStore {
       metricSnapshots: Array.isArray(file.metricSnapshots) ? file.metricSnapshots as MetricSnapshot[] : [],
       trendSamples: Array.isArray(file.trendSamples) ? file.trendSamples as TrendSample[] : [],
       studioMessages: studioMessages.map(message => ({ ...message, read: message.read ?? false })),
+      settings: {
+        apify: {
+          actorId: typeof fileApify.actorId === 'string' ? fileApify.actorId : defaults.apify.actorId,
+          apiToken: typeof fileApify.apiToken === 'string' ? fileApify.apiToken : defaults.apify.apiToken,
+          maxItems: typeof fileApify.maxItems === 'number' ? fileApify.maxItems : defaults.apify.maxItems,
+          requestTimeoutMs: typeof fileApify.requestTimeoutMs === 'number' ? fileApify.requestTimeoutMs : defaults.apify.requestTimeoutMs,
+          maxPolls: typeof fileApify.maxPolls === 'number' ? fileApify.maxPolls : defaults.apify.maxPolls,
+        },
+      },
     }
     return this.data
   }
@@ -201,6 +213,22 @@ export class MatrixStore {
     const tmp = this.filePath + '.tmp'
     writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf8')
     renameSync(tmp, this.filePath)
+  }
+
+  // ---------------------------------------------------------------- 运行时设置
+  /** 读取运行时设置（apify 等）。 */
+  getSettings(): MatrixSettings {
+    return this.data.settings
+  }
+
+  /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
+  updateApifySettings(payload: Partial<MatrixSettings['apify']>): MatrixSettings {
+    this.data.settings = {
+      ...this.data.settings,
+      apify: { ...this.data.settings.apify, ...payload },
+    }
+    this.save()
+    return this.data.settings
   }
 
   // ---------------------------------------------------------------- 账号

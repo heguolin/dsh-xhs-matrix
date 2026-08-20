@@ -9,6 +9,7 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region src/protocol.ts
 		const XHS_API = {
+			settingsApify: "/api/dsh-xhs-matrix/settings/apify",
 			accounts: "/api/dsh-xhs-matrix/accounts",
 			accountImport: "/api/dsh-xhs-matrix/accounts/import",
 			personas: "/api/dsh-xhs-matrix/personas",
@@ -151,6 +152,16 @@ window.__ModuleLoader__.load({
 					note: noteId
 				})))).metrics;
 			}
+			async getApifyConfig() {
+				return (await readJson(await fetch(XHS_API.settingsApify))).settings;
+			}
+			async updateApifyConfig(payload) {
+				return (await readJson(await fetch(XHS_API.settingsApify, {
+					method: "PATCH",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
+				}))).settings;
+			}
 			async listStudioMessages(accountId) {
 				return (await readJson(await fetch(XHS_API.studioMessages + query({ account: accountId })))).messages;
 			}
@@ -277,124 +288,124 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"libTitle": "hv-J7W_libTitle",
-			"accountName": "hv-J7W_accountName",
-			"bubble": "hv-J7W_bubble",
-			"studioSend": "hv-J7W_studioSend",
-			"card": "hv-J7W_card",
-			"postBody": "hv-J7W_postBody",
-			"contextLine": "hv-J7W_contextLine",
-			"dialog": "hv-J7W_dialog",
-			"libBody": "hv-J7W_libBody",
-			"contextCard": "hv-J7W_contextCard",
-			"input": "hv-J7W_input",
-			"active": "hv-J7W_active",
-			"navIcon": "hv-J7W_navIcon",
 			"dangerBtn": "hv-J7W_dangerBtn",
-			"success": "hv-J7W_success",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"filterRow": "hv-J7W_filterRow",
 			"badgeGray": "hv-J7W_badgeGray",
-			"ghostBtn": "hv-J7W_ghostBtn",
-			"empty": "hv-J7W_empty",
-			"brand": "hv-J7W_brand",
-			"chips": "hv-J7W_chips",
-			"chipInput": "hv-J7W_chipInput",
-			"topicTitle": "hv-J7W_topicTitle",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"draftEditor": "hv-J7W_draftEditor",
-			"studioMain": "hv-J7W_studioMain",
-			"topbarRight": "hv-J7W_topbarRight",
-			"msgBubble": "hv-J7W_msgBubble",
-			"context": "hv-J7W_context",
-			"msgAvatar": "hv-J7W_msgAvatar",
-			"studioLayout": "hv-J7W_studioLayout",
-			"personaName": "hv-J7W_personaName",
-			"badge": "hv-J7W_badge",
-			"warn": "hv-J7W_warn",
-			"metrics": "hv-J7W_metrics",
-			"personaList": "hv-J7W_personaList",
-			"viewGrid": "hv-J7W_viewGrid",
-			"chat": "hv-J7W_chat",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"chatInput": "hv-J7W_chatInput",
-			"dialogClose": "hv-J7W_dialogClose",
-			"contextline": "hv-J7W_contextline",
-			"score": "hv-J7W_score",
-			"topicLayout": "hv-J7W_topicLayout",
-			"textarea": "hv-J7W_textarea",
-			"source": "hv-J7W_source",
-			"face": "hv-J7W_face",
-			"brandLogo": "hv-J7W_brandLogo",
 			"primary": "hv-J7W_primary",
-			"editbar": "hv-J7W_editbar",
-			"on": "hv-J7W_on",
-			"workspace": "hv-J7W_workspace",
-			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"accountItem": "hv-J7W_accountItem",
-			"studioTop": "hv-J7W_studioTop",
-			"studioResult": "hv-J7W_studioResult",
-			"overview": "hv-J7W_overview",
-			"field": "hv-J7W_field",
-			"weightBadge": "hv-J7W_weightBadge",
-			"ok": "hv-J7W_ok",
-			"tabs": "hv-J7W_tabs",
-			"msg": "hv-J7W_msg",
-			"studioTopSub": "hv-J7W_studioTopSub",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"rowActions": "hv-J7W_rowActions",
-			"group": "hv-J7W_group",
-			"idle": "hv-J7W_idle",
-			"studioComposer": "hv-J7W_studioComposer",
-			"chatSend": "hv-J7W_chatSend",
-			"filter": "hv-J7W_filter",
-			"chip": "hv-J7W_chip",
-			"me": "hv-J7W_me",
-			"draftLayout": "hv-J7W_draftLayout",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"viewHost": "hv-J7W_viewHost",
-			"libRow": "hv-J7W_libRow",
-			"libMeta": "hv-J7W_libMeta",
-			"overlay": "hv-J7W_overlay",
-			"sourcePanel": "hv-J7W_sourcePanel",
 			"messages": "hv-J7W_messages",
-			"topbar": "hv-J7W_topbar",
-			"panel": "hv-J7W_panel",
-			"content": "hv-J7W_content",
-			"topicReason": "hv-J7W_topicReason",
-			"personaItem": "hv-J7W_personaItem",
-			"below": "hv-J7W_below",
-			"personaDesc": "hv-J7W_personaDesc",
-			"muted": "hv-J7W_muted",
-			"topicItem": "hv-J7W_topicItem",
-			"meter": "hv-J7W_meter",
-			"statusDot": "hv-J7W_statusDot",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"brandLogo": "hv-J7W_brandLogo",
 			"sidebar": "hv-J7W_sidebar",
-			"bar": "hv-J7W_bar",
-			"miniThumb": "hv-J7W_miniThumb",
-			"personaLayout": "hv-J7W_personaLayout",
+			"overview": "hv-J7W_overview",
+			"me": "hv-J7W_me",
+			"group": "hv-J7W_group",
+			"field": "hv-J7W_field",
+			"context": "hv-J7W_context",
+			"source": "hv-J7W_source",
+			"libBody": "hv-J7W_libBody",
+			"viewHost": "hv-J7W_viewHost",
+			"contextCard": "hv-J7W_contextCard",
+			"topicReason": "hv-J7W_topicReason",
 			"tab": "hv-J7W_tab",
-			"tag": "hv-J7W_tag",
-			"button": "hv-J7W_button",
-			"danger": "hv-J7W_danger",
-			"error": "hv-J7W_error",
+			"studioMain": "hv-J7W_studioMain",
+			"score": "hv-J7W_score",
+			"brand": "hv-J7W_brand",
+			"navItem": "hv-J7W_navItem",
+			"chatSend": "hv-J7W_chatSend",
+			"pill": "hv-J7W_pill",
+			"postTitle": "hv-J7W_postTitle",
+			"warn": "hv-J7W_warn",
 			"topbarSub": "hv-J7W_topbarSub",
-			"post": "hv-J7W_post",
 			"modeSwitch": "hv-J7W_modeSwitch",
-			"thumb": "hv-J7W_thumb",
-			"chathead": "hv-J7W_chathead",
 			"tabActive": "hv-J7W_tabActive",
-			"panelTitle": "hv-J7W_panelTitle",
-			"dialogRow": "hv-J7W_dialogRow",
-			"accountAdd": "hv-J7W_accountAdd",
+			"empty": "hv-J7W_empty",
+			"topicItem": "hv-J7W_topicItem",
+			"chatInput": "hv-J7W_chatInput",
+			"post": "hv-J7W_post",
+			"below": "hv-J7W_below",
+			"face": "hv-J7W_face",
+			"personaList": "hv-J7W_personaList",
+			"postBody": "hv-J7W_postBody",
+			"ok": "hv-J7W_ok",
+			"metric": "hv-J7W_metric",
+			"topicTitle": "hv-J7W_topicTitle",
+			"chathead": "hv-J7W_chathead",
+			"overlay": "hv-J7W_overlay",
+			"badgeDanger": "hv-J7W_badgeDanger",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"msgAvatar": "hv-J7W_msgAvatar",
+			"weight": "hv-J7W_weight",
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"textarea": "hv-J7W_textarea",
+			"viewGrid": "hv-J7W_viewGrid",
+			"filter": "hv-J7W_filter",
+			"libRow": "hv-J7W_libRow",
+			"tag": "hv-J7W_tag",
+			"filterRow": "hv-J7W_filterRow",
+			"topicLayout": "hv-J7W_topicLayout",
+			"bar": "hv-J7W_bar",
+			"error": "hv-J7W_error",
+			"idle": "hv-J7W_idle",
+			"workspace": "hv-J7W_workspace",
+			"chips": "hv-J7W_chips",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"thumb": "hv-J7W_thumb",
+			"tabs": "hv-J7W_tabs",
+			"personaName": "hv-J7W_personaName",
+			"accountItem": "hv-J7W_accountItem",
+			"studioResult": "hv-J7W_studioResult",
+			"chat": "hv-J7W_chat",
+			"studioSend": "hv-J7W_studioSend",
+			"dialog": "hv-J7W_dialog",
+			"studioComposer": "hv-J7W_studioComposer",
+			"libTitle": "hv-J7W_libTitle",
+			"meter": "hv-J7W_meter",
+			"draftEditor": "hv-J7W_draftEditor",
+			"msgBubble": "hv-J7W_msgBubble",
+			"editbar": "hv-J7W_editbar",
+			"chip": "hv-J7W_chip",
 			"postMeta": "hv-J7W_postMeta",
 			"spacer": "hv-J7W_spacer",
-			"navItem": "hv-J7W_navItem",
-			"metric": "hv-J7W_metric",
-			"postTitle": "hv-J7W_postTitle",
-			"pill": "hv-J7W_pill",
-			"weight": "hv-J7W_weight",
-			"pillWarn": "hv-J7W_pillWarn"
+			"msg": "hv-J7W_msg",
+			"chipInput": "hv-J7W_chipInput",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"card": "hv-J7W_card",
+			"dialogRow": "hv-J7W_dialogRow",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"weightBadge": "hv-J7W_weightBadge",
+			"personaDesc": "hv-J7W_personaDesc",
+			"rowActions": "hv-J7W_rowActions",
+			"contextline": "hv-J7W_contextline",
+			"accountAdd": "hv-J7W_accountAdd",
+			"draftLayout": "hv-J7W_draftLayout",
+			"personaLayout": "hv-J7W_personaLayout",
+			"success": "hv-J7W_success",
+			"panelTitle": "hv-J7W_panelTitle",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"dialogClose": "hv-J7W_dialogClose",
+			"studioTop": "hv-J7W_studioTop",
+			"personaItem": "hv-J7W_personaItem",
+			"studioLayout": "hv-J7W_studioLayout",
+			"input": "hv-J7W_input",
+			"statusDot": "hv-J7W_statusDot",
+			"topbarRight": "hv-J7W_topbarRight",
+			"accountName": "hv-J7W_accountName",
+			"metrics": "hv-J7W_metrics",
+			"miniThumb": "hv-J7W_miniThumb",
+			"libMeta": "hv-J7W_libMeta",
+			"active": "hv-J7W_active",
+			"on": "hv-J7W_on",
+			"badge": "hv-J7W_badge",
+			"button": "hv-J7W_button",
+			"muted": "hv-J7W_muted",
+			"danger": "hv-J7W_danger",
+			"content": "hv-J7W_content",
+			"panel": "hv-J7W_panel",
+			"pillWarn": "hv-J7W_pillWarn",
+			"contextLine": "hv-J7W_contextLine",
+			"topbar": "hv-J7W_topbar",
+			"bubble": "hv-J7W_bubble",
+			"navIcon": "hv-J7W_navIcon"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -2317,6 +2328,12 @@ window.__ModuleLoader__.load({
 			const [bulk, setBulk] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
 			const [collecting, setCollecting] = (0, react.useState)(false);
+			const [configOpen, setConfigOpen] = (0, react.useState)(false);
+			const [apifyConfigured, setApifyConfigured] = (0, react.useState)(false);
+			const [actorId, setActorId] = (0, react.useState)("");
+			const [apiToken, setApiToken] = (0, react.useState)("");
+			const [maxItems, setMaxItems] = (0, react.useState)("10");
+			const [savingConfig, setSavingConfig] = (0, react.useState)(false);
 			const refresh = (0, react.useCallback)(async () => {
 				try {
 					const [topicList, accountList, personaList] = await Promise.all([
@@ -2334,6 +2351,43 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			(0, react.useEffect)(() => {
+				api.getApifyConfig().then((config) => {
+					setApifyConfigured(config.actorId !== "" && config.apiToken !== "");
+					setActorId(config.actorId);
+					setApiToken(config.apiToken);
+					setMaxItems(String(config.maxItems ?? 10));
+				}).catch(() => {});
+			}, [api]);
+			const openConfig = () => {
+				api.getApifyConfig().then((config) => {
+					setActorId(config.actorId);
+					setApiToken(config.apiToken);
+					setMaxItems(String(config.maxItems ?? 10));
+					setConfigOpen(true);
+				}).catch(() => setConfigOpen(true));
+			};
+			const saveConfig = async () => {
+				if (actorId.trim() === "" || apiToken.trim() === "") {
+					setError("Actor ID 与 API Token 必填");
+					return;
+				}
+				setSavingConfig(true);
+				try {
+					await api.updateApifyConfig({
+						actorId: actorId.trim(),
+						apiToken: apiToken.trim(),
+						maxItems: Number(maxItems) > 0 ? Number(maxItems) : 10
+					});
+					setApifyConfigured(true);
+					setConfigOpen(false);
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setSavingConfig(false);
+				}
+			};
 			const collect = async () => {
 				if (accountId === "") {
 					setError("请先在左侧选择账号");
@@ -2392,16 +2446,34 @@ window.__ModuleLoader__.load({
 						children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.panelTitle,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Apify 趋势候选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.primary,
-									onClick: () => void collect(),
-									disabled: collecting,
-									children: collecting ? "采集中…" : "开始采集"
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Apify 趋势候选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									style: {
+										display: "flex",
+										gap: 6,
+										alignItems: "center"
+									},
+									children: [
+										!apifyConfigured && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: panel_module_css_default.badgeWarn,
+											children: "未配置数据源"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: openConfig,
+											children: "配置 Apify"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.primary,
+											onClick: () => void collect(),
+											disabled: collecting,
+											children: collecting ? "采集中…" : "开始采集"
+										})
+									]
 								})]
 							}),
-							candidates.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							candidates.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.muted,
-								children: "尚未采集。点击「开始采集」拉取外部趋势并按当前人设与知识库权重排序； 未配置 Apify（apifyActorId / apifyApiToken）时会提示错误。"
+								children: ["尚未采集。点击「开始采集」拉取外部趋势并按当前人设与知识库权重排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
 							}),
 							candidates.map((candidate, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.topicItem,
@@ -2621,6 +2693,70 @@ window.__ModuleLoader__.load({
 							})
 						]
 					})]
+				}),
+				configOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.overlay,
+					onClick: () => setConfigOpen(false),
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.dialog,
+						onClick: (e) => e.stopPropagation(),
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.dialogClose,
+								onClick: () => setConfigOpen(false),
+								"aria-label": "关闭",
+								children: "×"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "配置 Apify 趋势数据源" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								style: { marginBottom: 12 },
+								children: "在 apify.com 创建 Actor 并获取 API Token；配置保存后「开始采集」即可拉取外部趋势并按人设与知识库权重排序。"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "Actor ID" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: actorId,
+									onChange: (e) => setActorId(e.target.value),
+									placeholder: "apify/actor-name"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "API Token" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									type: "password",
+									value: apiToken,
+									onChange: (e) => setApiToken(e.target.value),
+									placeholder: "apify_api_..."
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "单次最大候选数" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									type: "number",
+									min: 1,
+									value: maxItems,
+									onChange: (e) => setMaxItems(e.target.value)
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.rowActions,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => void saveConfig(),
+									disabled: savingConfig,
+									children: savingConfig ? "保存中…" : "保存配置"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => setConfigOpen(false),
+									children: "取消"
+								})]
+							})
+						]
+					})
 				})
 			] });
 		}

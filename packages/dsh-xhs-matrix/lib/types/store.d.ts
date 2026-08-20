@@ -1,5 +1,5 @@
 /** 私有 JSON 文件存储（~/.dsh/dsh-xhs-matrix.json），原子写 + 格式版本。 */
-import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample } from './types.ts';
+import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, Topic, TrendSample } from './types.ts';
 /** 存储文件格式版本。 */
 export declare const MATRIX_STORE_VERSION = 2;
 /** 存储文件默认位置。 */
@@ -99,6 +99,10 @@ export declare class MatrixStore {
     load(): StoreFile;
     /** 原子落盘（tmp + rename）。 */
     save(): void;
+    /** 读取运行时设置（apify 等）。 */
+    getSettings(): MatrixSettings;
+    /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
+    updateApifySettings(payload: Partial<MatrixSettings['apify']>): MatrixSettings;
     listAccounts(): Account[];
     upsertAccount(payload: AccountPayload, id?: string): Account;
     deleteAccount(id: string): void;

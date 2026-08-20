@@ -167,4 +167,17 @@ export interface StoreFile {
     metricSnapshots: MetricSnapshot[];
     trendSamples: TrendSample[];
     studioMessages: StudioMessage[];
+    /** 插件运行时设置（面板可配置，与 Cordis 配置并存、面板写入优先）。 */
+    settings: MatrixSettings;
+}
+/** 矩阵插件运行时设置。 */
+export interface MatrixSettings {
+    /** Apify 外部趋势数据源配置。 */
+    apify: {
+        actorId: string;
+        apiToken: string;
+        maxItems: number;
+        requestTimeoutMs: number;
+        maxPolls: number;
+    };
 }

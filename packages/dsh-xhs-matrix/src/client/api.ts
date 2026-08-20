@@ -143,6 +143,16 @@ export class XhsApi {
     return body.metrics
   }
 
+  // ------------------------------------------------------------ Apify 配置
+  async getApifyConfig(): Promise<{ actorId: string; apiToken: string; maxItems: number; requestTimeoutMs: number; maxPolls: number }> {
+    const body = await readJson<{ settings: { actorId: string; apiToken: string; maxItems: number; requestTimeoutMs: number; maxPolls: number } }>(await fetch(XHS_API.settingsApify))
+    return body.settings
+  }
+  async updateApifyConfig(payload: { actorId?: string; apiToken?: string; maxItems?: number; requestTimeoutMs?: number; maxPolls?: number }): Promise<{ actorId: string; apiToken: string; maxItems: number; requestTimeoutMs: number; maxPolls: number }> {
+    const body = await readJson<{ settings: { actorId: string; apiToken: string; maxItems: number; requestTimeoutMs: number; maxPolls: number } }>(await fetch(XHS_API.settingsApify, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }))
+    return body.settings
+  }
+
   // ------------------------------------------------------------ 创作台
   async listStudioMessages(accountId: string): Promise<Array<{ id: string; role: string; content: string; receivedAt: string }>> {
     const body = await readJson<{ messages: Array<{ id: string; role: string; content: string; receivedAt: string }> }>(await fetch(XHS_API.studioMessages + query({ account: accountId })))

@@ -1,4 +1,4 @@
-import { t as MatrixStore } from "./store-CXb7JV83.js";
+import { t as MatrixStore } from "./store-BNH0EGiw.js";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
 import { createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
@@ -346,6 +346,7 @@ function isLoopbackRequest(request) {
 //#endregion
 //#region src/protocol.ts
 const XHS_API = {
+	settingsApify: "/api/dsh-xhs-matrix/settings/apify",
 	accounts: "/api/dsh-xhs-matrix/accounts",
 	accountImport: "/api/dsh-xhs-matrix/accounts/import",
 	personas: "/api/dsh-xhs-matrix/personas",
@@ -408,7 +409,7 @@ function guard(req, res, method) {
 * @returns 路由数组。
 */
 function makeRoutes(deps) {
-	const { store, trendProvider, scheduler, studio } = deps;
+	const { store, trendProvider, scheduler, studio, reload } = deps;
 	const route = (path, handler) => ({
 		kind: "exact",
 		path,
@@ -418,6 +419,68 @@ function makeRoutes(deps) {
 		writeJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
 	};
 	return [
+		route(XHS_API.settingsApify, async (req, res) => {
+			if (!isLoopbackRequest(req)) {
+				writeJson(res, 403, { error: "forbidden: loopback-only" });
+				return;
+			}
+			if ((req.method ?? "GET") === "GET") {
+				writeJson(res, 200, { settings: store.getSettings().apify });
+				return;
+			}
+			if ((req.method ?? "GET") !== "PATCH") {
+				writeJson(res, 405, { error: `method not allowed: ${req.method}` });
+				return;
+			}
+			const body = await readJsonBody(req);
+			if (body === void 0) {
+				writeJson(res, 400, { error: "invalid JSON body" });
+				return;
+			}
+			const payload = {};
+			if (body.actorId !== void 0) {
+				if (typeof body.actorId !== "string") {
+					writeJson(res, 400, { error: "actorId 必须是字符串" });
+					return;
+				}
+				payload.actorId = body.actorId;
+			}
+			if (body.apiToken !== void 0) {
+				if (typeof body.apiToken !== "string") {
+					writeJson(res, 400, { error: "apiToken 必须是字符串" });
+					return;
+				}
+				payload.apiToken = body.apiToken;
+			}
+			if (body.maxItems !== void 0) {
+				if (typeof body.maxItems !== "number" || !Number.isInteger(body.maxItems) || body.maxItems <= 0) {
+					writeJson(res, 400, { error: "maxItems 必须是正整数" });
+					return;
+				}
+				payload.maxItems = body.maxItems;
+			}
+			if (body.requestTimeoutMs !== void 0) {
+				if (typeof body.requestTimeoutMs !== "number" || body.requestTimeoutMs <= 0) {
+					writeJson(res, 400, { error: "requestTimeoutMs 必须是正数" });
+					return;
+				}
+				payload.requestTimeoutMs = body.requestTimeoutMs;
+			}
+			if (body.maxPolls !== void 0) {
+				if (typeof body.maxPolls !== "number" || !Number.isInteger(body.maxPolls) || body.maxPolls <= 0) {
+					writeJson(res, 400, { error: "maxPolls 必须是正整数" });
+					return;
+				}
+				payload.maxPolls = body.maxPolls;
+			}
+			try {
+				const settings = store.updateApifySettings(payload);
+				reload?.();
+				writeJson(res, 200, { settings: settings.apify });
+			} catch (error) {
+				fail(res, error);
+			}
+		}),
 		route(XHS_API.accounts, async (req, res) => {
 			const method = req.method ?? "GET";
 			if (!isLoopbackRequest(req)) {
@@ -1757,12 +1820,15 @@ function apply(ctx, config) {
 			order: 150,
 			text: XHS_GUIDANCE
 		});
-		const trendProvider = value.apifyActorId !== "" && value.apifyApiToken !== "" ? new ApifyTrendProvider({
-			actorId: value.apifyActorId,
-			apiToken: value.apifyApiToken,
-			maxItems: value.apifyMaxItems ?? 10,
-			requestTimeoutMs: value.apifyRequestTimeoutMs ?? 3e4,
-			maxPolls: value.apifyMaxPolls ?? 120
+		const apifyStore = store.getSettings().apify;
+		const actorId = apifyStore.actorId !== "" ? apifyStore.actorId : value.apifyActorId;
+		const apiToken = apifyStore.apiToken !== "" ? apifyStore.apiToken : value.apifyApiToken;
+		const trendProvider = actorId !== "" && apiToken !== "" ? new ApifyTrendProvider({
+			actorId,
+			apiToken,
+			maxItems: apifyStore.maxItems ?? value.apifyMaxItems ?? 10,
+			requestTimeoutMs: apifyStore.requestTimeoutMs ?? value.apifyRequestTimeoutMs ?? 3e4,
+			maxPolls: apifyStore.maxPolls ?? value.apifyMaxPolls ?? 120
 		}) : void 0;
 		let scheduler;
 		if (trendProvider !== void 0) {
@@ -1810,7 +1876,8 @@ function apply(ctx, config) {
 				store,
 				trendProvider,
 				scheduler,
-				studio
+				studio,
+				reload: sync
 			}).map((route) => ctx.webServer.register(route));
 			return () => {
 				for (const dispose of disposers) dispose();

@@ -108,13 +108,18 @@ export function apply(ctx: Context, config?: Config): void {
         text: XHS_GUIDANCE,
       })
     }
-    const trendProvider = value.apifyActorId !== '' && value.apifyApiToken !== ''
+    // Apify 数据源配置：面板写入的运行时设置优先（store.settings），
+    // 未配置时回退到插件 Config（设置面板）。
+    const apifyStore = store.getSettings().apify
+    const actorId = apifyStore.actorId !== '' ? apifyStore.actorId : value.apifyActorId
+    const apiToken = apifyStore.apiToken !== '' ? apifyStore.apiToken : value.apifyApiToken
+    const trendProvider = actorId !== '' && apiToken !== ''
       ? new ApifyTrendProvider({
-          actorId: value.apifyActorId,
-          apiToken: value.apifyApiToken,
-          maxItems: value.apifyMaxItems ?? 10,
-          requestTimeoutMs: value.apifyRequestTimeoutMs ?? 30000,
-          maxPolls: value.apifyMaxPolls ?? 120,
+          actorId,
+          apiToken,
+          maxItems: apifyStore.maxItems ?? value.apifyMaxItems ?? 10,
+          requestTimeoutMs: apifyStore.requestTimeoutMs ?? value.apifyRequestTimeoutMs ?? 30000,
+          maxPolls: apifyStore.maxPolls ?? value.apifyMaxPolls ?? 120,
         } satisfies ApifyConfig)
       : undefined
     let scheduler: CollectionScheduler | undefined
@@ -144,7 +149,7 @@ export function apply(ctx: Context, config?: Config): void {
     disposeScheduler = () => scheduler?.stop()
     disposeRoutes = ctx.effect(
       () => {
-        const disposers = makeRoutes({ store, trendProvider, scheduler, studio }).map(route => ctx.webServer.register(route))
+        const disposers = makeRoutes({ store, trendProvider, scheduler, studio, reload: sync }).map(route => ctx.webServer.register(route))
         return () => { for (const dispose of disposers) dispose() }
       },
       'dsh-xhs-matrix: routes',

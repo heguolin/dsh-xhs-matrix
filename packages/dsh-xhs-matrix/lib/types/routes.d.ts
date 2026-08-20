@@ -10,6 +10,8 @@ export interface RoutesDeps {
     trendProvider?: TrendProvider;
     scheduler?: CollectionScheduler;
     studio?: StudioService;
+    /** Apify 配置更新后重建数据源/调度器/路由的回调。 */
+    reload?: () => void;
 }
 /**
  * 构建全部 /api/dsh-xhs-matrix 路由。

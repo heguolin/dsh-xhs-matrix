@@ -122,6 +122,26 @@ export declare class XhsApi {
         source: string;
         status: string;
     }>>;
+    getApifyConfig(): Promise<{
+        actorId: string;
+        apiToken: string;
+        maxItems: number;
+        requestTimeoutMs: number;
+        maxPolls: number;
+    }>;
+    updateApifyConfig(payload: {
+        actorId?: string;
+        apiToken?: string;
+        maxItems?: number;
+        requestTimeoutMs?: number;
+        maxPolls?: number;
+    }): Promise<{
+        actorId: string;
+        apiToken: string;
+        maxItems: number;
+        requestTimeoutMs: number;
+        maxPolls: number;
+    }>;
     listStudioMessages(accountId: string): Promise<Array<{
         id: string;
         role: string;
