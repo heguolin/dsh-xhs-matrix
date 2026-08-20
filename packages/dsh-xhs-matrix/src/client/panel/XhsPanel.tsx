@@ -7,10 +7,10 @@ import { KnowledgeTab } from './KnowledgeTab.tsx'
 import { OverviewTab } from './OverviewTab.tsx'
 import { PersonasTab } from './PersonasTab.tsx'
 import { StudioTab } from './StudioTab.tsx'
-import { TopicsTab } from './TopicsTab.tsx'
+import { ViralTab } from './ViralTab.tsx'
 import css from './panel.module.css'
 
-export type PageId = 'overview' | 'knowledge' | 'topics' | 'studio' | 'drafts' | 'personas'
+export type PageId = 'overview' | 'knowledge' | 'viral' | 'studio' | 'drafts' | 'personas'
 
 const NAV_GROUPS: Array<{ group: string; items: Array<{ id: PageId; icon: string; label: string }> }> = [
   {
@@ -18,7 +18,7 @@ const NAV_GROUPS: Array<{ group: string; items: Array<{ id: PageId; icon: string
     items: [
       { id: 'overview', icon: '◈', label: '总览' },
       { id: 'knowledge', icon: '▤', label: '已发布知识库' },
-      { id: 'topics', icon: '✦', label: '趋势选题' },
+      { id: 'viral', icon: '✦', label: '爆款池' },
     ],
   },
   {
@@ -52,7 +52,7 @@ export function accountDot(account: AccountRow): 'ok' | 'warn' | 'error' | 'idle
 const PAGE_TITLES: Record<PageId, string> = {
   overview: '账号运营总览',
   knowledge: '已发布知识库',
-  topics: '趋势选题',
+  viral: '爆款池',
   studio: '专属创作台',
   drafts: '草稿箱',
   personas: '人设配置',
@@ -193,7 +193,7 @@ export function XhsPanel(props: XhsPanelProps) {
             />
           )}
           {currentPage === 'knowledge' && <KnowledgeTab key={`kb-${accountId}`} api={api} accountId={accountId} />}
-          {currentPage === 'topics' && <TopicsTab key={`tp-${accountId}`} api={api} accountId={accountId} />}
+          {currentPage === 'viral' && <ViralTab key={`vp-${accountId}`} api={api} accountId={accountId} />}
           {currentPage === 'studio' && (
             <StudioTab key={`st-${accountId}`} api={api} accountId={accountId} onOpenDraft={openDrafts} />
           )}

@@ -19,14 +19,14 @@ interface AccountSummary {
   highWeightCount: number
   reads: number
   draftCount: number
-  trendCount: number
+  viralCount: number
 }
 
 /**
  * 运营总览（设计稿 content/hybrid-layout.html + 设计文档 §8.2）：
  * 矩阵级多账号总览 —— 显示所有账号的状态、指标、知识库表现与草稿摘要；
- * 趋势选题按账号隔离，每个账号卡片显示自己的外部趋势样本数，
- * 具体候选进入该账号的「趋势选题」工作区查看。
+ * 爆款池按账号隔离，每个账号卡片显示自己的爆款条数，
+ * 具体条目进入该账号的「爆款池」工作区查看。
  */
 export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAccountUpdated }: {
   api: XhsApi
@@ -38,7 +38,6 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
   const [summaries, setSummaries] = useState<AccountSummary[]>([])
   const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [error, setError] = useState('')
-  const [manualTopic, setManualTopic] = useState('')
   // 人设快捷绑定：bindingFor 为正在绑定的账号 id，bindPick 为下拉选择值。
   const [bindingFor, setBindingFor] = useState<string | null>(null)
   const [bindPick, setBindPick] = useState('')
@@ -49,10 +48,10 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
       const [personaList, draftList] = await Promise.all([api.listPersonas(), api.listDrafts()])
       setPersonas(personaList)
       const rows = await Promise.all(accounts.map(async account => {
-        const [noteList, metricList, trendList] = await Promise.all([
+        const [noteList, metricList, viralList] = await Promise.all([
           api.listNotes(account.id),
           api.listMetrics(account.id),
-          api.listTrends(account.id),
+          api.listViralItems(account.id),
         ])
         // 每篇笔记最新指标快照（按 collectedAt 取最近一次）
         const latestByNote = new Map<string, { reads: number; collectedAt: string }>()
@@ -68,7 +67,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           highWeightCount: noteList.filter(n => n.weight >= 3).length,
           reads,
           draftCount: draftList.filter(d => d.accountId === account.id && d.status === 'generated').length,
-          trendCount: trendList.length,
+          viralCount: viralList.length,
         }
       }))
       setSummaries(rows)
@@ -79,17 +78,6 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
   }, [api, accounts])
 
   useEffect(() => { void refresh() }, [refresh])
-
-  const addManualTopic = async (): Promise<void> => {
-    const title = manualTopic.trim()
-    if (title === '') return
-    try {
-      await api.addTopic(title)
-      setManualTopic('')
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    }
-  }
 
   /** 在总览卡片上直接绑定/更换账号人设。 */
   const bindPersona = async (account: AccountRow): Promise<void> => {
@@ -166,38 +154,27 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                 <span style={{ flex: 1 }} />
                 <div className={css.rowActions}>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'knowledge')}>知识库</button>
-                  <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'topics')}>选题</button>
+                  <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'viral')}>爆款池</button>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'drafts')}>草稿</button>
                   <button className={css.primary} onClick={() => onOpenStudio(row.account.id)}>进入创作台</button>
                 </div>
               </div>
-              {/* 账号指标摘要（趋势样本数按账号隔离显示） */}
+              {/* 账号指标摘要（爆款条数按账号隔离显示） */}
               <div className={css.metrics} style={{ marginTop: 10 }}>
                 <div className={css.metric}>已发布<b>{row.noteCount}</b></div>
                 <div className={css.metric}>最近浏览<b>{row.reads.toLocaleString()}</b></div>
                 <div className={css.metric}>高权重样本<b>{row.highWeightCount}</b></div>
               </div>
               <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>外部趋势样本：{row.trendCount} 个</span>
-                <button className={css.ghostBtn} style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => onOpenAccount(row.account.id, 'topics')}>
-                  {row.trendCount > 0 ? '查看该账号选题' : '去采集选题'}
+                <span>爆款池：{row.viralCount} 条</span>
+                <button className={css.ghostBtn} style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => onOpenAccount(row.account.id, 'viral')}>
+                  {row.viralCount > 0 ? '查看该账号爆款池' : '去采集爆款'}
                 </button>
               </div>
               {row.account.connection?.lastError !== undefined && <div className={css.muted} style={{ marginTop: 4 }}>连接：{row.account.connection.lastError}</div>}
               {row.account.collectionStatus?.lastError !== undefined && <div className={css.muted} style={{ marginTop: 4 }}>采集：{row.account.collectionStatus.lastError}</div>}
             </div>
           ))}
-
-          {/* 下方：手动添加选题（选题池为全局，按账号创作时过滤） */}
-          <div className={css.below}>
-            <section className={css.panel}>
-              <div className={css.panelTitle}><span>手动添加选题</span></div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input className={css.chipInput} value={manualTopic} onChange={e => setManualTopic(e.target.value)} placeholder="输入一个选题标题" />
-                <button className={css.primary} onClick={() => void addManualTopic()}>加入选题池</button>
-              </div>
-            </section>
-          </div>
         </>
       )}
     </div>
