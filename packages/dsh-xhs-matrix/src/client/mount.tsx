@@ -44,6 +44,15 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
   const waitObserver = new MutationObserver(() => { ensure() })
   waitObserver.observe(document.body, { childList: true, subtree: true })
 
+  const applyPanelStyle = (): void => {
+    // 显隐与左右分栏由内联样式兜底：即使页面残留旧版 CSS 标签（注入去重跳过），
+    // 布局与显隐依然由宿主元素自身保证，不依赖任何外部样式表。
+    if (container === undefined) return
+    const open = controller.getSnapshot().panelOpen
+    container.style.display = open ? 'grid' : 'none'
+    container.style.gridTemplateColumns = '188px 1fr'
+  }
+
   const applyActive = (): void => {
     if (controller.getSnapshot().panelOpen) {
       for (const attr of OTHER_ACTIVE_ATTRS) document.documentElement.removeAttribute(attr)
@@ -52,6 +61,7 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
     } else {
       document.documentElement.removeAttribute(ACTIVE_ATTR)
     }
+    applyPanelStyle()
   }
 
   const onOtherActivate = (event: Event): void => {
@@ -70,8 +80,8 @@ export function mountPanel(controller: PanelController, api: XhsApi): () => void
   document.addEventListener('click', onClickSidebarRow, true)
   document.addEventListener(ACTIVATE_EVENT, onOtherActivate)
   const unsubscribe = controller.subscribe(applyActive)
-  applyActive()
   ensure()
+  applyActive()
 
   return () => {
     document.removeEventListener('click', onClickSidebarRow, true)

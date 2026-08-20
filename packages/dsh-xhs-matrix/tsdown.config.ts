@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { basename, dirname, resolve as resolvePath, sep } from 'node:path'
+import { createHash } from 'node:crypto'
 import { transform } from 'lightningcss'
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
@@ -49,10 +50,13 @@ const cssModulesInline = {
     })
     const classMap: Record<string, string> = {}
     for (const [local, exp] of Object.entries(cssExports ?? {})) classMap[local] = exp.name
-    // 每个模块文件一个 <style data-plugin>；重复求值幂等。
+    // 每个模块文件一个 <style data-plugin>；tagId 携带 CSS 内容指纹，保证样式
+    // 变化后即使页面已存在旧版标签也会注入新版（旧标签残留不影响，新版在后覆盖）。
+    const cssText = code.toString()
+    const cssHash = createHash('sha1').update(cssText).digest('hex').slice(0, 8)
     return [
-      `const css = ${JSON.stringify(code.toString())};`,
-      `const tagId = ${JSON.stringify(`${PLUGIN_ID}/${basename(fileId)}`)};`,
+      `const css = ${JSON.stringify(cssText)};`,
+      `const tagId = ${JSON.stringify(`${PLUGIN_ID}/${basename(fileId)}?v=${cssHash}`)};`,
       'if (typeof document !== \'undefined\' && document.querySelector(\'style[data-plugin-css=\' + JSON.stringify(tagId) + \']\') === null) {',
       '  const tag = document.createElement(\'style\');',
       `  tag.dataset.plugin = ${JSON.stringify(PLUGIN_ID)};`,
