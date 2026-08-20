@@ -20,7 +20,7 @@ import { makeTools } from './tools.ts'
 export const name = 'xhs-matrix'
 
 /** 需要的服务。 */
-export const inject = ['webServer', 'tools', 'systemPrompt', 'llm']
+export const inject = ['webServer', 'tools', 'systemPrompt', 'llm', 'settings']
 
 /** 设置命名空间。 */
 export const XHS_SETTINGS_NAMESPACE = settingsNamespace('dsh-xhs-matrix')

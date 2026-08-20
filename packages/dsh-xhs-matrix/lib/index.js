@@ -1815,7 +1815,8 @@ const inject = [
 	"webServer",
 	"tools",
 	"systemPrompt",
-	"llm"
+	"llm",
+	"settings"
 ];
 /** 设置命名空间。 */
 const XHS_SETTINGS_NAMESPACE = settingsNamespace("dsh-xhs-matrix");
