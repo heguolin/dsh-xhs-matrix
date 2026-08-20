@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import type { ViralBatch, ViralItem, ViralStatus } from '../../types.ts'
 import css from './panel.module.css'
@@ -82,12 +82,15 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
 
   useEffect(() => { void refresh() }, [refresh])
 
-  // 数据加载后默认展开最新批次（其余收起）。
+  // 仅首次加载默认展开最新批次；之后展开/收起完全由用户控制，
+  // 防止用户手动收起后被自动展开覆盖。
+  const initialBatchSet = useRef(false)
   useEffect(() => {
-    if (batches.length > 0 && (expandedBatchId === null || !batches.some(b => b.id === expandedBatchId))) {
+    if (!initialBatchSet.current && batches.length > 0) {
+      initialBatchSet.current = true
       setExpandedBatchId(batches[0].id)
     }
-  }, [batches, expandedBatchId])
+  }, [batches])
 
   // 启动时读取 Apify 配置，判断是否已配置数据源。
   useEffect(() => {
