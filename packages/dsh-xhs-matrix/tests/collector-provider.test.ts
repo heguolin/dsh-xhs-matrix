@@ -9,8 +9,8 @@ describe('normalizeApifyItem', () => {
     expect(item.sourceUrl).toBe('https://x.com/1')
     expect(item.source).toBe('apify')
   })
-  it('缺 title 抛错', () => {
-    expect(() => normalizeApifyItem({ desc: 'x' })).toThrow(/title/)
+  it('缺 title 且无正文时抛错', () => {
+    expect(() => normalizeApifyItem({ foo: 'x' })).toThrow(/title/)
   })
   it('兼容 note_title / note_url 字段名（socialdatax 扁平结构）', () => {
     const item = normalizeApifyItem({ note_title: '小红书标题', content: '正文', note_url: 'https://xhs.com/note/1', like_count: 5 })
