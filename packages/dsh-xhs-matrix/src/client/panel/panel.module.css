@@ -43,7 +43,7 @@
 }
 
 html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view] {
-  display: block;
+  display: grid;
 }
 
 [data-pane='conversation'],
@@ -84,7 +84,7 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 .view {
   position: absolute;
   inset: 0;
-  display: grid;
+  /* display 由 [data-dsh-xhsmatrix-view] 的显隐规则控制（none / grid） */
   grid-template-columns: 188px 1fr;
   background: var(--xhs-bg);
   color: var(--xhs-text);
