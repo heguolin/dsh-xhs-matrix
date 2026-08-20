@@ -92,7 +92,15 @@ export function TopicsTab({ api, accountId }: { api: XhsApi; accountId: string }
       setCandidates(ranked)
       setError('')
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      const message = e instanceof Error ? e.message : String(e)
+      // Apify 认证失败：给用户可操作的指引。
+      if (/\b401\b|\b403\b/.test(message)) {
+        setError(`${message}。API Token 无效或已过期：请打开 apify.com → Settings → API & Integrations，点击 API token 右侧的「复制」按钮（不要复制掩码星号），回到「配置 Apify」重新粘贴后重试。`)
+      } else if (/未配置/.test(message)) {
+        setError(`${message}。请先点击「配置 Apify」填写 Actor ID 与 API Token。`)
+      } else {
+        setError(message)
+      }
     } finally {
       setCollecting(false)
     }
