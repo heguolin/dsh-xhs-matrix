@@ -1795,6 +1795,64 @@ const Config = z.object({
 /** 模型可见公告。 */
 const XHS_GUIDANCE = "本机已安装 dsh-xhs-matrix 插件（小红书矩阵内容管理）：侧边栏「矩阵」入口管理账号、人设、已发布知识库、爆款池、草稿与专属创作台。能力：xhs_today 按账号人设与爆款池生成创作简报供你撰写文案；xhs_notes 查询账号已发布笔记知识库；xhs_virals 查询账号爆款池条目与审核状态；xhs_collection_status 查询指标采集状态；xhs_draft_save 持久化草稿（同账号当日去重）；xhs_accounts 查询账号与人设；xhs_draft_status 回填发布状态与阅读量指标（触发 xhs/feedback 事件）。用户提到「今天要发什么 / 小红书 / 矩阵 / 选题 / 爆款」时即指本插件。";
 /**
+* 构建创作台模型客户端：模型解析失败（未配置 agent-default-model 且存在注册 provider）时，
+* 仅让创作台在调用 complete 时给出明确错误，插件照常加载，其余功能（路由/工具/公告/
+* 爆款池/知识库/草稿/账号）不受影响。
+* @param resolveModel - 读取 agent-default-model 设置的处理器；未配置时返回 undefined。
+* @param listProviders - 列出已注册 provider。
+* @param stream - 底层 llm.stream 调用入口。
+* @returns 模型客户端与模型标签。
+*/
+function buildStudioLlmClient(resolveModel, listProviders, stream) {
+	let modelRoute;
+	try {
+		modelRoute = resolveStudioModel(resolveModel, listProviders);
+	} catch {
+		modelRoute = void 0;
+	}
+	if (modelRoute === void 0) return {
+		client: { complete: async () => {
+			throw new Error("未配置创作台模型：请在 Harness 设置 agent-default-model（provider 与 model）");
+		} },
+		modelLabel: "未配置"
+	};
+	return {
+		client: { async complete(request) {
+			const messages = request.messages.map((message) => message.role === "assistant" ? createAssistantMessage({
+				content: [{
+					type: "text",
+					text: message.content
+				}],
+				source: {
+					provider: modelRoute.provider,
+					model: modelRoute.model
+				}
+			}) : createUserMessage({
+				content: [{
+					type: "text",
+					text: message.content
+				}],
+				source: {
+					kind: "plugin",
+					plugin: "dsh-xhs-matrix"
+				}
+			}));
+			const options = {
+				provider: modelRoute.provider,
+				model: modelRoute.model,
+				messages,
+				system: request.system,
+				maxTokens: request.maxTokens
+			};
+			const assembler = new BlockAssembler();
+			for await (const chunk of stream(options)) assembler.push(chunk);
+			if (assembler.finish.kind !== "stop") throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`);
+			return { text: assembler.blocks().filter((block) => block.type === "text").map((block) => block.text).join("") };
+		} },
+		modelLabel: `${modelRoute.provider}/${modelRoute.model}`
+	};
+}
+/**
 * 挂载存储、路由、工具与公告。
 * @param ctx - host 上下文（webServer/tools/systemPrompt/llm）。
 * @param config - 插件配置。
@@ -1836,7 +1894,7 @@ function apply(ctx, config) {
 			order: 150,
 			text: XHS_GUIDANCE
 		});
-		const modelRoute = resolveStudioModel(() => {
+		const { client: llmClient, modelLabel } = buildStudioLlmClient(() => {
 			try {
 				const m = ctx.settings.get(settingsNamespace("agent-default-model"));
 				return m !== void 0 && m.provider !== void 0 && m.model !== void 0 ? {
@@ -1846,41 +1904,8 @@ function apply(ctx, config) {
 			} catch {
 				return;
 			}
-		}, () => ctx.llm.listProviders().map((p) => ({ id: p.id })));
-		const studio = new StudioService(store, modelRoute === void 0 ? { complete: async () => {
-			throw new Error("未配置创作台模型：请在 Harness 设置 agent-default-model");
-		} } : { async complete(request) {
-			const messages = request.messages.map((message) => message.role === "assistant" ? createAssistantMessage({
-				content: [{
-					type: "text",
-					text: message.content
-				}],
-				source: {
-					provider: modelRoute.provider,
-					model: modelRoute.model
-				}
-			}) : createUserMessage({
-				content: [{
-					type: "text",
-					text: message.content
-				}],
-				source: {
-					kind: "plugin",
-					plugin: "dsh-xhs-matrix"
-				}
-			}));
-			const options = {
-				provider: modelRoute.provider,
-				model: modelRoute.model,
-				messages,
-				system: request.system,
-				maxTokens: request.maxTokens
-			};
-			const assembler = new BlockAssembler();
-			for await (const chunk of ctx.llm.stream(options)) assembler.push(chunk);
-			if (assembler.finish.kind !== "stop") throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`);
-			return { text: assembler.blocks().filter((block) => block.type === "text").map((block) => block.text).join("") };
-		} }, modelRoute === void 0 ? "未配置" : `${modelRoute.provider}/${modelRoute.model}`);
+		}, () => ctx.llm.listProviders().map((p) => ({ id: p.id })), (options) => ctx.llm.stream(options));
+		const studio = new StudioService(store, llmClient, modelLabel);
 		const apifyStore = store.getSettings().apify;
 		const viralProvider = apifyStore.actorId !== "" && apifyStore.apiToken !== "" ? new ApifyViralProvider({
 			actorId: apifyStore.actorId,
@@ -1930,4 +1955,4 @@ function apply(ctx, config) {
 	sync();
 }
 //#endregion
-export { Config, XHS_GUIDANCE, XHS_SETTINGS_NAMESPACE, apply, inject, name };
+export { Config, XHS_GUIDANCE, XHS_SETTINGS_NAMESPACE, apply, buildStudioLlmClient, inject, name };

@@ -2,7 +2,7 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import { BlockAssembler, createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
+import type { GenerateOptions, Message, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-system-prompt'
@@ -10,7 +10,7 @@ import type {} from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import { ApifyViralProvider } from './collector/apify.ts'
 import { CollectionScheduler } from './metrics.ts'
-import { resolveStudioModel } from './model-config.ts'
+import { resolveStudioModel, type ModelRoute } from './model-config.ts'
 import { makeRoutes } from './routes/index.ts'
 import { MatrixStore } from './store.ts'
 import { StudioService, type StudioLlmClient } from './studio.ts'
@@ -47,6 +47,74 @@ interface ResolvedConfig {
 
 /** 模型可见公告。 */
 export const XHS_GUIDANCE = '本机已安装 dsh-xhs-matrix 插件（小红书矩阵内容管理）：侧边栏「矩阵」入口管理账号、人设、已发布知识库、爆款池、草稿与专属创作台。能力：xhs_today 按账号人设与爆款池生成创作简报供你撰写文案；xhs_notes 查询账号已发布笔记知识库；xhs_virals 查询账号爆款池条目与审核状态；xhs_collection_status 查询指标采集状态；xhs_draft_save 持久化草稿（同账号当日去重）；xhs_accounts 查询账号与人设；xhs_draft_status 回填发布状态与阅读量指标（触发 xhs/feedback 事件）。用户提到「今天要发什么 / 小红书 / 矩阵 / 选题 / 爆款」时即指本插件。'
+
+/** 创作台模型装配结果。 */
+export interface StudioLlmSetup {
+  /** 模型客户端：模型解析失败时 complete 抛明确错误。 */
+  client: StudioLlmClient
+  /** 模型标签：解析失败时为「未配置」。 */
+  modelLabel: string
+}
+
+/**
+ * 构建创作台模型客户端：模型解析失败（未配置 agent-default-model 且存在注册 provider）时，
+ * 仅让创作台在调用 complete 时给出明确错误，插件照常加载，其余功能（路由/工具/公告/
+ * 爆款池/知识库/草稿/账号）不受影响。
+ * @param resolveModel - 读取 agent-default-model 设置的处理器；未配置时返回 undefined。
+ * @param listProviders - 列出已注册 provider。
+ * @param stream - 底层 llm.stream 调用入口。
+ * @returns 模型客户端与模型标签。
+ */
+export function buildStudioLlmClient(
+  resolveModel: () => ModelRoute | undefined,
+  listProviders: () => Array<{ id: string }>,
+  stream: (options: GenerateOptions) => AsyncIterable<StreamChunk>,
+): StudioLlmSetup {
+  let modelRoute: ModelRoute | undefined
+  try {
+    modelRoute = resolveStudioModel(resolveModel, listProviders)
+  } catch {
+    // resolveStudioModel 仅在「未配置 agent-default-model 且存在注册 provider」时抛错；
+    // 捕获后模型路由不可得只影响创作台，不让插件加载失败。
+    modelRoute = undefined
+  }
+  if (modelRoute === undefined) {
+    return {
+      client: {
+        complete: async () => {
+          throw new Error('未配置创作台模型：请在 Harness 设置 agent-default-model（provider 与 model）')
+        },
+      },
+      modelLabel: '未配置',
+    }
+  }
+  return {
+    client: {
+      async complete(request) {
+        const messages: Message[] = request.messages.map((message) => (
+          message.role === 'assistant'
+            ? createAssistantMessage({ content: [{ type: 'text', text: message.content }], source: { provider: modelRoute.provider, model: modelRoute.model } })
+            : createUserMessage({ content: [{ type: 'text', text: message.content }], source: { kind: 'plugin', plugin: 'dsh-xhs-matrix' } })
+        ))
+        const options: GenerateOptions = {
+          provider: modelRoute.provider,
+          model: modelRoute.model,
+          messages,
+          system: request.system,
+          maxTokens: request.maxTokens,
+        }
+        const assembler = new BlockAssembler()
+        for await (const chunk of stream(options)) assembler.push(chunk)
+        if (assembler.finish.kind !== 'stop') {
+          throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
+        }
+        const text = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
+        return { text }
+      },
+    },
+    modelLabel: `${modelRoute.provider}/${modelRoute.model}`,
+  }
+}
 
 /**
  * 挂载存储、路由、工具与公告。
@@ -85,7 +153,8 @@ export function apply(ctx: Context, config?: Config): void {
     }
 
     // 创作台模型：优先读取 Harness 用户设置 agent-default-model，未配置时探测注册 provider。
-    const modelRoute = resolveStudioModel(
+    // 解析失败（未配置默认模型）只让创作台在调用时给出明确错误，插件照常加载。
+    const { client: llmClient, modelLabel } = buildStudioLlmClient(
       () => {
         try {
           const m = ctx.settings.get(settingsNamespace('agent-default-model')) as { provider?: string; model?: string } | undefined
@@ -97,38 +166,9 @@ export function apply(ctx: Context, config?: Config): void {
         }
       },
       () => ctx.llm.listProviders().map(p => ({ id: p.id })),
+      (options) => ctx.llm.stream(options),
     )
-    // llmClient 经由 ctx.llm.stream 按 modelRoute 路由（不再硬编码 deepseek）。
-    const llmClient: StudioLlmClient = modelRoute === undefined
-      ? {
-          complete: async () => {
-            throw new Error('未配置创作台模型：请在 Harness 设置 agent-default-model')
-          },
-        }
-      : {
-          async complete(request) {
-            const messages: Message[] = request.messages.map((message) => (
-              message.role === 'assistant'
-                ? createAssistantMessage({ content: [{ type: 'text', text: message.content }], source: { provider: modelRoute.provider, model: modelRoute.model } })
-                : createUserMessage({ content: [{ type: 'text', text: message.content }], source: { kind: 'plugin', plugin: 'dsh-xhs-matrix' } })
-            ))
-            const options: GenerateOptions = {
-              provider: modelRoute.provider,
-              model: modelRoute.model,
-              messages,
-              system: request.system,
-              maxTokens: request.maxTokens,
-            }
-            const assembler = new BlockAssembler()
-            for await (const chunk of ctx.llm.stream(options)) assembler.push(chunk)
-            if (assembler.finish.kind !== 'stop') {
-              throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
-            }
-            const text = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
-            return { text }
-          },
-        }
-    const studio = new StudioService(store, llmClient, modelRoute === undefined ? '未配置' : `${modelRoute.provider}/${modelRoute.model}`)
+    const studio = new StudioService(store, llmClient, modelLabel)
 
     // Apify 数据源配置：唯一来源 store 运行时设置（面板写入，无插件 Config 回退）。
     const apifyStore = store.getSettings().apify
