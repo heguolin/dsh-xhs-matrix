@@ -3,7 +3,8 @@
 import { MatrixStore, type PublishedNotePayload } from './store.ts'
 import type { DataSource, NoteWeight } from './types.ts'
 
-const REQUIRED = ['title', 'copy', 'publishedAt'] as const
+// 导入简化：标题 + 正文必填，发布日期缺省用当天（人工导入不要求精确日期）。
+const REQUIRED = ['title', 'copy'] as const
 
 function validateRecord(value: unknown, index: number): PublishedNotePayload {
   if (typeof value !== 'object' || value === null) throw new Error(`第 ${index + 1} 条记录必须是对象`)
@@ -11,7 +12,9 @@ function validateRecord(value: unknown, index: number): PublishedNotePayload {
   for (const field of REQUIRED) {
     if (typeof record[field] !== 'string' || record[field].trim() === '') throw new Error(`第 ${index + 1} 条记录 ${field} 必填`)
   }
-  const publishedAt = record.publishedAt as string
+  const publishedAt = record.publishedAt === undefined
+    ? new Date().toISOString().slice(0, 10)
+    : record.publishedAt as string
   if (Number.isNaN(Date.parse(publishedAt))) throw new Error(`第 ${index + 1} 条记录 publishedAt 无效`)
   const weight = record.weight === undefined ? 0 : Number(record.weight)
   if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new Error(`第 ${index + 1} 条记录 weight 必须是 0-5 的整数`)

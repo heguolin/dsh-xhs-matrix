@@ -128,6 +128,21 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect((res.body as { error: string }).error).toContain('metrics')
   })
 
+  it('导入仅标题+正文时自动补当天发布日期', async () => {
+    const accountId = await seedAccount()
+    const res = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: '标题一', copy: '正文一' }, { title: '标题二', copy: '正文二' }]) }),
+    })
+    expect(res.status).toBe(201)
+    expect((res.body as { imported: number }).imported).toBe(2)
+    const notes = store.listPublishedNotes(accountId)
+    expect(notes).toHaveLength(2)
+    expect(notes[0].title).toBe('标题一')
+    // 发布日期缺省为当天日期（YYYY-MM-DD），保证人工导入无需填写精确日期。
+    expect(notes[0].publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
   it('创作台保存草稿不要求 topicId', async () => {
     const accountId = await seedAccount()
     const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }) }

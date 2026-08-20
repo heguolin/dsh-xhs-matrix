@@ -105,7 +105,7 @@ export function DraftEditor({ api, accountId, draft, onSaved }: { api: XhsApi; a
               <div className={css.source}><b>本地笔记 <span className={css.weightBadge}>高权重参考</span></b>引用 {draft.evidence.noteIds.length} 篇已发布笔记</div>
             )}
             {draft.evidence.trendIds.length > 0 && (
-              <div className={css.source}><b>外部趋势 <span className={css.weightBadge}>Apify</span></b>引用 {draft.evidence.trendIds.length} 个趋势样本</div>
+              <div className={css.source}><b>已采纳爆款参考 <span className={css.weightBadge}>外部数据</span></b>引用 {draft.evidence.trendIds.length} 个爆款样本</div>
             )}
             <div className={css.source}><b>匹配理由</b>{draft.evidence.reasons.join('；')}</div>
             <div className={css.source}><b>编辑提醒</b>已生成原创草稿，不复制外部原文；保存后仍为草稿状态。</div>

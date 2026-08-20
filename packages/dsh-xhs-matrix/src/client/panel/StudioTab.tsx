@@ -7,7 +7,7 @@ interface StudioEvidence { persona?: string; noteIds: string[]; trendIds: string
 
 /**
  * 专属创作台（设计稿 content/creative-studio.html）：
- * 对话区最大化 + 右侧本次创作上下文（人设/知识库/趋势/指标快照），
+ * 对话区最大化 + 右侧本次创作上下文（人设/知识库/已采纳爆款参考/指标快照），
  * 上下文始终可见，生成结果通过人工操作保存为草稿。
  */
 export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accountId: string; onOpenDraft: () => void }) {
@@ -18,17 +18,17 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
   const [sending, setSending] = useState(false)
   const [evidence, setEvidence] = useState<StudioEvidence | undefined>(undefined)
   // 创作上下文统计
-  const [context, setContext] = useState<{ personaName: string; hookStyles: string[]; noteCount: number; highCount: number; trendCount: number; metricCount: number }>({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, trendCount: 0, metricCount: 0 })
+  const [context, setContext] = useState<{ personaName: string; hookStyles: string[]; noteCount: number; highCount: number; viralCount: number; metricCount: number }>({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0, metricCount: 0 })
 
   const refresh = useCallback(async () => {
-    if (accountId === '') { setMessages([]); setContext({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, trendCount: 0, metricCount: 0 }); return }
+    if (accountId === '') { setMessages([]); setContext({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0, metricCount: 0 }); return }
     try {
-      const [msgList, accountList, personaList, noteList, trendList, metricList] = await Promise.all([
+      const [msgList, accountList, personaList, noteList, viralList, metricList] = await Promise.all([
         api.listStudioMessages(accountId),
         api.listAccounts(),
         api.listPersonas(),
         api.listNotes(accountId),
-        api.listTrends(accountId),
+        api.listViralItems(accountId, 'accepted'),
         api.listMetrics(accountId),
       ])
       setMessages(msgList)
@@ -38,7 +38,7 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
         hookStyles: persona?.hookStyles ?? [],
         noteCount: noteList.length,
         highCount: noteList.filter(n => n.weight >= 3).length,
-        trendCount: trendList.length,
+        viralCount: viralList.length,
         metricCount: metricList.length,
       })
       setError('')
@@ -67,14 +67,8 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
   const saveLastAsDraft = async (): Promise<void> => {
     const last = [...messages].reverse().find(m => m.role === 'assistant')
     if (last === undefined) { setError('还没有生成结果可保存'); return }
-    const topicId = window.prompt('请输入或粘贴一个选题标题，将先加入选题池再保存草稿：', '')
-    if (topicId === null || topicId.trim() === '') return
     try {
-      await api.addTopic(topicId.trim())
-      const topics = await api.listTopics()
-      const created = topics.filter(t => t.title === topicId.trim()).at(-1)
-      if (created === undefined) { setError('选题创建失败'); return }
-      await api.studioSaveDraft(accountId, created.id, last.content, '')
+      await api.studioSaveDraft(accountId, last.content, '')
       setError('')
       await refresh()
     } catch (e) {
@@ -95,7 +89,7 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
         <header className={css.studioTop}>
           <div>
             <strong>专属创作台</strong>
-            <div className={css.studioTopSub}>人设、知识库、Apify 趋势已隔离加载</div>
+            <div className={css.studioTopSub}>人设、知识库、已采纳爆款参考已隔离加载</div>
           </div>
           <span className={css.pill}>● 仅矩阵内容</span>
         </header>
@@ -106,10 +100,10 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
             <div className={css.msg}>
               <div className={css.msgAvatar}>薯</div>
               <div className={css.msgBubble}>
-                你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、趋势选题和草稿。
+                你好，我是本账号的专属创作助手。我只处理当前账号的人设、已发布内容、已采纳爆款参考和草稿。
                 <div className={css.studioResult}>
                   <b>已加载创作上下文</b>
-                  人设规则 · {context.noteCount} 篇本地知识库 · {context.highCount} 篇高权重样本 · {context.trendCount} 个 Apify 趋势样本 · {context.metricCount} 条指标历史快照
+                  人设规则 · {context.noteCount} 篇本地知识库 · {context.highCount} 篇高权重样本 · {context.viralCount} 个已采纳爆款参考 · {context.metricCount} 条指标历史快照
                 </div>
               </div>
             </div>
@@ -178,8 +172,8 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
           <div className={css.contextLine}>权重 5 样本优先参考，权重 0 样本不进入推荐</div>
         </div>
         <div className={css.contextCard}>
-          <h5>外部趋势</h5>
-          <div className={css.contextLine}>{context.trendCount} 个 Apify 趋势样本</div>
+          <h5>已采纳爆款参考</h5>
+          <div className={css.contextLine}>{context.viralCount} 个已采纳爆款</div>
           <div className={css.contextLine}>仅使用公开数据，不复制原文</div>
         </div>
         <div className={css.contextCard}>

@@ -4,7 +4,7 @@ import css from './panel.module.css'
 import { DraftEditor } from './DraftEditor.tsx'
 
 interface DraftRow {
-  id: string; accountId: string; topicId: string; date: string
+  id: string; accountId: string; date: string
   copy: string; coverPrompt: string; tags?: string; status: string
   metrics?: { reads: number; likes: number; comments: number; collected: string }
   evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }

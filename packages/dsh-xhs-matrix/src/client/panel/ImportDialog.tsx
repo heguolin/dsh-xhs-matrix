@@ -2,19 +2,23 @@ import { useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
 
-/** 后台数据导入：CSV / JSON 粘贴导入当前账号已发布笔记。 */
+/** 后台数据导入简化版：标题（每行一个）+ 正文（与标题行号对应），构造 JSON 数组导入当前账号已发布笔记。 */
 export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountId: string; onDone: () => void }) {
-  const [format, setFormat] = useState<'csv' | 'json'>('json')
-  const [content, setContent] = useState('')
+  const [titles, setTitles] = useState('')
+  const [copies, setCopies] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
   const run = async (): Promise<void> => {
-    if (content.trim() === '') { setError('请输入导入内容'); return }
+    const titleLines = titles.split('\n').map(line => line.trim()).filter(line => line !== '')
+    if (titleLines.length === 0) { setError('请输入至少一个标题'); return }
+    const copyLines = copies.split('\n')
+    const records = titleLines.map((title, index) => ({ title, copy: copyLines[index] ?? '' }))
     try {
-      const count = await api.importPublishedNotes(accountId, format, content)
+      const count = await api.importPublishedNotes(accountId, 'json', JSON.stringify(records))
       setNotice(`已导入 ${count} 条已发布笔记。`)
-      setContent('')
+      setTitles('')
+      setCopies('')
       setError('')
       onDone()
     } catch (e) {
@@ -27,15 +31,12 @@ export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountI
       {error !== '' && <div className={css.danger}>{error}</div>}
       {notice !== '' && <div className={css.success}>{notice}</div>}
       <div className={css.field}>
-        <label>格式</label>
-        <select className={css.input} value={format} onChange={e => setFormat(e.target.value as 'csv' | 'json')}>
-          <option value="json">JSON 数组</option>
-          <option value="csv">CSV（title,copy,publishedAt,...）</option>
-        </select>
+        <label>标题（每行一个）</label>
+        <textarea className={css.input} rows={5} value={titles} onChange={e => setTitles(e.target.value)} placeholder={'标题 1\n标题 2\n标题 3'} />
       </div>
       <div className={css.field}>
-        <label>内容</label>
-        <textarea className={css.input} rows={6} value={content} onChange={e => setContent(e.target.value)} placeholder={format === 'json' ? '[{"title":"...","copy":"...","publishedAt":"2026-08-01"}]' : 'title,copy,publishedAt\n...'} />
+        <label>正文（与标题行号对应）</label>
+        <textarea className={css.input} rows={6} value={copies} onChange={e => setCopies(e.target.value)} placeholder={'与左侧标题逐行对应的正文内容\n（行数不足时对应标题正文为空）'} />
       </div>
       <button className={css.primary} onClick={() => void run()}>导入</button>
     </div>
