@@ -60,6 +60,8 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   const [error, setError] = useState('')
   const [collecting, setCollecting] = useState(false)
   const [reviewingId, setReviewingId] = useState('')
+  // 展开中的批次 id；默认展开最新一个批次，其余收起。
+  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null)
   // Apify 数据源配置弹窗状态
   const [configOpen, setConfigOpen] = useState(false)
   const [apifyConfigured, setApifyConfigured] = useState(false)
@@ -79,6 +81,13 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   }, [api, accountId, filter])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  // 数据加载后默认展开最新批次（其余收起）。
+  useEffect(() => {
+    if (batches.length > 0 && (expandedBatchId === null || !batches.some(b => b.id === expandedBatchId))) {
+      setExpandedBatchId(batches[0].id)
+    }
+  }, [batches, expandedBatchId])
 
   // 启动时读取 Apify 配置，判断是否已配置数据源。
   useEffect(() => {
@@ -201,21 +210,38 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
             {!apifyConfigured && ' 先点击「配置 Apify」填写 Actor ID 与 API Token。'}
           </div>
         )}
-        {batches.map(batch => (
-          <div key={batch.id} className={css.panel} style={{ marginTop: 10 }}>
-            <div className={css.panelTitle}>
-              <span>批次 · {batch.collectedAt.slice(0, 16).replace('T', ' ')}{batch.id === 'legacy' ? '（历史）' : ''}</span>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span className={css.muted}>{batch.itemCount} 条</span>
-                <button className={css.dangerBtn} onClick={() => void deleteBatch(batch.id)}>删除该批次</button>
+        {batches.map(batch => {
+          const expanded = expandedBatchId === batch.id
+          return (
+            <div key={batch.id} className={css.panel} style={{ marginTop: 10 }}>
+              <div
+                className={css.panelTitle}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setExpandedBatchId(expanded ? null : batch.id)}
+              >
+                <span>
+                  {expanded ? '▾' : '▸'} 批次 · {batch.collectedAt.slice(0, 16).replace('T', ' ')}{batch.id === 'legacy' ? '（历史）' : ''}
+                </span>
+                <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span className={css.muted}>{batch.itemCount} 条</span>
+                  <span className={css.muted}>{expanded ? '点击收起' : '点击查看'}</span>
+                  <button
+                    className={css.dangerBtn}
+                    onClick={e => { e.stopPropagation(); void deleteBatch(batch.id) }}
+                  >删除该批次</button>
+                </span>
               </div>
+              {expanded && (
+                <>
+                  {batch.items.length === 0 && <div className={css.muted}>该批次在当前筛选下没有条目。</div>}
+                  {batch.items.map(item => (
+                    <ViralRow key={item.id} item={item} busy={reviewingId === item.id} onReview={(id, status) => void review(id, status)} />
+                  ))}
+                </>
+              )}
             </div>
-            {batch.items.length === 0 && <div className={css.muted}>该批次在当前筛选下没有条目。</div>}
-            {batch.items.map(item => (
-              <ViralRow key={item.id} item={item} busy={reviewingId === item.id} onReview={(id, status) => void review(id, status)} />
-            ))}
-          </div>
-        ))}
+          )
+        })}
       </section>
 
       {/* Apify 数据源配置弹窗 */}

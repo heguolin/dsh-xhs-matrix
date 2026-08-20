@@ -339,122 +339,122 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"field": "hv-J7W_field",
-			"dialogRowActions": "hv-J7W_dialogRowActions",
-			"studioLayout": "hv-J7W_studioLayout",
-			"group": "hv-J7W_group",
-			"msgBubble": "hv-J7W_msgBubble",
-			"chips": "hv-J7W_chips",
-			"messages": "hv-J7W_messages",
-			"button": "hv-J7W_button",
-			"topicReason": "hv-J7W_topicReason",
-			"card": "hv-J7W_card",
-			"studioResult": "hv-J7W_studioResult",
-			"pill": "hv-J7W_pill",
-			"badgeWarn": "hv-J7W_badgeWarn",
-			"statusDot": "hv-J7W_statusDot",
-			"sourcePanel": "hv-J7W_sourcePanel",
-			"below": "hv-J7W_below",
-			"chat": "hv-J7W_chat",
-			"tabActive": "hv-J7W_tabActive",
-			"msg": "hv-J7W_msg",
-			"chatSend": "hv-J7W_chatSend",
-			"brandLogo": "hv-J7W_brandLogo",
-			"chathead": "hv-J7W_chathead",
-			"panelTitle": "hv-J7W_panelTitle",
-			"muted": "hv-J7W_muted",
-			"badgeGray": "hv-J7W_badgeGray",
-			"badgeDanger": "hv-J7W_badgeDanger",
-			"spacer": "hv-J7W_spacer",
-			"accountItem": "hv-J7W_accountItem",
-			"personaAvatar": "hv-J7W_personaAvatar",
-			"panel": "hv-J7W_panel",
-			"face": "hv-J7W_face",
-			"studioSendGhost": "hv-J7W_studioSendGhost",
-			"dialogClose": "hv-J7W_dialogClose",
-			"studioMain": "hv-J7W_studioMain",
-			"libBody": "hv-J7W_libBody",
-			"badge": "hv-J7W_badge",
-			"topicItem": "hv-J7W_topicItem",
-			"chatInput": "hv-J7W_chatInput",
-			"postMeta": "hv-J7W_postMeta",
-			"pillWarn": "hv-J7W_pillWarn",
-			"personaLayout": "hv-J7W_personaLayout",
-			"ghostBtn": "hv-J7W_ghostBtn",
-			"metrics": "hv-J7W_metrics",
-			"ok": "hv-J7W_ok",
-			"editbar": "hv-J7W_editbar",
-			"badgeGreen": "hv-J7W_badgeGreen",
-			"metric": "hv-J7W_metric",
-			"overlay": "hv-J7W_overlay",
-			"bubble": "hv-J7W_bubble",
-			"score": "hv-J7W_score",
-			"topbar": "hv-J7W_topbar",
-			"postTitle": "hv-J7W_postTitle",
-			"active": "hv-J7W_active",
-			"warn": "hv-J7W_warn",
-			"libMeta": "hv-J7W_libMeta",
-			"studioTop": "hv-J7W_studioTop",
-			"draftLayout": "hv-J7W_draftLayout",
-			"dangerBtn": "hv-J7W_dangerBtn",
-			"weightBadge": "hv-J7W_weightBadge",
-			"libTitle": "hv-J7W_libTitle",
-			"viewHost": "hv-J7W_viewHost",
-			"meter": "hv-J7W_meter",
-			"miniThumb": "hv-J7W_miniThumb",
-			"scoreLow": "hv-J7W_scoreLow",
-			"bar": "hv-J7W_bar",
-			"navItem": "hv-J7W_navItem",
-			"sidebar": "hv-J7W_sidebar",
-			"tag": "hv-J7W_tag",
-			"overview": "hv-J7W_overview",
-			"filterRow": "hv-J7W_filterRow",
-			"viewGrid": "hv-J7W_viewGrid",
-			"studioComposer": "hv-J7W_studioComposer",
-			"tabs": "hv-J7W_tabs",
-			"accountName": "hv-J7W_accountName",
-			"personaName": "hv-J7W_personaName",
-			"post": "hv-J7W_post",
-			"dialogRow": "hv-J7W_dialogRow",
-			"input": "hv-J7W_input",
-			"studioTopSub": "hv-J7W_studioTopSub",
-			"navIcon": "hv-J7W_navIcon",
 			"context": "hv-J7W_context",
-			"postBody": "hv-J7W_postBody",
-			"contextLine": "hv-J7W_contextLine",
-			"filter": "hv-J7W_filter",
-			"empty": "hv-J7W_empty",
-			"topicTitle": "hv-J7W_topicTitle",
-			"topbarRight": "hv-J7W_topbarRight",
-			"contextCard": "hv-J7W_contextCard",
-			"rowActions": "hv-J7W_rowActions",
-			"personaDesc": "hv-J7W_personaDesc",
-			"on": "hv-J7W_on",
-			"thumb": "hv-J7W_thumb",
 			"brand": "hv-J7W_brand",
-			"topbarSub": "hv-J7W_topbarSub",
-			"modeSwitch": "hv-J7W_modeSwitch",
+			"badgeDanger": "hv-J7W_badgeDanger",
 			"msgAvatar": "hv-J7W_msgAvatar",
-			"me": "hv-J7W_me",
-			"contextline": "hv-J7W_contextline",
-			"danger": "hv-J7W_danger",
-			"error": "hv-J7W_error",
-			"studioSend": "hv-J7W_studioSend",
-			"content": "hv-J7W_content",
-			"weight": "hv-J7W_weight",
-			"primary": "hv-J7W_primary",
-			"dialog": "hv-J7W_dialog",
-			"textarea": "hv-J7W_textarea",
-			"idle": "hv-J7W_idle",
+			"badge": "hv-J7W_badge",
+			"active": "hv-J7W_active",
+			"score": "hv-J7W_score",
+			"messages": "hv-J7W_messages",
+			"brandLogo": "hv-J7W_brandLogo",
+			"chat": "hv-J7W_chat",
+			"libBody": "hv-J7W_libBody",
+			"empty": "hv-J7W_empty",
 			"workspace": "hv-J7W_workspace",
-			"accountAdd": "hv-J7W_accountAdd",
+			"dialogRow": "hv-J7W_dialogRow",
 			"source": "hv-J7W_source",
-			"personaItem": "hv-J7W_personaItem",
-			"success": "hv-J7W_success",
-			"personaList": "hv-J7W_personaList",
+			"chips": "hv-J7W_chips",
+			"muted": "hv-J7W_muted",
+			"postTitle": "hv-J7W_postTitle",
+			"viewGrid": "hv-J7W_viewGrid",
+			"button": "hv-J7W_button",
+			"personaAvatar": "hv-J7W_personaAvatar",
+			"sourcePanel": "hv-J7W_sourcePanel",
+			"danger": "hv-J7W_danger",
+			"personaLayout": "hv-J7W_personaLayout",
+			"accountAdd": "hv-J7W_accountAdd",
+			"tag": "hv-J7W_tag",
+			"topicItem": "hv-J7W_topicItem",
+			"chatSend": "hv-J7W_chatSend",
+			"msgBubble": "hv-J7W_msgBubble",
+			"studioSend": "hv-J7W_studioSend",
+			"contextline": "hv-J7W_contextline",
+			"metrics": "hv-J7W_metrics",
+			"postBody": "hv-J7W_postBody",
+			"me": "hv-J7W_me",
+			"tabs": "hv-J7W_tabs",
+			"dialogRowActions": "hv-J7W_dialogRowActions",
+			"dangerBtn": "hv-J7W_dangerBtn",
+			"overlay": "hv-J7W_overlay",
+			"personaName": "hv-J7W_personaName",
+			"dialogClose": "hv-J7W_dialogClose",
+			"idle": "hv-J7W_idle",
 			"tab": "hv-J7W_tab",
+			"pill": "hv-J7W_pill",
+			"modeSwitch": "hv-J7W_modeSwitch",
+			"success": "hv-J7W_success",
+			"meter": "hv-J7W_meter",
+			"studioTop": "hv-J7W_studioTop",
+			"metric": "hv-J7W_metric",
+			"topbarSub": "hv-J7W_topbarSub",
+			"libRow": "hv-J7W_libRow",
+			"pillWarn": "hv-J7W_pillWarn",
+			"studioLayout": "hv-J7W_studioLayout",
+			"studioResult": "hv-J7W_studioResult",
+			"studioTopSub": "hv-J7W_studioTopSub",
+			"input": "hv-J7W_input",
+			"badgeGray": "hv-J7W_badgeGray",
+			"below": "hv-J7W_below",
+			"bubble": "hv-J7W_bubble",
+			"sidebar": "hv-J7W_sidebar",
+			"accountName": "hv-J7W_accountName",
+			"filter": "hv-J7W_filter",
+			"personaDesc": "hv-J7W_personaDesc",
+			"rowActions": "hv-J7W_rowActions",
+			"viewHost": "hv-J7W_viewHost",
+			"card": "hv-J7W_card",
+			"overview": "hv-J7W_overview",
+			"personaItem": "hv-J7W_personaItem",
+			"weightBadge": "hv-J7W_weightBadge",
+			"field": "hv-J7W_field",
+			"msg": "hv-J7W_msg",
+			"chatInput": "hv-J7W_chatInput",
+			"draftLayout": "hv-J7W_draftLayout",
+			"personaList": "hv-J7W_personaList",
+			"filterRow": "hv-J7W_filterRow",
+			"accountItem": "hv-J7W_accountItem",
+			"content": "hv-J7W_content",
+			"studioComposer": "hv-J7W_studioComposer",
+			"tabActive": "hv-J7W_tabActive",
+			"error": "hv-J7W_error",
+			"ok": "hv-J7W_ok",
+			"on": "hv-J7W_on",
+			"bar": "hv-J7W_bar",
+			"post": "hv-J7W_post",
+			"postMeta": "hv-J7W_postMeta",
+			"panelTitle": "hv-J7W_panelTitle",
+			"statusDot": "hv-J7W_statusDot",
+			"thumb": "hv-J7W_thumb",
+			"panel": "hv-J7W_panel",
+			"topbar": "hv-J7W_topbar",
 			"draftEditor": "hv-J7W_draftEditor",
-			"libRow": "hv-J7W_libRow"
+			"badgeGreen": "hv-J7W_badgeGreen",
+			"weight": "hv-J7W_weight",
+			"scoreLow": "hv-J7W_scoreLow",
+			"topbarRight": "hv-J7W_topbarRight",
+			"libTitle": "hv-J7W_libTitle",
+			"primary": "hv-J7W_primary",
+			"contextCard": "hv-J7W_contextCard",
+			"miniThumb": "hv-J7W_miniThumb",
+			"textarea": "hv-J7W_textarea",
+			"libMeta": "hv-J7W_libMeta",
+			"topicTitle": "hv-J7W_topicTitle",
+			"face": "hv-J7W_face",
+			"topicReason": "hv-J7W_topicReason",
+			"navItem": "hv-J7W_navItem",
+			"editbar": "hv-J7W_editbar",
+			"group": "hv-J7W_group",
+			"navIcon": "hv-J7W_navIcon",
+			"studioMain": "hv-J7W_studioMain",
+			"warn": "hv-J7W_warn",
+			"spacer": "hv-J7W_spacer",
+			"badgeWarn": "hv-J7W_badgeWarn",
+			"studioSendGhost": "hv-J7W_studioSendGhost",
+			"ghostBtn": "hv-J7W_ghostBtn",
+			"contextLine": "hv-J7W_contextLine",
+			"dialog": "hv-J7W_dialog",
+			"chathead": "hv-J7W_chathead"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -2475,6 +2475,7 @@ window.__ModuleLoader__.load({
 			const [error, setError] = (0, react.useState)("");
 			const [collecting, setCollecting] = (0, react.useState)(false);
 			const [reviewingId, setReviewingId] = (0, react.useState)("");
+			const [expandedBatchId, setExpandedBatchId] = (0, react.useState)(null);
 			const [configOpen, setConfigOpen] = (0, react.useState)(false);
 			const [apifyConfigured, setApifyConfigured] = (0, react.useState)(false);
 			const [actorId, setActorId] = (0, react.useState)("");
@@ -2497,6 +2498,9 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			(0, react.useEffect)(() => {
+				if (batches.length > 0 && (expandedBatchId === null || !batches.some((b) => b.id === expandedBatchId))) setExpandedBatchId(batches[0].id);
+			}, [batches, expandedBatchId]);
 			(0, react.useEffect)(() => {
 				api.getApifyConfig().then((config) => {
 					setApifyConfigured(config.actorId !== "" && config.apiToken !== "");
@@ -2647,43 +2651,55 @@ window.__ModuleLoader__.load({
 							className: panel_module_css_default.muted,
 							children: ["爆款池为空。点击「采集爆款」从外部数据源拉取内容并按当前人设与知识库排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
 						}),
-						batches.map((batch) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.panel,
-							style: { marginTop: 10 },
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						batches.map((batch) => {
+							const expanded = expandedBatchId === batch.id;
+							return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panel,
+								style: { marginTop: 10 },
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: panel_module_css_default.panelTitle,
+									style: { cursor: "pointer" },
+									onClick: () => setExpandedBatchId(expanded ? null : batch.id),
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-										"批次 · ",
+										expanded ? "▾" : "▸",
+										" 批次 · ",
 										batch.collectedAt.slice(0, 16).replace("T", " "),
 										batch.id === "legacy" ? "（历史）" : ""
-									] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										style: {
 											display: "flex",
 											gap: 8,
 											alignItems: "center"
 										},
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-											className: panel_module_css_default.muted,
-											children: [batch.itemCount, " 条"]
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: panel_module_css_default.dangerBtn,
-											onClick: () => void deleteBatch(batch.id),
-											children: "删除该批次"
-										})]
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: panel_module_css_default.muted,
+												children: [batch.itemCount, " 条"]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												className: panel_module_css_default.muted,
+												children: expanded ? "点击收起" : "点击查看"
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.dangerBtn,
+												onClick: (e) => {
+													e.stopPropagation();
+													deleteBatch(batch.id);
+												},
+												children: "删除该批次"
+											})
+										]
 									})]
-								}),
-								batch.items.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								}), expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [batch.items.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: panel_module_css_default.muted,
 									children: "该批次在当前筛选下没有条目。"
-								}),
-								batch.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralRow, {
+								}), batch.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralRow, {
 									item,
 									busy: reviewingId === item.id,
 									onReview: (id, status) => void review(id, status)
-								}, item.id))
-							]
-						}, batch.id))
+								}, item.id))] })]
+							}, batch.id);
+						})
 					]
 				}),
 				configOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
