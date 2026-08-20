@@ -223,7 +223,8 @@ export class MatrixStore {
     let items = this.data.viralItems
     if (accountId !== undefined) items = items.filter(i => i.accountId === accountId)
     if (status !== undefined) items = items.filter(i => i.status === status)
-    if (batchId !== undefined) items = items.filter(i => i.batchId === batchId)
+    // 历史条目（无 batchId）归入 legacy 批次，与 listViralBatches 分组规则一致。
+    if (batchId !== undefined) items = items.filter(i => (i.batchId ?? 'legacy') === batchId)
     return items
   }
 

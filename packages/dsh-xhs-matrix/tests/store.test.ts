@@ -173,6 +173,18 @@ describe('MatrixStore', () => {
     expect(() => store.reviewViralItem('a2', item.id, 'accepted')).toThrow(/账号/)
   })
 
+  it('历史条目（无 batchId）归入 legacy 批次且可查询', () => {
+    const store = new MatrixStore(file)
+    const account = store.upsertAccount({ name: 'a', personaId: '', enabled: true })
+    store.saveViralItem({ accountId: account.id, title: '历史爆款', body: '正文', source: 'apify', score: 10, reasons: [] })
+    const batches = store.listViralBatches(account.id)
+    expect(batches).toHaveLength(1)
+    expect(batches[0].id).toBe('legacy')
+    expect(batches[0].itemCount).toBe(1)
+    // legacy 批次按 batchId 过滤查询能取到无 batchId 的条目（回归：之前查不到）。
+    expect(store.listViralItems(account.id, undefined, 'legacy')).toHaveLength(1)
+  })
+
   it('草稿保存自动提取话题标签', () => {
     const store = new MatrixStore(file)
     const account = store.upsertAccount({ name: 'a', personaId: '', enabled: true })
