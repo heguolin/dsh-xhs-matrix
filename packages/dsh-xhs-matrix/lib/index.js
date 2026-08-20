@@ -55,20 +55,29 @@ var ApifyViralProvider = class {
 					searchKeyword: request.query,
 					keyword: request.query,
 					search: request.query,
-					operation: "note search",
+					operation: "search_notes",
+					max_items: limit,
 					maxItems: limit,
 					maxResults: limit
 				}),
 				signal: AbortSignal.timeout(this.config.requestTimeoutMs)
 			});
-			if (!runResponse.ok) return {
-				items: [],
-				status: "failed",
-				error: `Apify Run HTTP ${runResponse.status}`
-			};
+			if (!runResponse.ok) {
+				let detail = "";
+				try {
+					detail = (await runResponse.json()).error?.message ?? "";
+				} catch {}
+				const suffix = detail !== "" ? `：${detail}` : "";
+				return {
+					items: [],
+					status: "failed",
+					error: `Apify Run HTTP ${runResponse.status}${suffix}`
+				};
+			}
 			const run = await runResponse.json();
 			const runId = run.data?.id;
 			const datasetId = run.data?.defaultDatasetId;
+			const kvStoreId = run.data?.defaultKeyValueStoreId;
 			if (runId === void 0 || datasetId === void 0) return {
 				items: [],
 				status: "failed",
@@ -98,6 +107,21 @@ var ApifyViralProvider = class {
 				status: "failed",
 				error: "Apify Run 等待超时"
 			};
+			if (kvStoreId !== void 0) try {
+				const outputResponse = await this.fetcher(`https://api.apify.com/v2/key-value-stores/${encodeURIComponent(kvStoreId)}/records/OUTPUT?token=${encodeURIComponent(this.config.apiToken)}`, {
+					headers,
+					signal: AbortSignal.timeout(this.config.requestTimeoutMs)
+				});
+				if (outputResponse.ok) {
+					const output = await outputResponse.json();
+					const warnings = Array.isArray(output.warnings) ? output.warnings.filter((w) => typeof w === "string") : [];
+					if (warnings.length > 0) return {
+						items: [],
+						status: "failed",
+						error: warnings.join("；")
+					};
+				}
+			} catch {}
 			const datasetResponse = await this.fetcher(`https://api.apify.com/v2/datasets/${encodeURIComponent(datasetId)}/items?clean=true&limit=${limit}&token=${encodeURIComponent(this.config.apiToken)}`, {
 				headers,
 				signal: AbortSignal.timeout(this.config.requestTimeoutMs)

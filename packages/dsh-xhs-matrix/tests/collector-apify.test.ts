@@ -18,7 +18,8 @@ describe('ApifyViralProvider', () => {
     const result = await provider.search({ accountId: 'a1', query: 'AI 工具', maxItems: 5 })
     expect(result.status).toBe('success')
     expect(runBody?.searchKeyword).toBe('AI 工具')
-    expect(runBody?.operation).toBe('note search')
+    expect(runBody?.operation).toBe('search_notes')
+    expect(runBody?.max_items).toBe(5)
     expect(result.items[0]?.body).toBe('正文')
   })
   it('Run 401 返回失败', async () => {
@@ -27,5 +28,27 @@ describe('ApifyViralProvider', () => {
     const result = await provider.search({ accountId: 'a1', query: 'q', maxItems: 5 })
     expect(result.status).toBe('failed')
     expect(result.error).toContain('401')
+  })
+  it('Run 400 带 Apify 校验错误详情', async () => {
+    const fetcher = async () => new Response(JSON.stringify({ error: { message: 'Input is not valid: Field input.operation ...' } }), { status: 400 })
+    const provider = new ApifyViralProvider({ actorId: 'o/a', apiToken: 'tok', maxItems: 10, requestTimeoutMs: 5000, maxPolls: 2 }, { fetcher: fetcher as typeof fetch, sleep: async () => {} })
+    const result = await provider.search({ accountId: 'a1', query: 'q', maxItems: 5 })
+    expect(result.status).toBe('failed')
+    expect(result.error).toContain('Input is not valid')
+  })
+  it('Run 成功但 OUTPUT 带 warning（如免费计划）时返回 failed 并透传警告', async () => {
+    const fetcher = async (url: string) => {
+      if (String(url).includes('/runs')) {
+        return new Response(JSON.stringify({ data: { id: 'r1', defaultDatasetId: 'd1', defaultKeyValueStoreId: 'kv1', status: 'SUCCEEDED' } }), { status: 200 })
+      }
+      if (String(url).includes('/key-value-stores/kv1/records/OUTPUT')) {
+        return new Response(JSON.stringify({ operation: 'search_notes', itemCount: 0, warnings: ['继续使用此 Actor 需要 Apify 付费计划。'] }), { status: 200 })
+      }
+      return new Response(JSON.stringify({ data: { status: 'SUCCEEDED' } }), { status: 200 })
+    }
+    const provider = new ApifyViralProvider({ actorId: 'o/a', apiToken: 'tok', maxItems: 10, requestTimeoutMs: 5000, maxPolls: 2 }, { fetcher: fetcher as typeof fetch, sleep: async () => {} })
+    const result = await provider.search({ accountId: 'a1', query: 'q', maxItems: 5 })
+    expect(result.status).toBe('failed')
+    expect(result.error).toContain('付费计划')
   })
 })
