@@ -1,6 +1,8 @@
-/** 存储文件版本迁移。 */
+/** 存储文件版本迁移（v1/v2 → v3）。 */
 
-import type { Account, CollectionStatus, Draft, MatrixSettings, Persona, StoreFile } from './types.ts'
+import type {
+  Account, CollectionStatus, Draft, MatrixSettings, MetricSnapshot, Persona, PublishedNote, StoreFile, StudioMessage,
+} from './types.ts'
 
 /** 运行时设置默认值（存于 migration 模块，避免 store↔migration 循环依赖）。 */
 export function defaultMatrixSettings(): MatrixSettings {
@@ -22,18 +24,59 @@ type VersionOneAccount = Omit<Account, 'connection' | 'collection' | 'collection
   collectionStatus?: CollectionStatus
 }
 
-/** 旧版存储文件的最小输入。 */
+/** v2 旧版趋势样本（迁移为爆款池条目）。 */
+interface VersionTwoTrendSample {
+  id: string
+  accountId: string
+  title: string
+  summary?: string
+  desc?: string
+  sourceUrl?: string
+  source: string
+  publishedAt?: string
+  collectedAt: string
+  status?: string
+}
+
+/** 旧版草稿（v2 含冗余 topicId 字段）。 */
+type LegacyDraft = Draft & { topicId?: string }
+
+/** v1 存储文件的最小输入。 */
 export interface VersionOneStoreFile {
   version: 1
   accounts?: VersionOneAccount[]
   personas?: Persona[]
   topics?: unknown[]
   negatives?: unknown[]
-  drafts?: Draft[]
+  drafts?: LegacyDraft[]
 }
 
-/** 将 version 1 存储迁移到 version 3（v2 输入的完整迁移在后续任务实现）；旧版独立约束不会迁移。 */
-export function migrateStoreFile(file: VersionOneStoreFile): StoreFile {
+/** v2 存储文件输入（含趋势样本与已发布知识库）。 */
+export interface VersionTwoStoreFile {
+  version: 2
+  accounts?: VersionOneAccount[]
+  personas?: Persona[]
+  topics?: unknown[]
+  negatives?: unknown[]
+  drafts?: LegacyDraft[]
+  publishedNotes?: PublishedNote[]
+  metricSnapshots?: MetricSnapshot[]
+  trendSamples?: VersionTwoTrendSample[]
+  studioMessages?: StudioMessage[]
+  settings?: MatrixSettings
+}
+
+/** 迁移输入：v1 或 v2 存储文件。 */
+export type LegacyStoreFile = VersionOneStoreFile | VersionTwoStoreFile
+
+/** 生成迁移条目 id（时间戳 + 随机后缀）。 */
+function nextId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+}
+
+/** 将 v1/v2 存储迁移到 v3：trendSamples 转为爆款池 pending 条目、topics/negatives 丢弃、draft 去 topicId。 */
+export function migrateStoreFile(file: LegacyStoreFile): StoreFile {
+  const defaults = defaultMatrixSettings()
   return {
     version: 3,
     accounts: (file.accounts ?? []).map(account => ({
@@ -43,11 +86,25 @@ export function migrateStoreFile(file: VersionOneStoreFile): StoreFile {
       collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' },
     })),
     personas: file.personas ?? [],
-    drafts: file.drafts ?? [],
-    publishedNotes: [],
-    metricSnapshots: [],
-    viralItems: [],
-    studioMessages: [],
-    settings: defaultMatrixSettings(),
+    drafts: (file.drafts ?? []).map(({ topicId: _topicId, ...draft }) => draft),
+    publishedNotes: file.version === 2 ? file.publishedNotes ?? [] : [],
+    metricSnapshots: file.version === 2 ? file.metricSnapshots ?? [] : [],
+    viralItems: (file.version === 2 ? file.trendSamples ?? [] : []).map(sample => ({
+      id: nextId(),
+      accountId: sample.accountId,
+      title: sample.title,
+      body: sample.summary ?? sample.desc ?? '',
+      sourceUrl: sample.sourceUrl,
+      source: sample.source === 'manual' ? 'manual' : 'apify',
+      status: 'pending',
+      score: 0,
+      reasons: ['历史趋势样本迁移'],
+      publishedAt: sample.publishedAt,
+      collectedAt: sample.collectedAt,
+    })),
+    studioMessages: file.version === 2 ? file.studioMessages ?? [] : [],
+    settings: {
+      apify: { ...defaults.apify, ...(file.version === 2 ? file.settings?.apify ?? {} : {}) },
+    },
   }
 }

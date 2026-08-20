@@ -159,7 +159,7 @@ export class MatrixStore {
       throw new MatrixStoreError(`存储文件形状非法：${this.filePath}`)
     }
     const rawVersion = (file as { version?: number }).version
-    if (rawVersion === 1) {
+    if (rawVersion === 1 || rawVersion === 2) {
       this.data = migrateStoreFile(file as unknown as Parameters<typeof migrateStoreFile>[0])
       this.save()
       return this.data

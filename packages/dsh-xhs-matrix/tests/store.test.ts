@@ -12,20 +12,44 @@ beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'xhs-store-')); file = join(
 afterEach(() => { })
 
 describe('MatrixStore', () => {
-  it('version 1 迁移到 version 2，并初始化新增集合（不保留 negatives）', () => {
+  it('version 1 迁移到 version 3，并初始化新增集合（不保留 negatives/topics）', () => {
     const migrated = migrateStoreFile({ version: 1, accounts: [], personas: [], topics: [], drafts: [] })
-    expect(migrated.version).toBe(2)
-    expect(migrated).toMatchObject({ accounts: [], personas: [], topics: [], drafts: [], publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [] })
+    expect(migrated.version).toBe(3)
+    expect(migrated).toMatchObject({ accounts: [], personas: [], drafts: [], publishedNotes: [], metricSnapshots: [], viralItems: [], studioMessages: [] })
     expect('negatives' in migrated).toBe(false)
+    expect('topics' in migrated).toBe(false)
   })
 
-  it('加载 version 1 文件后持久化为完整 version 2 StoreFile 形状', () => {
+  it('加载 version 1 文件后持久化为完整 version 3 StoreFile 形状', () => {
     writeFileSync(file, JSON.stringify({ version: 1, accounts: [{ id: 'a1' }], personas: [], topics: [], drafts: [] }))
     const data = new MatrixStore(file).load()
-    expect(data).toEqual(expect.objectContaining({ version: 2, publishedNotes: [], metricSnapshots: [], trendSamples: [], studioMessages: [] }))
+    expect(data).toEqual(expect.objectContaining({ version: 3, publishedNotes: [], metricSnapshots: [], viralItems: [], studioMessages: [] }))
     const persisted = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
-    expect(persisted.version).toBe(2)
+    expect(persisted.version).toBe(3)
     expect('negatives' in persisted).toBe(false)
+  })
+
+  it('加载 version 2 文件：trendSamples 迁移为爆款池并持久化', () => {
+    writeFileSync(file, JSON.stringify({
+      version: 2,
+      accounts: [{ id: 'a1' }],
+      personas: [],
+      topics: [{ id: 'tp1', title: 't', source: 'manual', status: 'open', createdAt: '2026-08-01T00:00:00.000Z' }],
+      drafts: [{ id: 'd1', accountId: 'a1', topicId: 'tp1', date: '2026-08-20', copy: 'c', coverPrompt: 'p', status: 'generated', createdAt: '2026-08-20T00:00:00.000Z' }],
+      publishedNotes: [],
+      metricSnapshots: [],
+      trendSamples: [{ id: 't1', accountId: 'a1', title: '爆款标题', summary: '摘要正文', sourceUrl: 'https://x.com/1', source: 'apify', collectedAt: '2026-08-10T00:00:00.000Z', status: 'success' }],
+      studioMessages: [],
+    }))
+    const data = new MatrixStore(file).load()
+    expect(data.version).toBe(3)
+    expect(data.viralItems).toHaveLength(1)
+    expect(data.viralItems[0].status).toBe('pending')
+    expect(data.viralItems[0].body).toBe('摘要正文')
+    expect('topicId' in data.drafts[0]).toBe(false)
+    const persisted = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
+    expect(persisted.version).toBe(3)
+    expect('topics' in persisted).toBe(false)
   })
   it('默认路径为 ~/.dsh/dsh-xhs-matrix.json', () => {
     expect(matrixStorePath()).toContain('.dsh')
