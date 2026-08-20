@@ -81,7 +81,8 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
     const last = [...messages].reverse().find(m => m.role === 'assistant')
     if (last === undefined) { setError('还没有生成结果可保存'); return }
     try {
-      await api.studioSaveDraft(accountId, last.content, coverPrompt)
+      // 记录生成依据：参考的人设/高权重笔记/已采纳爆款（工作台内生成）。
+      await api.studioSaveDraft(accountId, last.content, coverPrompt, evidence)
       setError('')
       await refresh()
     } catch (e) {

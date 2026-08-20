@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
 
@@ -19,6 +19,28 @@ export function DraftEditor({ api, accountId, draft, onSaved }: { api: XhsApi; a
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  // 参考文章标题映射（id → 标题），用于生成依据展示具体文章。
+  const [noteTitles, setNoteTitles] = useState<Record<string, string>>({})
+  const [viralTitles, setViralTitles] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    const evidence = draft.evidence
+    if (evidence === undefined) return
+    void (async () => {
+      try {
+        if (evidence.noteIds.length > 0) {
+          const notes = await api.listNotes(accountId)
+          setNoteTitles(Object.fromEntries(notes.filter(n => evidence.noteIds.includes(n.id)).map(n => [n.id, n.title])))
+        }
+        if (evidence.trendIds.length > 0) {
+          const virals = await api.listViralItems(accountId)
+          setViralTitles(Object.fromEntries(virals.filter(v => evidence.trendIds.includes(v.id)).map(v => [v.id, v.title])))
+        }
+      } catch {
+        // 标题映射失败不影响依据展示（退回 id）。
+      }
+    })()
+  }, [api, accountId, draft.evidence])
 
   const save = async (): Promise<void> => {
     try {
@@ -102,10 +124,16 @@ export function DraftEditor({ api, accountId, draft, onSaved }: { api: XhsApi; a
               <div className={css.source}><b>人设规则 <span className={css.weightBadge}>已使用</span></b>{draft.evidence.persona}</div>
             )}
             {draft.evidence.noteIds.length > 0 && (
-              <div className={css.source}><b>本地笔记 <span className={css.weightBadge}>高权重参考</span></b>引用 {draft.evidence.noteIds.length} 篇已发布笔记</div>
+              <div className={css.source}>
+                <b>本地笔记 <span className={css.weightBadge}>高权重参考</span></b>
+                {draft.evidence.noteIds.map(id => `· ${noteTitles[id] ?? id}`).join('\n')}
+              </div>
             )}
             {draft.evidence.trendIds.length > 0 && (
-              <div className={css.source}><b>已采纳爆款参考 <span className={css.weightBadge}>外部数据</span></b>引用 {draft.evidence.trendIds.length} 个爆款样本</div>
+              <div className={css.source}>
+                <b>已采纳爆款参考 <span className={css.weightBadge}>外部数据</span></b>
+                {draft.evidence.trendIds.map(id => `· ${viralTitles[id] ?? id}`).join('\n')}
+              </div>
             )}
             <div className={css.source}><b>匹配理由</b>{draft.evidence.reasons.join('；')}</div>
             <div className={css.source}><b>编辑提醒</b>已生成原创草稿，不复制外部原文；保存后仍为草稿状态。</div>

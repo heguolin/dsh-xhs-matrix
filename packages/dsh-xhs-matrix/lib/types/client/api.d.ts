@@ -159,7 +159,12 @@ export declare class XhsApi {
         warning?: string;
     }>;
     /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
-    studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{
+    studioSaveDraft(accountId: string, copy: string, coverPrompt: string, evidence?: {
+        persona?: string;
+        noteIds: string[];
+        trendIds: string[];
+        reasons: string[];
+    }): Promise<{
         id: string;
     }>;
     listDrafts(): Promise<Array<{

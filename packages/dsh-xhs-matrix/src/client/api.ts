@@ -208,8 +208,8 @@ export class XhsApi {
     return summary
   }
   /** 保存创作台草稿（v3 草稿独立，不含 topicId）。 */
-  async studioSaveDraft(accountId: string, copy: string, coverPrompt: string): Promise<{ id: string }> {
-    const body = await readJson<{ draft: { id: string } }>(await fetch(XHS_API.studio + '/draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accountId, copy, coverPrompt }) }))
+  async studioSaveDraft(accountId: string, copy: string, coverPrompt: string, evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }): Promise<{ id: string }> {
+    const body = await readJson<{ draft: { id: string } }>(await fetch(XHS_API.studio + '/draft', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accountId, copy, coverPrompt, evidence }) }))
     return body.draft
   }
 
