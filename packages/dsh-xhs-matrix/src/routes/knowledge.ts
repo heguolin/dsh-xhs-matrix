@@ -31,7 +31,9 @@ export function makeKnowledgeRoutes(store: MatrixStore, scheduler?: CollectionSc
       const noteId = queryParam(url, 'note')
       if (method === 'GET') {
         if (accountId === undefined) { writeJson(res, 400, { error: 'account 查询参数必填' }); return }
-        writeJson(res, 200, { notes: store.listPublishedNotes(accountId) })
+        const account = store.listAccounts().find(item => item.id === accountId)
+        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
+        writeJson(res, 200, { notes: store.listPublishedNotes(account.personaId) })
         return
       }
       if (method !== 'PATCH') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
@@ -43,7 +45,9 @@ export function makeKnowledgeRoutes(store: MatrixStore, scheduler?: CollectionSc
         writeJson(res, 400, { error: 'weight 必须是 0-5 的整数' }); return
       }
       try {
-        const note = store.setNoteWeight(accountId, noteId, weight as NoteWeight)
+        const account = store.listAccounts().find(item => item.id === accountId)
+        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
+        const note = store.setNoteWeight(account.personaId, noteId, weight as NoteWeight)
         writeJson(res, 200, { note })
       } catch (error) { fail(res, error) }
     }),

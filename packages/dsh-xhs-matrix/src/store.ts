@@ -4,13 +4,14 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type {
-  Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight,
-  Persona, PublishedNote, StoreFile, StudioMessage, ViralBatch, ViralItem, ViralStatus,
+  Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftQualityReport, DraftStatus,
+  MatrixSettings, MetricSnapshot, NoteWeight, PendingOwnership, Persona, PublishedNote, StoreFile,
+  StudioMessage, ViralBatch, ViralItem, ViralStatus,
 } from './types.ts'
 import { defaultMatrixSettings, migrateStoreFile } from './migration.ts'
 
 /** 存储文件格式版本。 */
-export const MATRIX_STORE_VERSION = 3
+export const MATRIX_STORE_VERSION = 4
 
 /** 存储文件默认位置。 */
 export function matrixStorePath(): string {
@@ -41,6 +42,10 @@ export interface PersonaPayload {
   forbiddenExpressions?: string
   topicCriteria?: string
   defaultHashtags?: string[]
+  writingStyles?: string[]
+  endingHookConstraints?: string
+  endingHookExamples?: string[]
+  forbiddenWords?: string[]
 }
 /** 从文案中提取话题标签（#开头，去重，空格分隔）；无标签返回 undefined。 */
 export function extractHashtags(text: string): string | undefined {
@@ -49,10 +54,20 @@ export function extractHashtags(text: string): string | undefined {
   return [...new Set(tags)].join(' ')
 }
 
-export interface DraftPayload { accountId: string; date: string; copy: string; coverPrompt: string; tags?: string }
+export interface DraftPayload {
+  accountId: string
+  date: string
+  copy: string
+  coverPrompt: string
+  tags?: string
+  personaIdSnapshot?: string
+  qualityReport?: DraftQualityReport
+}
 
 export interface PublishedNotePayload {
-  accountId: string
+  personaId: string
+  sourceAccountId?: string
+  sourceAccountName?: string
   title: string
   copy: string
   topic?: string
@@ -67,6 +82,7 @@ export interface PublishedNotePayload {
 export interface MetricSnapshotPayload {
   noteId: string
   accountId: string
+  accountNameSnapshot?: string
   reads: number
   likes: number
   favorites: number
@@ -78,7 +94,9 @@ export interface MetricSnapshotPayload {
 }
 
 export interface ViralItemPayload {
-  accountId: string
+  personaId: string
+  sourceAccountId?: string
+  sourceAccountName?: string
   title: string
   body: string
   sourceUrl?: string
@@ -90,15 +108,26 @@ export interface ViralItemPayload {
   batchId?: string
 }
 
+/** 手动新增爆款载荷：标题 + 正文必填；来源链接与发布时间可选。 */
+export interface ManualViralPayload {
+  title: string
+  body: string
+  sourceUrl?: string
+  publishedAt?: string
+  reasons?: string[]
+}
+
 export interface StudioMessagePayload {
   accountId: string
   role: 'user' | 'assistant'
   content: string
   evidenceIds?: string[]
+  personaIdSnapshot?: string
+  requestId?: string
 }
 
 function empty(): StoreFile {
-  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], drafts: [], publishedNotes: [], metricSnapshots: [], viralItems: [], studioMessages: [], settings: defaultMatrixSettings() }
+  return { version: MATRIX_STORE_VERSION, accounts: [], personas: [], drafts: [], publishedNotes: [], metricSnapshots: [], viralItems: [], studioMessages: [], pendingOwnership: [], settings: defaultMatrixSettings() }
 }
 
 function nextId(): string {
@@ -118,7 +147,7 @@ export class MatrixStore {
     if (typeof p.enabled !== 'boolean') return 'enabled 必须是布尔值'
     return undefined
   }
-
+  
   static validatePersonaPayload(payload: unknown): string | undefined {
     const p = payload as Partial<PersonaPayload> | null
     if (typeof p !== 'object' || p === null) return 'body 必须是 JSON 对象'
@@ -126,30 +155,54 @@ export class MatrixStore {
     if (typeof p.prompt !== 'string' || p.prompt.trim() === '') return '人设提示词必填'
     return undefined
   }
-
+  
   private readonly filePath: string
   private data: StoreFile
-
+  
   private requireAccount(accountId: string): Account {
     const account = this.data.accounts.find(item => item.id === accountId)
-    if (account === undefined) throw new MatrixStoreError(`账号不存在：${accountId}`)
+    if (account === undefined) throw new MatrixStoreError('账号不存在：' + accountId)
     return account
   }
-
-  private requirePublishedNote(accountId: string, noteId: string): PublishedNote {
-    this.requireAccount(accountId)
-    const note = this.data.publishedNotes.find(item => item.id === noteId && item.accountId === accountId)
-    if (note === undefined) throw new MatrixStoreError(`已发布笔记不存在或不属于该账号：${noteId}`)
+  
+  private requirePersona(personaId: string): Persona {
+    const persona = this.data.personas.find(item => item.id === personaId)
+    if (persona === undefined) throw new MatrixStoreError('人设不存在：' + personaId)
+    return persona
+  }
+  
+  private requirePersonaNote(personaId: string, noteId: string): PublishedNote {
+    this.requirePersona(personaId)
+    const note = this.data.publishedNotes.find(item => item.id === noteId && item.personaId === personaId)
+    if (note === undefined) throw new MatrixStoreError('已发布笔记不存在或不属于该人设：' + noteId)
     return note
   }
-
+  
+  private requireNoteById(noteId: string): PublishedNote {
+    const note = this.data.publishedNotes.find(item => item.id === noteId)
+    if (note === undefined) throw new MatrixStoreError('已发布笔记不存在：' + noteId)
+    return note
+  }
+  
+  private requirePersonaViral(personaId: string, itemId: string): ViralItem {
+    this.requirePersona(personaId)
+    const item = this.data.viralItems.find(i => i.id === itemId && i.personaId === personaId)
+    if (item === undefined) throw new MatrixStoreError('爆款条目不存在或不属于该人设：' + itemId)
+    return item
+  }
+  
+  /** 校验 note weight 是否合法 0-5 整数。 */
+  private static checkWeight(weight: number): void {
+    if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new MatrixStoreError('权重必须是 0-5 的整数')
+  }
+  
   constructor(filePath: string = matrixStorePath()) {
     this.filePath = resolve(filePath)
     this.data = empty()
     // 实例化时自动加载已存在的存储文件，保证新实例直接可见已持久化的数据。
     if (existsSync(this.filePath)) this.load()
   }
-
+  
   /** 读取并校验存储文件；缺失则返回空结构。 */
   load(): StoreFile {
     if (!existsSync(this.filePath)) {
@@ -160,11 +213,11 @@ export class MatrixStore {
     try {
       parsed = JSON.parse(readFileSync(this.filePath, 'utf8'))
     } catch {
-      throw new MatrixStoreError(`存储文件损坏，无法解析：${this.filePath}`)
+      throw new MatrixStoreError('存储文件损坏，无法解析：' + this.filePath)
     }
     const file = parsed as Partial<StoreFile> | null
     if (typeof file !== 'object' || file === null || typeof file.version !== 'number') {
-      throw new MatrixStoreError(`存储文件形状非法：${this.filePath}`)
+      throw new MatrixStoreError('存储文件形状非法：' + this.filePath)
     }
     const rawVersion = (file as { version?: number }).version
     if (rawVersion === 1 || rawVersion === 2) {
@@ -173,42 +226,32 @@ export class MatrixStore {
       return this.data
     }
     if (rawVersion !== MATRIX_STORE_VERSION) {
-      throw new MatrixStoreError(`存储文件 version 不匹配：期望 ${MATRIX_STORE_VERSION}，实际 ${rawVersion}`)
+      // v3 用户文件由后续 Task（v3→v4 备份、原子迁移与失败恢复）处理。
+      throw new MatrixStoreError('存储文件 version 不匹配：期望 ' + MATRIX_STORE_VERSION + '，实际 ' + rawVersion)
     }
     const now = new Date().toISOString()
     const accounts = Array.isArray(file.accounts) ? file.accounts as Account[] : []
     const publishedNotes = Array.isArray(file.publishedNotes) ? file.publishedNotes as PublishedNote[] : []
+    const viralItems = Array.isArray(file.viralItems) ? file.viralItems as ViralItem[] : []
     const studioMessages = Array.isArray(file.studioMessages) ? file.studioMessages as StudioMessage[] : []
     const fileSettings = (file.settings ?? {}) as Partial<MatrixSettings>
     const fileApify = (fileSettings.apify ?? {}) as Partial<MatrixSettings['apify']>
     const defaults = defaultMatrixSettings()
     this.data = {
       version: MATRIX_STORE_VERSION,
-      accounts: accounts.map(account => ({
-        ...account,
-        connection: account.connection ?? { status: 'unbound' },
-        collection: account.collection ?? { enabled: false, intervalMinutes: 1440, maxItems: 100 },
-        collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' },
-      })),
+      accounts: accounts.map(account => ({ ...account, connection: account.connection ?? { status: 'unbound' }, collection: account.collection ?? { enabled: false, intervalMinutes: 1440, maxItems: 100 }, collectionStatus: account.collectionStatus ?? { running: false, lastStatus: 'idle' } })),
       personas: Array.isArray(file.personas) ? file.personas as Persona[] : [],
       drafts: Array.isArray(file.drafts) ? file.drafts as Draft[] : [],
       publishedNotes: publishedNotes.map(note => ({ ...note, updatedAt: note.updatedAt ?? note.createdAt ?? now })),
       metricSnapshots: Array.isArray(file.metricSnapshots) ? file.metricSnapshots as MetricSnapshot[] : [],
-      viralItems: Array.isArray(file.viralItems) ? file.viralItems as ViralItem[] : [],
+      viralItems: viralItems.map(item => ({ ...item, weight: (item.weight ?? 1) })),
       studioMessages: studioMessages.map(message => ({ ...message, read: message.read ?? false })),
-      settings: {
-        apify: {
-          actorId: typeof fileApify.actorId === 'string' ? fileApify.actorId : defaults.apify.actorId,
-          apiToken: typeof fileApify.apiToken === 'string' ? fileApify.apiToken : defaults.apify.apiToken,
-          maxItems: typeof fileApify.maxItems === 'number' ? fileApify.maxItems : defaults.apify.maxItems,
-          requestTimeoutMs: typeof fileApify.requestTimeoutMs === 'number' ? fileApify.requestTimeoutMs : defaults.apify.requestTimeoutMs,
-          maxPolls: typeof fileApify.maxPolls === 'number' ? fileApify.maxPolls : defaults.apify.maxPolls,
-        },
-      },
+      pendingOwnership: Array.isArray(file.pendingOwnership) ? file.pendingOwnership as PendingOwnership[] : [],
+      settings: { apify: { actorId: typeof fileApify.actorId === 'string' ? fileApify.actorId : defaults.apify.actorId, apiToken: typeof fileApify.apiToken === 'string' ? fileApify.apiToken : defaults.apify.apiToken, maxItems: typeof fileApify.maxItems === 'number' ? fileApify.maxItems : defaults.apify.maxItems, requestTimeoutMs: typeof fileApify.requestTimeoutMs === 'number' ? fileApify.requestTimeoutMs : defaults.apify.requestTimeoutMs, maxPolls: typeof fileApify.maxPolls === 'number' ? fileApify.maxPolls : defaults.apify.maxPolls } },
     }
     return this.data
   }
-
+  
   /** 原子落盘（tmp + rename）。 */
   save(): void {
     mkdirSync(dirname(this.filePath), { recursive: true })
@@ -218,70 +261,61 @@ export class MatrixStore {
   }
 
   // ---------------------------------------------------------------- 爆款池
-  /** 按账号与审核状态列出爆款池条目；batchId 指定时只返回该批次。 */
-  listViralItems(accountId?: string, status?: ViralStatus, batchId?: string): ViralItem[] {
+  listViralItems(personaId?: string, status?: ViralStatus, batchId?: string): ViralItem[] {
     let items = this.data.viralItems
-    if (accountId !== undefined) items = items.filter(i => i.accountId === accountId)
+    if (personaId !== undefined) items = items.filter(i => i.personaId === personaId)
     if (status !== undefined) items = items.filter(i => i.status === status)
     // 历史条目（无 batchId）归入 legacy 批次，与 listViralBatches 分组规则一致。
     if (batchId !== undefined) items = items.filter(i => (i.batchId ?? 'legacy') === batchId)
     return items
   }
-
-  /**
-   * 按采集批次分组列出爆款池（每次采集一个批次；历史无 batchId 的归入 legacy）。
-   * 批次按最早采集时间倒序（新批次在前）。
-   */
-  listViralBatches(accountId: string): ViralBatch[] {
+  
+  listViralBatches(personaId: string, sourceAccountId?: string): ViralBatch[] {
+    this.requirePersona(personaId)
     const byBatch = new Map<string, ViralItem[]>()
-    for (const item of this.data.viralItems.filter(i => i.accountId === accountId)) {
+    for (const item of this.data.viralItems.filter(i => i.personaId === personaId)) {
       const key = item.batchId ?? 'legacy'
       const list = byBatch.get(key)
       if (list === undefined) byBatch.set(key, [item])
       else list.push(item)
     }
-    return [...byBatch.entries()].map(([batchId, items]) => ({
-      id: batchId,
-      accountId,
-      collectedAt: items.map(i => i.collectedAt).sort()[0] ?? new Date().toISOString(),
-      itemCount: items.length,
-    } satisfies ViralBatch)).sort((a, b) => b.collectedAt.localeCompare(a.collectedAt))
+    return [...byBatch.entries()].map(([batchId, items]) => ({ id: batchId, personaId, sourceAccountId, collectedAt: items.map(i => i.collectedAt).sort()[0] ?? new Date().toISOString(), itemCount: items.length } satisfies ViralBatch)).sort((a, b) => b.collectedAt.localeCompare(a.collectedAt))
   }
-
-  /** 删除整个采集批次（该批次全部条目），返回删除条数。 */
-  deleteViralBatch(accountId: string, batchId: string): number {
-    this.requireAccount(accountId)
+  
+  deleteViralBatch(personaId: string, batchId: string): number {
+    this.requirePersona(personaId)
     const before = this.data.viralItems.length
-    this.data.viralItems = this.data.viralItems.filter(i => !(i.accountId === accountId && (i.batchId ?? 'legacy') === batchId))
+    this.data.viralItems = this.data.viralItems.filter(i => !(i.personaId === personaId && (i.batchId ?? 'legacy') === batchId))
     const removed = before - this.data.viralItems.length
     if (removed > 0) this.save()
     return removed
   }
-
-  /** 新增爆款池条目（默认 pending）；账号必须存在。 */
+  
   saveViralItem(payload: ViralItemPayload): ViralItem {
-    this.requireAccount(payload.accountId)
-    const item: ViralItem = { id: nextId(), ...payload, status: payload.status ?? 'pending', collectedAt: new Date().toISOString() }
+    this.requirePersona(payload.personaId)
+    const item: ViralItem = { id: nextId(), ...payload, status: payload.status ?? 'pending', weight: 1, collectedAt: new Date().toISOString() }
     this.data.viralItems.push(item)
     this.save()
     return item
   }
-
-  /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
-  reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem {
-    this.requireAccount(accountId)
-    const item = this.data.viralItems.find(i => i.id === itemId && i.accountId === accountId)
-    if (item === undefined) throw new MatrixStoreError(`爆款不存在或不属于该账号：${itemId}`)
+  
+  addManualViral(personaId: string, payload: ManualViralPayload): ViralItem {
+    this.requirePersona(personaId)
+    const item: ViralItem = { id: nextId(), personaId, title: payload.title, body: payload.body, sourceUrl: payload.sourceUrl, source: 'manual', status: 'accepted', weight: 5, score: 0, reasons: payload.reasons ?? ['手动新增'], publishedAt: payload.publishedAt, collectedAt: new Date().toISOString() }
+    this.data.viralItems.push(item)
+    this.save()
+    return item
+  }
+  
+  reviewViralItem(personaId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem {
+    const item = this.requirePersonaViral(personaId, itemId)
     item.status = status
     this.save()
     return item
   }
-
-  /** 更新爆款条目的详情字段（采纳后抓回完整正文/标题，或重算评分）。 */
-  updateViralItem(accountId: string, itemId: string, patch: { title?: string; body?: string; score?: number; reasons?: string[] }): ViralItem {
-    this.requireAccount(accountId)
-    const item = this.data.viralItems.find(i => i.id === itemId && i.accountId === accountId)
-    if (item === undefined) throw new MatrixStoreError(`爆款不存在或不属于该账号：${itemId}`)
+  
+  updateViralItem(personaId: string, itemId: string, patch: { title?: string; body?: string; score?: number; reasons?: string[] }): ViralItem {
+    const item = this.requirePersonaViral(personaId, itemId)
     if (patch.title !== undefined) item.title = patch.title
     if (patch.body !== undefined) item.body = patch.body
     if (patch.score !== undefined) item.score = patch.score
@@ -289,19 +323,83 @@ export class MatrixStore {
     this.save()
     return item
   }
+  
+  setViralWeight(personaId: string, itemId: string, weight: number): ViralItem {
+    MatrixStore.checkWeight(weight)
+    const item = this.requirePersonaViral(personaId, itemId)
+    item.weight = weight as NoteWeight
+    this.save()
+    return item
+  }
+  
+  transferViralItems(personaId: string, itemIds: string[], targetPersonaId: string): ViralItem[] {
+    this.requirePersona(personaId)
+    this.requirePersona(targetPersonaId)
+    const moved: ViralItem[] = []
+    for (const item of this.data.viralItems) {
+      if (item.personaId === personaId && itemIds.includes(item.id)) {
+        item.personaId = targetPersonaId
+        moved.push(item)
+      }
+    }
+    if (moved.length > 0) this.save()
+    return moved
+  }
+
+  // ---------------------------------------------------------------- 待归属数据
+  stashPendingOwnership(input: {
+    kind: 'published-note'
+    payload: Omit<PublishedNote, 'personaId'>
+    sourceAccountId?: string
+    sourceAccountName?: string
+    reason: string
+  } | {
+    kind: 'viral-item'
+    payload: Omit<ViralItem, 'personaId'>
+    sourceAccountId?: string
+    sourceAccountName?: string
+    reason: string
+  }): PendingOwnership {
+    const base = { id: nextId(), sourceAccountId: input.sourceAccountId, sourceAccountName: input.sourceAccountName, reason: input.reason, migratedAt: new Date().toISOString() }
+    const entry: PendingOwnership = input.kind === 'published-note'
+      ? { ...base, kind: 'published-note' as const, payload: input.payload }
+      : { ...base, kind: 'viral-item' as const, payload: input.payload }
+    this.data.pendingOwnership.push(entry)
+    this.save()
+    return entry
+  }
+  
+  listPendingOwnership(): PendingOwnership[] {
+    return this.data.pendingOwnership
+  }
+  
+  assignPendingOwnership(id: string, targetPersonaId: string): PublishedNote | ViralItem {
+    const index = this.data.pendingOwnership.findIndex(entry => entry.id === id)
+    if (index < 0) throw new MatrixStoreError('待归属记录不存在：' + id)
+    this.requirePersona(targetPersonaId)
+    const entry = this.data.pendingOwnership[index]
+    const now = new Date().toISOString()
+    if (entry.kind === 'published-note') {
+      const note: PublishedNote = { ...entry.payload, personaId: targetPersonaId, updatedAt: entry.payload.updatedAt ?? now }
+      this.data.publishedNotes.push(note)
+      this.data.pendingOwnership.splice(index, 1)
+      this.save()
+      return note
+    }
+    const item: ViralItem = { ...entry.payload, personaId: targetPersonaId }
+    this.data.viralItems.push(item)
+    this.data.pendingOwnership.splice(index, 1)
+    this.save()
+    return item
+  }
 
   // ---------------------------------------------------------------- 运行时设置
-  /** 读取运行时设置（apify 等）。 */
   getSettings(): MatrixSettings {
     return this.data.settings
   }
-
-  /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
+  
   updateApifySettings(payload: Partial<MatrixSettings['apify']>): MatrixSettings {
-    this.data.settings = {
-      ...this.data.settings,
-      apify: { ...this.data.settings.apify, ...payload },
-    }
+    this.data.settings = { ...this.data.settings, apify: { ...this.data.settings.apify, ...payload } }
     this.save()
     return this.data.settings
   }
@@ -313,27 +411,22 @@ export class MatrixStore {
     if (error !== undefined) throw new MatrixStoreError(error)
     if (id !== undefined) {
       const existing = this.data.accounts.find(a => a.id === id)
-      if (existing === undefined) throw new MatrixStoreError(`账号不存在：${id}`)
+      if (existing === undefined) throw new MatrixStoreError('账号不存在：' + id)
       existing.name = payload.name
       existing.personaId = payload.personaId
       existing.enabled = payload.enabled
       this.save()
       return existing
     }
-    const account: Account = {
-      id: nextId(),
-      ...payload,
-      createdAt: new Date().toISOString(),
-      connection: { status: 'unbound' },
-      collection: { enabled: false, intervalMinutes: 1440, maxItems: 100 },
-      collectionStatus: { running: false, lastStatus: 'idle' },
-    }
+    const account: Account = { id: nextId(), ...payload, createdAt: new Date().toISOString(), connection: { status: 'unbound' }, collection: { enabled: false, intervalMinutes: 1440, maxItems: 100 }, collectionStatus: { running: false, lastStatus: 'idle' } }
     this.data.accounts.push(account)
     this.save()
     return account
   }
   deleteAccount(id: string): void {
     this.data.accounts = this.data.accounts.filter(a => a.id !== id)
+    this.data.studioMessages = this.data.studioMessages.filter(m => m.accountId !== id)
+    this.data.drafts = this.data.drafts.filter(d => d.accountId !== id)
     this.save()
   }
   updateAccountConnection(id: string, connection: Account['connection']): Account {
@@ -364,7 +457,7 @@ export class MatrixStore {
     if (error !== undefined) throw new MatrixStoreError(error)
     if (id !== undefined) {
       const existing = this.data.personas.find(p => p.id === id)
-      if (existing === undefined) throw new MatrixStoreError(`人设不存在：${id}`)
+      if (existing === undefined) throw new MatrixStoreError('人设不存在：' + id)
       existing.name = payload.name
       existing.prompt = payload.prompt
       existing.toneTags = payload.toneTags
@@ -378,26 +471,14 @@ export class MatrixStore {
       existing.forbiddenExpressions = payload.forbiddenExpressions
       existing.topicCriteria = payload.topicCriteria
       existing.defaultHashtags = payload.defaultHashtags
+      existing.writingStyles = payload.writingStyles
+      existing.endingHookConstraints = payload.endingHookConstraints
+      existing.endingHookExamples = payload.endingHookExamples
+      existing.forbiddenWords = payload.forbiddenWords
       this.save()
       return existing
     }
-    const persona: Persona = {
-      id: nextId(),
-      name: payload.name,
-      prompt: payload.prompt,
-      toneTags: payload.toneTags,
-      positioning: payload.positioning,
-      audience: payload.audience,
-      expertise: payload.expertise,
-      contentDirections: payload.contentDirections,
-      hookStyles: payload.hookStyles,
-      bodyStructure: payload.bodyStructure,
-      endingStyle: payload.endingStyle,
-      forbiddenExpressions: payload.forbiddenExpressions,
-      topicCriteria: payload.topicCriteria,
-      defaultHashtags: payload.defaultHashtags,
-      createdAt: new Date().toISOString(),
-    }
+    const persona: Persona = { id: nextId(), name: payload.name, prompt: payload.prompt, toneTags: payload.toneTags, positioning: payload.positioning, audience: payload.audience, expertise: payload.expertise, contentDirections: payload.contentDirections, hookStyles: payload.hookStyles, bodyStructure: payload.bodyStructure, endingStyle: payload.endingStyle, forbiddenExpressions: payload.forbiddenExpressions, topicCriteria: payload.topicCriteria, defaultHashtags: payload.defaultHashtags, writingStyles: payload.writingStyles, endingHookConstraints: payload.endingHookConstraints, endingHookExamples: payload.endingHookExamples, forbiddenWords: payload.forbiddenWords, createdAt: new Date().toISOString() }
     this.data.personas.push(persona)
     this.save()
     return persona
@@ -409,10 +490,14 @@ export class MatrixStore {
     }
     this.save()
   }
+  personaInUse(personaId: string): { accountCount: number; noteCount: number; viralCount: number } {
+    return { accountCount: this.data.accounts.filter(a => a.personaId === personaId).length, noteCount: this.data.publishedNotes.filter(n => n.personaId === personaId).length, viralCount: this.data.viralItems.filter(i => i.personaId === personaId).length }
+  }
 
   // ---------------------------------------------------------------- 草稿
-  listDrafts(): Draft[] { return this.data.drafts }
-  /** v3 草稿独立于选题，去重键为账号 + 日期（无 topicId 残留）。 */
+  listDrafts(accountId?: string): Draft[] {
+    return accountId === undefined ? this.data.drafts : this.data.drafts.filter(d => d.accountId === accountId)
+  }
   findDraft(accountId: string, date: string): Draft | undefined {
     return this.data.drafts.find(d => d.accountId === accountId && d.date === date)
   }
@@ -428,7 +513,7 @@ export class MatrixStore {
   }
   setDraftStatus(id: string, status: DraftStatus, metrics?: DraftMetrics): Draft {
     const draft = this.data.drafts.find(d => d.id === id)
-    if (draft === undefined) throw new MatrixStoreError(`草稿不存在：${id}`)
+    if (draft === undefined) throw new MatrixStoreError('草稿不存在：' + id)
     draft.status = status
     if (metrics !== undefined) draft.metrics = metrics
     this.save()
@@ -436,10 +521,9 @@ export class MatrixStore {
   }
   updateDraft(id: string, payload: { copy?: string; coverPrompt?: string; tags?: string }): Draft {
     const draft = this.data.drafts.find(d => d.id === id)
-    if (draft === undefined) throw new MatrixStoreError(`草稿不存在：${id}`)
+    if (draft === undefined) throw new MatrixStoreError('草稿不存在：' + id)
     if (payload.copy !== undefined) draft.copy = payload.copy
     if (payload.coverPrompt !== undefined) draft.coverPrompt = payload.coverPrompt
-    // 未显式传标签时，若当前无标签则从正文自动提取，避免手工填写。
     if (payload.tags !== undefined) draft.tags = payload.tags
     else if (draft.tags === undefined || draft.tags === '') draft.tags = extractHashtags(draft.copy)
     draft.updatedAt = new Date().toISOString()
@@ -448,24 +532,28 @@ export class MatrixStore {
   }
 
   // ---------------------------------------------------------------- 已发布笔记
-  listPublishedNotes(accountId?: string): PublishedNote[] {
-    return accountId === undefined ? this.data.publishedNotes : this.data.publishedNotes.filter(note => note.accountId === accountId)
+  listPublishedNotes(personaId?: string): PublishedNote[] {
+    return personaId === undefined ? this.data.publishedNotes : this.data.publishedNotes.filter(note => note.personaId === personaId)
   }
   savePublishedNote(payload: PublishedNotePayload): PublishedNote {
-    return this.importPublishedNotes(payload.accountId, [payload])[0]
-  }
-  importPublishedNotes(accountId: string, payloads: PublishedNotePayload[]): PublishedNote[] {
-    this.requireAccount(accountId)
-    if (payloads.some(payload => payload.accountId !== accountId)) throw new MatrixStoreError('导入记录 accountId 与目标账号不一致')
+    this.requirePersona(payload.personaId)
     const now = new Date().toISOString()
-    const existingUrls = new Set(this.data.publishedNotes.filter(note => note.accountId === accountId).map(note => note.sourceUrl).filter((url): url is string => url !== undefined))
+    const note: PublishedNote = { id: nextId(), ...payload, sourceAccountName: payload.sourceAccountName ?? (payload.sourceAccountId !== undefined ? this.data.accounts.find(a => a.id === payload.sourceAccountId)?.name : undefined), createdAt: now, updatedAt: payload.updatedAt ?? now }
+    this.data.publishedNotes.push(note)
+    this.save()
+    return note
+  }
+  importPublishedNotes(personaId: string, payloads: PublishedNotePayload[]): PublishedNote[] {
+    this.requirePersona(personaId)
+    const now = new Date().toISOString()
+    const existingUrls = new Set(this.data.publishedNotes.filter(note => note.personaId === personaId).map(note => note.sourceUrl).filter((url): url is string => url !== undefined))
     const batchUrls = new Set<string>()
     const created = payloads.filter((payload) => {
       if (payload.sourceUrl === undefined) return true
       if (existingUrls.has(payload.sourceUrl) || batchUrls.has(payload.sourceUrl)) return false
       batchUrls.add(payload.sourceUrl)
       return true
-    }).map(payload => ({ id: nextId(), ...payload, createdAt: now, updatedAt: payload.updatedAt ?? now }))
+    }).map(payload => ({ id: nextId(), personaId, sourceAccountId: payload.sourceAccountId, sourceAccountName: payload.sourceAccountName ?? (payload.sourceAccountId !== undefined ? this.data.accounts.find(a => a.id === payload.sourceAccountId)?.name : undefined), title: payload.title, copy: payload.copy, topic: payload.topic, contentType: payload.contentType, sourceUrl: payload.sourceUrl, publishedAt: payload.publishedAt, source: payload.source, weight: payload.weight, createdAt: now, updatedAt: payload.updatedAt ?? now }))
     this.data.publishedNotes.push(...created)
     if (created.length > 0) this.save()
     return created
@@ -474,27 +562,39 @@ export class MatrixStore {
     this.data.publishedNotes = this.data.publishedNotes.filter(n => n.id !== id)
     this.save()
   }
-  setNoteWeight(accountId: string, noteId: string, weight: number): PublishedNote {
-    if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new MatrixStoreError('权重必须是 0-5 的整数')
-    this.requirePublishedNote(accountId, noteId)
-    const note = this.data.publishedNotes.find(item => item.id === noteId && item.accountId === accountId)
-    if (note === undefined) throw new MatrixStoreError(`已发布笔记不存在或不属于该账号：${noteId}`)
+  setNoteWeight(personaId: string, noteId: string, weight: number): PublishedNote {
+    MatrixStore.checkWeight(weight)
+    const note = this.requirePersonaNote(personaId, noteId)
     note.weight = weight as NoteWeight
     note.updatedAt = new Date().toISOString()
     this.save()
     return note
   }
+  transferNotes(personaId: string, noteIds: string[], targetPersonaId: string): PublishedNote[] {
+    this.requirePersona(personaId)
+    this.requirePersona(targetPersonaId)
+    const moved: PublishedNote[] = []
+    for (const note of this.data.publishedNotes) {
+      if (note.personaId === personaId && noteIds.includes(note.id)) {
+        note.personaId = targetPersonaId
+        note.updatedAt = new Date().toISOString()
+        moved.push(note)
+      }
+    }
+    if (moved.length > 0) this.save()
+    return moved
+  }
 
   // ---------------------------------------------------------------- 指标快照
   listMetricSnapshots(accountId?: string, noteId?: string): MetricSnapshot[] {
-    return this.data.metricSnapshots.filter(snapshot =>
-      (accountId === undefined || snapshot.accountId === accountId)
-      && (noteId === undefined || snapshot.noteId === noteId),
-    )
+    return this.data.metricSnapshots.filter(snapshot => (accountId === undefined || snapshot.accountId === accountId) && (noteId === undefined || snapshot.noteId === noteId))
+  }
+  listMetricSnapshotsByNote(noteId: string): MetricSnapshot[] {
+    return this.data.metricSnapshots.filter(snapshot => snapshot.noteId === noteId)
   }
   saveMetricSnapshot(payload: MetricSnapshotPayload): MetricSnapshot {
-    this.requirePublishedNote(payload.accountId, payload.noteId)
-    const snapshot: MetricSnapshot = { id: nextId(), ...payload, collectedAt: new Date().toISOString() }
+    this.requireNoteById(payload.noteId)
+    const snapshot: MetricSnapshot = { id: nextId(), accountId: payload.accountId, noteId: payload.noteId, accountNameSnapshot: payload.accountNameSnapshot ?? this.data.accounts.find(a => a.id === payload.accountId)?.name, reads: payload.reads, likes: payload.likes, favorites: payload.favorites, comments: payload.comments, shares: payload.shares, source: payload.source, status: payload.status, error: payload.error, collectedAt: new Date().toISOString() }
     this.data.metricSnapshots.push(snapshot)
     this.save()
     return snapshot
@@ -506,14 +606,14 @@ export class MatrixStore {
   }
   saveStudioMessage(payload: StudioMessagePayload): StudioMessage {
     this.requireAccount(payload.accountId)
-    const message: StudioMessage = { id: nextId(), ...payload, receivedAt: new Date().toISOString(), read: false }
+    const message: StudioMessage = { id: nextId(), accountId: payload.accountId, role: payload.role, content: payload.content, evidenceIds: payload.evidenceIds, personaIdSnapshot: payload.personaIdSnapshot, requestId: payload.requestId, receivedAt: new Date().toISOString(), read: false }
     this.data.studioMessages.push(message)
     this.save()
     return message
   }
   markStudioMessageRead(id: string): void {
     const message = this.data.studioMessages.find(m => m.id === id)
-    if (message === undefined) throw new MatrixStoreError(`创作室消息不存在：${id}`)
+    if (message === undefined) throw new MatrixStoreError('创作室消息不存在：' + id)
     message.read = true
     this.save()
   }

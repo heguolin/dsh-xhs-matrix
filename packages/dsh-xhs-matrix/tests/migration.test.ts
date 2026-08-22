@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { migrateStoreFile } from '../src/migration.ts'
 
-describe('v2 → v3 迁移', () => {
+describe('v2 → v4 迁移', () => {
   it('trendSamples 转为爆款池 pending 条目', () => {
     const migrated = migrateStoreFile({
       version: 2,
@@ -11,11 +11,13 @@ describe('v2 → v3 迁移', () => {
       studioMessages: [],
       settings: { apify: { actorId: '', apiToken: '', maxItems: 10, requestTimeoutMs: 30000, maxPolls: 120 } },
     } as never)
-    expect(migrated.version).toBe(3)
-    expect(migrated.viralItems).toHaveLength(1)
-    expect(migrated.viralItems[0].status).toBe('pending')
-    expect(migrated.viralItems[0].body).toBe('摘要正文')
-    expect(migrated.viralItems[0].sourceUrl).toBe('https://x.com/1')
+    expect(migrated.version).toBe(4)
+    // 该账号未绑定人设 → 无法归属的趋势样本进入待归属集合。
+    expect(migrated.viralItems).toHaveLength(0)
+    expect(migrated.pendingOwnership).toHaveLength(1)
+    expect(migrated.pendingOwnership[0].kind).toBe('viral-item')
+    const pending = migrated.pendingOwnership[0] as { payload: { status: string; body: string; sourceUrl?: string } }
+    expect(pending.payload).toMatchObject({ status: 'pending', body: '摘要正文', sourceUrl: 'https://x.com/1' })
     expect('topics' in migrated).toBe(false)
   })
   it('draft 迁移后移除 topicId', () => {

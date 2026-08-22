@@ -25,7 +25,7 @@ export interface AccountConnection {
     lastError?: string;
     lastSuccessAt?: string;
 }
-/** 矩阵账号。 */
+/** 矩阵账号：发布、采集和会话的运营载体。 */
 export interface Account {
     id: string;
     name: string;
@@ -36,7 +36,7 @@ export interface Account {
     collection: CollectionConfig;
     collectionStatus: CollectionStatus;
 }
-/** 人设模板。 */
+/** 人设模板：可复用内容资产的所有者。 */
 export interface Persona {
     id: string;
     name: string;
@@ -52,14 +52,24 @@ export interface Persona {
     forbiddenExpressions?: string;
     topicCriteria?: string;
     defaultHashtags?: string[];
+    /** 自定义写作风格标签（任意增删，不限于固定选项）。 */
+    writingStyles?: string[];
+    /** 结尾互动钩子自由约束文本。 */
+    endingHookConstraints?: string;
+    /** 结尾互动钩子最佳案例列表。 */
+    endingHookExamples?: string[];
+    /** 人设级违禁词来源。 */
+    forbiddenWords?: string[];
     createdAt: string;
 }
 /** 发布笔记的人工知识库权重。 */
 export type NoteWeight = 0 | 1 | 2 | 3 | 4 | 5;
-/** 已发布笔记。 */
+/** 已发布笔记：唯一归属人设，来源账号仅用于追踪与指标采集。 */
 export interface PublishedNote {
     id: string;
-    accountId: string;
+    personaId: string;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
     title: string;
     copy: string;
     topic?: string;
@@ -76,6 +86,8 @@ export interface MetricSnapshot {
     id: string;
     noteId: string;
     accountId: string;
+    /** 采集时账号名称快照；账号删除后仍可解释历史数据。 */
+    accountNameSnapshot?: string;
     reads: number;
     likes: number;
     favorites: number;
@@ -88,15 +100,18 @@ export interface MetricSnapshot {
 }
 /** 爆款池审核状态。 */
 export type ViralStatus = 'pending' | 'accepted' | 'ignored';
-/** 爆款池条目；收集到的外部内容与审核结果。 */
+/** 爆款池条目：唯一归属人设；weight 为人工权重，score 为机器评分，二者不互相覆盖。 */
 export interface ViralItem {
     id: string;
-    accountId: string;
+    personaId: string;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
     title: string;
     body: string;
     sourceUrl?: string;
     source: 'apify' | 'manual' | 'import';
     status: ViralStatus;
+    weight: NoteWeight;
     score: number;
     reasons: string[];
     publishedAt?: string;
@@ -104,10 +119,11 @@ export interface ViralItem {
     /** 采集批次 id：同一次采集的条目归入同一批次，可整批删除。 */
     batchId?: string;
 }
-/** 爆款采集批次：一次采集产生的条目集合。 */
+/** 爆款采集批次：以人设分组。 */
 export interface ViralBatch {
     id: string;
-    accountId: string;
+    personaId: string;
+    sourceAccountId?: string;
     query?: string;
     collectedAt: string;
     itemCount: number;
@@ -119,6 +135,10 @@ export interface StudioMessage {
     role: 'user' | 'assistant';
     content: string;
     evidenceIds?: string[];
+    /** 生成该消息时的人设快照；账号换绑后旧会话不混入当前人设上下文。 */
+    personaIdSnapshot?: string;
+    /** 请求 id：用于流式重试去重，防止重复落库。 */
+    requestId?: string;
     receivedAt: string;
     read: boolean;
 }
@@ -137,6 +157,16 @@ export interface DraftMetrics {
     comments: number;
     collected: string;
 }
+/** 草稿质量报告（审校状态、违禁词命中、检查时间与人设快照）。 */
+export interface DraftQualityReport {
+    reviewStatus: 'passed' | 'failed' | 'unchecked';
+    forbiddenWordHits: Array<{
+        word: string;
+        position: number;
+    }>;
+    checkedAt: string;
+    personaSnapshot?: string;
+}
 /** 草稿（文案 + 封面提示词）。 */
 export interface Draft {
     id: string;
@@ -148,12 +178,38 @@ export interface Draft {
     status: DraftStatus;
     metrics?: DraftMetrics;
     evidence?: DraftEvidence;
+    /** 生成该草稿时的人设快照。 */
+    personaIdSnapshot?: string;
+    /** 轻量质检报告。 */
+    qualityReport?: DraftQualityReport;
     createdAt: string;
     updatedAt?: string;
 }
+/** 待归属「已发布笔记」完整载荷（不含 personaId）。 */
+export type PendingPublishedNotePayload = Omit<PublishedNote, 'personaId'>;
+/** 待归属「爆款条目」完整载荷（不含 personaId）。 */
+export type PendingViralItemPayload = Omit<ViralItem, 'personaId'>;
+/** 待归属数据：迁移时无法解析人设的内容进入该集合，不进入正常人设资产查询。 */
+export type PendingOwnership = {
+    id: string;
+    kind: 'published-note';
+    payload: PendingPublishedNotePayload;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
+    reason: string;
+    migratedAt: string;
+} | {
+    id: string;
+    kind: 'viral-item';
+    payload: PendingViralItemPayload;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
+    reason: string;
+    migratedAt: string;
+};
 /** 存储文件整体形状。 */
 export interface StoreFile {
-    version: 3;
+    version: 4;
     accounts: Account[];
     personas: Persona[];
     drafts: Draft[];
@@ -161,6 +217,7 @@ export interface StoreFile {
     metricSnapshots: MetricSnapshot[];
     viralItems: ViralItem[];
     studioMessages: StudioMessage[];
+    pendingOwnership: PendingOwnership[];
     /** 插件运行时设置（面板可配置，与 Cordis 配置并存、面板写入优先）。 */
     settings: MatrixSettings;
 }

@@ -11,12 +11,13 @@ const account: Account = {
 const persona: Persona = { id: 'p1', name: '干货风', prompt: '专业、数据支撑、不废话', createdAt: '2026-08-18T00:00:00.000Z' }
 const viralItems: ViralItem[] = [{
   id: 'v1',
-  accountId: 'acc-a',
+  personaId: 'p1',
   title: '通勤穿搭公式',
   body: '正文摘要',
   sourceUrl: 'https://xhs.example.com/1',
   source: 'apify',
   status: 'pending',
+  weight: 1,
   score: 80,
   reasons: ['命中人设方向', '高互动'],
   collectedAt: '2026-08-18T00:00:00.000Z',

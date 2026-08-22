@@ -9,7 +9,7 @@ export function rankViralItems(account: Account, persona: Persona, notes: Publis
     const reasons: string[] = []
     let score = 0
     if (terms !== '' && terms.split(/[,，、\s]+/).some(term => term.length > 1 && haystack.includes(term))) { score += 35; reasons.push(`匹配${account.name}的人设方向`) }
-    const highWeight = notes.some(note => note.accountId === account.id && note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || (note.topic !== undefined && haystack.includes(note.topic.toLowerCase()))))
+    const highWeight = notes.some(note => note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || (note.topic !== undefined && haystack.includes(note.topic.toLowerCase()))))
     if (highWeight) { score += 30; reasons.push('与账号高权重历史内容相近') }
     const engagement = (item.likes ?? 0) + (item.comments ?? 0)
     if (engagement > 0) { score += Math.min(25, Math.log10(engagement + 1) * 8); reasons.push('存在公开互动信号') }

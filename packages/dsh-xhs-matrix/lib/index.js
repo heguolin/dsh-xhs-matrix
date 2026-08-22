@@ -1,4 +1,4 @@
-import { t as MatrixStore } from "./store-C4or72op.js";
+import { n as MatrixStoreError, t as MatrixStore } from "./store-CQC3B8ei.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -314,7 +314,7 @@ var CollectionScheduler = class {
 			});
 			return;
 		}
-		const notes = this.store.listPublishedNotes(accountId);
+		const notes = this.store.listPublishedNotes(persona.id).filter((note) => note.sourceAccountId === accountId);
 		if (result.status === "failed") {
 			for (const note of notes) this.store.saveMetricSnapshot({
 				accountId,
@@ -527,7 +527,7 @@ function makeAccountsRoutes(store) {
 			return;
 		}
 		try {
-			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-BNC8icWK.js");
+			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-CnZeRvlO.js");
 			const records = parsePublishedNoteImport(body.content, body.format);
 			applyPublishedNoteImport(store, body.accountId, records);
 			writeJson(res, 201, { imported: records.length });
@@ -659,11 +659,15 @@ function makeDraftsRoutes(store) {
 			const draft = store.setDraftStatus(draftId, status, metrics);
 			let note;
 			if (status === "published" && !wasPublished) {
+				const account = store.listAccounts().find((item) => item.id === draft.accountId);
+				if (account === void 0 || account.personaId === "") throw new MatrixStoreError("该账号尚未分配人设，无法写入知识库");
 				const lines = draft.copy.split("\n");
 				const title = (lines[0] ?? "").trim().slice(0, 60) || "未命名笔记";
 				const body = lines.slice(1).join("\n").trim() || draft.copy;
 				note = store.savePublishedNote({
-					accountId: draft.accountId,
+					personaId: account.personaId,
+					sourceAccountId: draft.accountId,
+					sourceAccountName: account.name,
 					title,
 					copy: body,
 					topic: draft.tags !== void 0 && draft.tags !== "" ? draft.tags.replace(/#/g, " ").trim().slice(0, 100) : void 0,
@@ -709,7 +713,12 @@ function makeKnowledgeRoutes(store, scheduler) {
 					writeJson(res, 400, { error: "account 查询参数必填" });
 					return;
 				}
-				writeJson(res, 200, { notes: store.listPublishedNotes(accountId) });
+				const account = store.listAccounts().find((item) => item.id === accountId);
+				if (account === void 0) {
+					writeJson(res, 400, { error: "账号不存在：" + accountId });
+					return;
+				}
+				writeJson(res, 200, { notes: store.listPublishedNotes(account.personaId) });
 				return;
 			}
 			if (method !== "PATCH") {
@@ -731,7 +740,12 @@ function makeKnowledgeRoutes(store, scheduler) {
 				return;
 			}
 			try {
-				writeJson(res, 200, { note: store.setNoteWeight(accountId, noteId, weight) });
+				const account = store.listAccounts().find((item) => item.id === accountId);
+				if (account === void 0) {
+					writeJson(res, 400, { error: "账号不存在：" + accountId });
+					return;
+				}
+				writeJson(res, 200, { note: store.setNoteWeight(account.personaId, noteId, weight) });
 			} catch (error) {
 				fail(res, error);
 			}
@@ -1062,7 +1076,7 @@ function rankViralItems(account, persona, notes, items) {
 			score += 35;
 			reasons.push(`匹配${account.name}的人设方向`);
 		}
-		if (notes.some((note) => note.accountId === account.id && note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || note.topic !== void 0 && haystack.includes(note.topic.toLowerCase())))) {
+		if (notes.some((note) => note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || note.topic !== void 0 && haystack.includes(note.topic.toLowerCase())))) {
 			score += 30;
 			reasons.push("与账号高权重历史内容相近");
 		}
@@ -1126,9 +1140,19 @@ function makeViralRoutes(store, provider) {
 				}
 				status = statusRaw;
 			}
-			writeJson(res, 200, { batches: store.listViralBatches(accountId).map((batch) => ({
+			const account = store.listAccounts().find((entry) => entry.id === accountId);
+			if (account === void 0) {
+				writeJson(res, 400, { error: "账号不存在：" + accountId });
+				return;
+			}
+			const personaId = account.personaId;
+			if (personaId === "") {
+				writeJson(res, 200, { batches: [] });
+				return;
+			}
+			writeJson(res, 200, { batches: store.listViralBatches(personaId).map((batch) => ({
 				...batch,
-				items: store.listViralItems(accountId, status, batch.id)
+				items: store.listViralItems(personaId, status, batch.id)
 			})) });
 			return;
 		}
@@ -1139,7 +1163,8 @@ function makeViralRoutes(store, provider) {
 				return;
 			}
 			try {
-				writeJson(res, 200, { deleted: store.deleteViralBatch(accountId, batchId) });
+				const personaId = store.listAccounts().find((entry) => entry.id === accountId)?.personaId ?? "";
+				writeJson(res, 200, { deleted: personaId === "" ? 0 : store.deleteViralBatch(personaId, batchId) });
 			} catch (error) {
 				fail(res, error);
 			}
@@ -1162,27 +1187,36 @@ function makeViralRoutes(store, provider) {
 				return;
 			}
 			try {
-				const item = store.reviewViralItem(accountId, itemId, status);
+				const account = store.listAccounts().find((entry) => entry.id === accountId);
+				if (account === void 0) {
+					writeJson(res, 400, { error: "账号不存在：" + accountId });
+					return;
+				}
+				const personaId = account.personaId;
+				if (personaId === "") {
+					writeJson(res, 400, { error: "该账号尚未分配人设" });
+					return;
+				}
+				const item = store.reviewViralItem(personaId, itemId, status);
 				if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
 					const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
 					if (detail !== void 0) {
-						const account = store.listAccounts().find((entry) => entry.id === accountId);
-						const persona = account !== void 0 ? store.listPersonas().find((entry) => entry.id === account.personaId) : void 0;
-						if (account !== void 0 && persona !== void 0) {
-							const best = rankViralItems(account, persona, store.listPublishedNotes(accountId), [detail])[0];
-							store.updateViralItem(accountId, itemId, {
+						const persona = store.listPersonas().find((entry) => entry.id === personaId);
+						if (persona !== void 0) {
+							const best = rankViralItems(account, persona, store.listPublishedNotes(personaId), [detail])[0];
+							store.updateViralItem(personaId, itemId, {
 								title: detail.title,
 								body: detail.body ?? "",
 								score: best !== void 0 ? best.score : item.score,
 								reasons: best !== void 0 ? best.reasons : item.reasons
 							});
-						} else store.updateViralItem(accountId, itemId, {
+						} else store.updateViralItem(personaId, itemId, {
 							title: detail.title,
 							body: detail.body ?? ""
 						});
 					}
 				}
-				writeJson(res, 200, { item: store.listViralItems(accountId).find((entry) => entry.id === itemId) ?? item });
+				writeJson(res, 200, { item: store.listViralItems(personaId).find((entry) => entry.id === itemId) ?? item });
 			} catch (error) {
 				fail(res, error);
 			}
@@ -1234,11 +1268,13 @@ function makeViralRoutes(store, provider) {
 				if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
 				return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
 			});
-			const ranked = rankViralItems(account, persona, store.listPublishedNotes(targetAccountId), items);
+			const ranked = rankViralItems(account, persona, store.listPublishedNotes(persona.id), items);
 			const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 			const savedItems = ranked.map((item) => {
 				const payload = {
-					accountId: targetAccountId,
+					personaId: persona.id,
+					sourceAccountId: targetAccountId,
+					sourceAccountName: account.name,
 					title: item.title,
 					body: item.body ?? "",
 					sourceUrl: item.sourceUrl,
@@ -1319,9 +1355,9 @@ function buildStudioContext(store, accountId, mode, maxInputChars) {
 	if (account === void 0) throw new Error(`账号不存在：${accountId}`);
 	const persona = store.listPersonas().find((item) => item.id === account.personaId);
 	if (persona === void 0) throw new Error("该账号尚未分配人设");
-	const notes = store.listPublishedNotes(accountId);
+	const notes = store.listPublishedNotes(account.personaId);
 	const snapshots = store.listMetricSnapshots(accountId);
-	const viralItems = store.listViralItems(accountId, "accepted");
+	const viralItems = store.listViralItems(account.personaId, "accepted");
 	const personaLines = [
 		`【人设名称】${persona.name}`,
 		persona.positioning !== void 0 ? `【账号定位】${persona.positioning}` : "",
@@ -1421,8 +1457,8 @@ var StudioService = class {
 			}),
 			evidence: {
 				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
-				noteIds: this.store.listPublishedNotes(accountId).filter((note) => note.weight >= 3).map((note) => note.id),
-				trendIds: this.store.listViralItems(accountId, "accepted").slice(0, 20).map((item) => item.id),
+				noteIds: this.store.listPublishedNotes(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "").filter((note) => note.weight >= 3).map((note) => note.id),
+				trendIds: this.store.listViralItems(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "", "accepted").slice(0, 20).map((item) => item.id),
 				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
 			}
 		};
@@ -1473,8 +1509,8 @@ var StudioService = class {
 			}),
 			evidence: {
 				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
-				noteIds: this.store.listPublishedNotes(accountId).filter((note) => note.weight >= 3).map((note) => note.id),
-				trendIds: this.store.listViralItems(accountId, "accepted").slice(0, 20).map((item) => item.id),
+				noteIds: this.store.listPublishedNotes(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "").filter((note) => note.weight >= 3).map((note) => note.id),
+				trendIds: this.store.listViralItems(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "", "accepted").slice(0, 20).map((item) => item.id),
 				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
 			},
 			coverPrompt
@@ -1616,7 +1652,7 @@ function makeTools(deps) {
 						skipped.push(`${account.name}（今日已生成）`);
 						continue;
 					}
-					const viralItems = store.listViralItems(account.id).filter((item) => item.status === "pending" || item.status === "accepted");
+					const viralItems = store.listViralItems(account.personaId).filter((item) => item.status === "pending" || item.status === "accepted");
 					if (viralItems.length === 0) {
 						skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`);
 						continue;
@@ -1782,8 +1818,9 @@ function makeTools(deps) {
 					message: `status 必须是 pending/accepted/ignored：${args.status}`,
 					items: []
 				};
+				const personaId = store.listAccounts().find((account) => account.id === args.accountId)?.personaId ?? "";
 				const status = args.status;
-				const items = store.listViralItems(args.accountId, status).map((item) => ({
+				const items = store.listViralItems(personaId, status).map((item) => ({
 					id: item.id,
 					title: item.title,
 					body: item.body,
@@ -1978,7 +2015,8 @@ function makeTools(deps) {
 					message: `账号不存在：${args.accountId}`,
 					notes: []
 				};
-				const notes = store.listPublishedNotes(args.accountId);
+				const personaId = store.listAccounts().find((account) => account.id === args.accountId)?.personaId ?? "";
+				const notes = store.listPublishedNotes(personaId);
 				const lines = notes.length === 0 ? ["该账号还没有已发布笔记"] : notes.map((note) => {
 					const metric = store.listMetricSnapshots(args.accountId, note.id).at(-1);
 					return `${note.id}\t权重 ${note.weight}\t${note.title}${metric !== void 0 ? `\t阅读 ${metric.reads}` : ""}`;

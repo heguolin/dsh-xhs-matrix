@@ -90,7 +90,7 @@ export function makeTools(deps: ToolsDeps) {
           continue
         }
         // v3 素材来源：该账号 pending/accepted 爆款池（pending 待审核、accepted 已采纳，均作为创作参考）。
-        const viralItems = store.listViralItems(account.id).filter(item => item.status === 'pending' || item.status === 'accepted')
+        const viralItems = store.listViralItems(account.personaId).filter(item => item.status === 'pending' || item.status === 'accepted')
         if (viralItems.length === 0) {
           skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`)
           continue
@@ -181,8 +181,9 @@ export function makeTools(deps: ToolsDeps) {
       if (args.status !== undefined && !VIRAL_STATUSES.includes(args.status as ViralStatus)) {
         return { ok: false, message: `status 必须是 pending/accepted/ignored：${args.status}`, items: [] }
       }
+      const personaId = store.listAccounts().find(account => account.id === args.accountId)?.personaId ?? ''
       const status = args.status as ViralStatus | undefined
-      const items = store.listViralItems(args.accountId, status).map(item => ({
+      const items = store.listViralItems(personaId, status).map(item => ({
         id: item.id,
         title: item.title,
         body: item.body,
@@ -287,7 +288,8 @@ export function makeTools(deps: ToolsDeps) {
       if (!store.listAccounts().some(account => account.id === args.accountId)) {
         return { ok: false, message: `账号不存在：${args.accountId}`, notes: [] }
       }
-      const notes = store.listPublishedNotes(args.accountId)
+      const personaId = store.listAccounts().find(account => account.id === args.accountId)?.personaId ?? ''
+      const notes = store.listPublishedNotes(personaId)
       const lines = notes.length === 0
         ? ['该账号还没有已发布笔记']
         : notes.map(note => {

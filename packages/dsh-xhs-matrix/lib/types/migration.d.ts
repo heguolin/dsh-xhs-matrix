@@ -1,5 +1,5 @@
-/** 存储文件版本迁移（v1/v2 → v3）。 */
-import type { Account, CollectionStatus, Draft, MatrixSettings, MetricSnapshot, Persona, PublishedNote, StoreFile, StudioMessage } from './types.ts';
+/** 存储文件版本迁移（v1/v2 → v4）。 */
+import type { Account, CollectionStatus, Draft, MatrixSettings, MetricSnapshot, Persona, StoreFile, StudioMessage } from './types.ts';
 /** 运行时设置默认值（存于 migration 模块，避免 store↔migration 循环依赖）。 */
 export declare function defaultMatrixSettings(): MatrixSettings;
 /** version 1 中尚未包含连接和采集配置的账号。 */
@@ -20,6 +20,21 @@ interface VersionTwoTrendSample {
     publishedAt?: string;
     collectedAt: string;
     status?: string;
+}
+/** 旧版已发布笔记（v2 仍以 accountId 归属）。 */
+interface LegacyNote {
+    id: string;
+    accountId: string;
+    title: string;
+    copy: string;
+    topic?: string;
+    contentType?: string;
+    sourceUrl?: string;
+    publishedAt: string;
+    source: string;
+    weight: number;
+    createdAt: string;
+    updatedAt?: string;
 }
 /** 旧版草稿（v2 含冗余 topicId 字段）。 */
 type LegacyDraft = Draft & {
@@ -42,7 +57,7 @@ export interface VersionTwoStoreFile {
     topics?: unknown[];
     negatives?: unknown[];
     drafts?: LegacyDraft[];
-    publishedNotes?: PublishedNote[];
+    publishedNotes?: LegacyNote[];
     metricSnapshots?: MetricSnapshot[];
     trendSamples?: VersionTwoTrendSample[];
     studioMessages?: StudioMessage[];
@@ -50,6 +65,9 @@ export interface VersionTwoStoreFile {
 }
 /** 迁移输入：v1 或 v2 存储文件。 */
 export type LegacyStoreFile = VersionOneStoreFile | VersionTwoStoreFile;
-/** 将 v1/v2 存储迁移到 v3：trendSamples 转为爆款池 pending 条目、topics/negatives 丢弃、draft 去 topicId。 */
+/**
+ * 将 v1/v2 存储迁移到 v4：无法解析人设的笔记/爆款进入待归属集合，
+ * topics/negatives 丢弃、draft 去 topicId，并补齐人设与来源账号快照。
+ */
 export declare function migrateStoreFile(file: LegacyStoreFile): StoreFile;
 export {};

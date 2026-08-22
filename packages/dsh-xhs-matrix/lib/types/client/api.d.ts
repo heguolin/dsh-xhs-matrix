@@ -1,5 +1,5 @@
 /** 浏览器侧 API 客户端：面板组件唯一的数据通道（同源 fetch）。 */
-import type { DraftMetrics, DraftStatus, ViralItem, ViralStatus } from '../types.ts';
+import type { DraftMetrics, DraftStatus, ViralBatch, ViralItem, ViralStatus } from '../types.ts';
 import type { AccountPayload, PersonaPayload } from '../store.ts';
 /** 携带路由 JSON 错误消息的客户端错误。 */
 export declare class XhsApiError extends Error {
@@ -75,11 +75,7 @@ export declare class XhsApi {
     /** 按账号与审核状态列出爆款池条目（所有批次拍平）。 */
     listViralItems(accountId: string, status?: ViralStatus): Promise<ViralItem[]>;
     /** 按采集批次列出爆款池（每批含条目）；status 过滤条目。 */
-    listViralBatches(accountId: string, status?: ViralStatus): Promise<Array<{
-        id: string;
-        accountId: string;
-        collectedAt: string;
-        itemCount: number;
+    listViralBatches(accountId: string, status?: ViralStatus): Promise<Array<ViralBatch & {
         items: ViralItem[];
     }>>;
     /** 删除整个采集批次（该批全部条目）。 */

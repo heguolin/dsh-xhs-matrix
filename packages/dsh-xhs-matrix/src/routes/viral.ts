@@ -47,9 +47,13 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
           }
           status = statusRaw as ViralStatus
         }
-        const batches = store.listViralBatches(accountId).map(batch => ({
+        const account = store.listAccounts().find(entry => entry.id === accountId)
+        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
+        const personaId = account.personaId
+        if (personaId === '') { writeJson(res, 200, { batches: [] }); return }
+        const batches = store.listViralBatches(personaId).map(batch => ({
           ...batch,
-          items: store.listViralItems(accountId, status, batch.id),
+          items: store.listViralItems(personaId, status, batch.id),
         }))
         writeJson(res, 200, { batches })
         return
@@ -60,7 +64,8 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         const batchId = queryParam(url, 'batch')
         if (accountId === undefined || batchId === undefined) { writeJson(res, 400, { error: 'account 与 batch 查询参数必填' }); return }
         try {
-          const deleted = store.deleteViralBatch(accountId, batchId)
+          const personaId = store.listAccounts().find(entry => entry.id === accountId)?.personaId ?? ''
+          const deleted = personaId === '' ? 0 : store.deleteViralBatch(personaId, batchId)
           writeJson(res, 200, { deleted })
         } catch (error) { fail(res, error) }
         return
@@ -75,30 +80,33 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         const status = body.status
         if (status !== 'accepted' && status !== 'ignored') { writeJson(res, 400, { error: 'status 必须是 accepted 或 ignored' }); return }
         try {
-          const item = store.reviewViralItem(accountId, itemId, status)
+          const account = store.listAccounts().find(entry => entry.id === accountId)
+          if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
+          const personaId = account.personaId
+          if (personaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
+          const item = store.reviewViralItem(personaId, itemId, status)
           // 采纳时若搜索接口未带回正文（常见），用笔记链接抓详情补全，
           // 并按补全后的完整内容重算相关性评分——创作参考用真实全文而非标题。
           if (status === 'accepted' && provider?.fetchNoteDetail !== undefined && item.body === '' && item.sourceUrl !== undefined) {
             const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => undefined)
             if (detail !== undefined) {
-              const account = store.listAccounts().find(entry => entry.id === accountId)
-              const persona = account !== undefined ? store.listPersonas().find(entry => entry.id === account.personaId) : undefined
-              if (account !== undefined && persona !== undefined) {
-                const notes = store.listPublishedNotes(accountId)
+              const persona = store.listPersonas().find(entry => entry.id === personaId)
+              if (persona !== undefined) {
+                const notes = store.listPublishedNotes(personaId)
                 const ranked = rankViralItems(account, persona, notes, [detail])
                 const best = ranked[0]
-                store.updateViralItem(accountId, itemId, {
+                store.updateViralItem(personaId, itemId, {
                   title: detail.title,
                   body: detail.body ?? '',
                   score: best !== undefined ? best.score : item.score,
                   reasons: best !== undefined ? best.reasons : item.reasons,
                 })
               } else {
-                store.updateViralItem(accountId, itemId, { title: detail.title, body: detail.body ?? '' })
+                store.updateViralItem(personaId, itemId, { title: detail.title, body: detail.body ?? '' })
               }
             }
           }
-          writeJson(res, 200, { item: store.listViralItems(accountId).find(entry => entry.id === itemId) ?? item })
+          writeJson(res, 200, { item: store.listViralItems(personaId).find(entry => entry.id === itemId) ?? item })
         } catch (error) { fail(res, error) }
         return
       }
@@ -131,13 +139,15 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
             return detail ?? item
           })
         }
-        const notes = store.listPublishedNotes(targetAccountId)
+        const notes = store.listPublishedNotes(persona.id)
         const ranked = rankViralItems(account, persona, notes, items)
         // 每次采集生成独立批次：整批可单独删除，不影响其他批次。
         const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
         const savedItems = ranked.map(item => {
           const payload: ViralItemPayload = {
-            accountId: targetAccountId,
+            personaId: persona.id,
+            sourceAccountId: targetAccountId,
+            sourceAccountName: account.name,
             title: item.title,
             body: item.body ?? '',
             sourceUrl: item.sourceUrl,

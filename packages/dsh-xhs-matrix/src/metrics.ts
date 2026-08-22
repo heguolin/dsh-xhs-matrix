@@ -96,7 +96,7 @@ export class CollectionScheduler {
       this.store.updateCollectionStatus(accountId, { running: false, lastStatus: 'failed', lastError: message })
       return
     }
-    const notes = this.store.listPublishedNotes(accountId)
+    const notes = this.store.listPublishedNotes(persona.id).filter(note => note.sourceAccountId === accountId)
     if (result.status === 'failed') {
       for (const note of notes) {
         this.store.saveMetricSnapshot({ accountId, noteId: note.id, reads: 0, likes: 0, favorites: 0, comments: 0, source: 'apify', status: 'failed' as const, error: result.error })

@@ -28,7 +28,7 @@ describe('xhs 工具族', () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业、数据支撑' })
     const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
     const [today] = makeTools({ store, ctx: {} as any })
     const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
     expect(result.ok).toBe(true)
@@ -41,7 +41,7 @@ describe('xhs 工具族', () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
     const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
     const now = new Date()
     const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     store.saveDraft({ accountId: account.id, date: local, copy: 'c', coverPrompt: 'p' })
@@ -111,10 +111,11 @@ describe('xhs 工具族', () => {
 
   it('xhs_virals：查询账号爆款池并按状态过滤', async () => {
     const store = newStore()
-    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '爆款A', body: '正文A', sourceUrl: 'https://x.com/a', source: 'apify', score: 70, reasons: ['命中人设方向'] })
-    store.reviewViralItem(account.id, store.listViralItems(account.id)[0].id, 'accepted')
-    store.saveViralItem({ accountId: account.id, title: '爆款B', body: '正文B', source: 'apify', score: 60, reasons: ['高互动'] })
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.saveViralItem({ personaId: persona.id, title: '爆款A', body: '正文A', sourceUrl: 'https://x.com/a', source: 'apify', score: 70, reasons: ['命中人设方向'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id)[0].id, 'accepted')
+    store.saveViralItem({ personaId: persona.id, title: '爆款B', body: '正文B', source: 'apify', score: 60, reasons: ['高互动'] })
     const tools = makeTools({ store, ctx: {} as any })
     const viralsTool = tools.find(t => t.name === 'xhs_virals')!
     const all = await viralsTool.execute({ accountId: account.id }, execStub) as { ok: boolean; items: Array<{ id: string; title: string; status: string; score: number; reasons: string[] }> }
@@ -141,8 +142,9 @@ describe('xhs 工具族', () => {
 
   it('xhs_notes：查询账号已发布笔记知识库', async () => {
     const store = newStore()
-    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
-    store.savePublishedNote({ accountId: account.id, title: '实测笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.savePublishedNote({ personaId: persona.id, title: '实测笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
     const tools = makeTools({ store, ctx: {} as any })
     const notesTool = tools.find(t => t.name === 'xhs_notes')!
     const result = await notesTool.execute({ accountId: account.id }, execStub) as { ok: boolean; notes: string[] }

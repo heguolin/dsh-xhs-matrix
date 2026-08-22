@@ -14,6 +14,9 @@ let base: string
 let store: MatrixStore
 let viralProvider: ViralProvider
 
+/** 解析账号当前人设（v4 内容按人设归属）。 */
+const personaIdOf = (accountId: string): string => store.listAccounts().find(a => a.id === accountId)?.personaId ?? ''
+
 /** 记录 mock 数据源的 search 调用参数（路由透传验证）。 */
 const searchCalls: Array<{ accountId: string; query: string; maxItems: number }> = []
 
@@ -122,7 +125,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       body: JSON.stringify({ draftId, status: 'published' }),
     })
     expect(published.status).toBe(200)
-    const notes = store.listPublishedNotes(accountId)
+    const notes = store.listPublishedNotes(personaIdOf(accountId))
     expect(notes).toHaveLength(1)
     expect(notes[0].title).toBe('这是标题')
     expect(notes[0].copy).toBe('正文第一行 #AI工具')
@@ -134,7 +137,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       body: JSON.stringify({ draftId, status: 'published', metrics: { reads: 10, likes: 1, comments: 0, collected: '2026-08-22T00:00:00.000Z' } }),
     })
     expect(again.status).toBe(200)
-    expect(store.listPublishedNotes(accountId)).toHaveLength(1)
+    expect(store.listPublishedNotes(personaIdOf(accountId))).toHaveLength(1)
   })
 
   it('草稿缺失必填字段返回 400 且不落库', async () => {
@@ -164,7 +167,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(res.status).toBe(201)
     expect((res.body as { imported: number }).imported).toBe(2)
-    const notes = store.listPublishedNotes(accountId)
+    const notes = store.listPublishedNotes(personaIdOf(accountId))
     expect(notes).toHaveLength(2)
     expect(notes[0].title).toBe('标题一')
     // 发布日期缺省为当天日期（YYYY-MM-DD），保证人工导入无需填写精确日期。
@@ -251,7 +254,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     const batches = (list.body as { batches: Array<{ items: Array<{ status: string }> }> }).batches
     expect(batches[0].items[0].status).toBe('accepted')
     // 入库条目可被 store 直接读到
-    expect(store.listViralItems(accountId, 'accepted')).toHaveLength(1)
+    expect(store.listViralItems(personaIdOf(accountId), 'accepted')).toHaveLength(1)
   })
 
   it('删除采集批次只删除该批，不影响其他批次', async () => {
@@ -265,11 +268,11 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ accountId, query: '效率', maxItems: 5 }),
     })
-    expect(store.listViralItems(accountId)).toHaveLength(2)
+    expect(store.listViralItems(personaIdOf(accountId))).toHaveLength(2)
     const deleted = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&batch=${firstBatch}`, { method: 'DELETE' })
     expect(deleted.status).toBe(200)
     expect((deleted.body as { deleted: number }).deleted).toBe(1)
-    expect(store.listViralItems(accountId)).toHaveLength(1)
+    expect(store.listViralItems(personaIdOf(accountId))).toHaveLength(1)
   })
 
   it('采集时自动抓详情补全完整正文，采纳后保留', async () => {
@@ -289,7 +292,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       })
       expect(created.status).toBe(201)
       // 采集入库即带完整正文：原已有正文的保留，空正文的被详情补全
-      const saved = store.listViralItems(accountId)
+      const saved = store.listViralItems(personaIdOf(accountId))
       expect(saved).toHaveLength(2)
       const withBody = saved.find(s => s.title === '有正文标题')
       const fetched = saved.find(s => s.title === '无正文标题')
@@ -301,7 +304,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
         body: JSON.stringify({ status: 'accepted' }),
       })
       expect(reviewed.status).toBe(200)
-      expect(store.listViralItems(accountId, 'accepted')[0].body).toBe('抓回的完整正文内容')
+      expect(store.listViralItems(personaIdOf(accountId), 'accepted')[0].body).toBe('抓回的完整正文内容')
     } finally {
       detailServer.close()
     }

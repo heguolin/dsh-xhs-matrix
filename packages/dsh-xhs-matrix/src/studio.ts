@@ -48,10 +48,10 @@ export function buildStudioContext(
   if (account === undefined) throw new Error(`账号不存在：${accountId}`)
   const persona = store.listPersonas().find(item => item.id === account.personaId)
   if (persona === undefined) throw new Error('该账号尚未分配人设')
-  const notes = store.listPublishedNotes(accountId)
+  const notes = store.listPublishedNotes(account.personaId)
   const snapshots = store.listMetricSnapshots(accountId)
-  // v3 创作参考：该账号已采纳的爆款池条目（pending/ignored 不进入上下文）。
-  const viralItems = store.listViralItems(accountId, 'accepted')
+  // v4 创作参考：该人设已采纳的爆款池条目（pending/ignored 不进入上下文）。
+  const viralItems = store.listViralItems(account.personaId, 'accepted')
 
   const personaLines = [
     `【人设名称】${persona.name}`,
@@ -136,8 +136,8 @@ export class StudioService {
     const message = this.store.saveStudioMessage({ accountId, role: 'assistant', content: response.text })
     const evidence: DraftEvidence = {
       persona: `${this.store.listPersonas().find(p => p.id === this.store.listAccounts().find(a => a.id === accountId)?.personaId)?.name ?? ''}`,
-      noteIds: this.store.listPublishedNotes(accountId).filter(note => note.weight >= 3).map(note => note.id),
-      trendIds: this.store.listViralItems(accountId, 'accepted').slice(0, 20).map(item => item.id),
+      noteIds: this.store.listPublishedNotes(this.store.listAccounts().find(a => a.id === accountId)?.personaId ?? '').filter(note => note.weight >= 3).map(note => note.id),
+      trendIds: this.store.listViralItems(this.store.listAccounts().find(a => a.id === accountId)?.personaId ?? '', 'accepted').slice(0, 20).map(item => item.id),
       reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`],
     }
     return { message, evidence }
@@ -179,8 +179,8 @@ export class StudioService {
     const message = this.store.saveStudioMessage({ accountId, role: 'assistant', content: copy })
     const evidence: DraftEvidence = {
       persona: `${this.store.listPersonas().find(p => p.id === this.store.listAccounts().find(a => a.id === accountId)?.personaId)?.name ?? ''}`,
-      noteIds: this.store.listPublishedNotes(accountId).filter(note => note.weight >= 3).map(note => note.id),
-      trendIds: this.store.listViralItems(accountId, 'accepted').slice(0, 20).map(item => item.id),
+      noteIds: this.store.listPublishedNotes(this.store.listAccounts().find(a => a.id === accountId)?.personaId ?? '').filter(note => note.weight >= 3).map(note => note.id),
+      trendIds: this.store.listViralItems(this.store.listAccounts().find(a => a.id === accountId)?.personaId ?? '', 'accepted').slice(0, 20).map(item => item.id),
       reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`],
     }
     return { message, evidence, coverPrompt }

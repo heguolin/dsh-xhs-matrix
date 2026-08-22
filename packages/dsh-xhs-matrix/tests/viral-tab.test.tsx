@@ -8,12 +8,13 @@ import type { ViralItem } from '../src/types.ts'
 /** 一条待审核爆款样本。 */
 const pendingItem: ViralItem = {
   id: 'v1',
-  accountId: 'acc-a',
+  personaId: 'p1',
   title: '秋季通勤穿搭公式',
   body: '正文内容'.repeat(40),
   sourceUrl: 'https://www.xiaohongshu.com/explore/abc123',
   source: 'apify',
   status: 'pending',
+  weight: 1,
   score: 86,
   reasons: ['命中穿搭方向', '高互动'],
   collectedAt: '2026-08-20T10:00:00.000Z',
