@@ -60,8 +60,9 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
     setCoverPrompt('')
     setError('')
     try {
-      const summary = await api.studioSendStream(accountId, prompt, mode, delta => {
-        setStreamText(prev => prev + delta)
+      const summary = await api.studioSendStream(accountId, prompt, mode, event => {
+        // v4 结构化事件：只把审校后的最终稿增量渲染为正文；plan_delta 等不进入最终内容。
+        if (event.type === 'content_delta') setStreamText(prev => prev + event.delta)
       })
       setEvidence(summary.evidence)
       setCoverPrompt(summary.coverPrompt ?? '')

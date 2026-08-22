@@ -50,6 +50,57 @@ window.__ModuleLoader__.load({
 			const text = search.toString();
 			return text === "" ? "" : "?" + text;
 		}
+		/** 解析一条 SSE data 载荷为结构化事件；未知类型返回 undefined（跳过）。 */
+		function parseSseEvent(data) {
+			let raw;
+			try {
+				raw = JSON.parse(data);
+			} catch {
+				return;
+			}
+			if (typeof raw !== "object" || raw === null) return void 0;
+			switch (raw.type) {
+				case "phase": {
+					const phase = raw.phase;
+					if (phase !== "planning" && phase !== "drafting" && phase !== "polishing" && phase !== "checking") return void 0;
+					return {
+						type: "phase",
+						phase
+					};
+				}
+				case "evidence": return raw;
+				case "plan_delta": {
+					const delta = raw.delta;
+					if (typeof delta !== "string") return void 0;
+					return {
+						type: "plan_delta",
+						delta
+					};
+				}
+				case "content_delta": {
+					const delta = raw.delta;
+					if (typeof delta !== "string") return void 0;
+					return {
+						type: "content_delta",
+						delta
+					};
+				}
+				case "quality": return raw;
+				case "done": return raw;
+				case "error": {
+					const stage = raw.stage;
+					const retryable = raw.retryable;
+					const message = raw.message;
+					return {
+						type: "error",
+						stage: typeof stage === "string" ? stage : "stream",
+						retryable: retryable === true,
+						message: typeof message === "string" ? message : String(raw)
+					};
+				}
+				default: return;
+			}
+		}
 		/** 面板数据入口。 */
 		var XhsApi = class {
 			async listAccounts() {
@@ -103,21 +154,24 @@ window.__ModuleLoader__.load({
 			async deletePersona(id) {
 				await readJson(await fetch(XHS_API.personas + query({ persona: id }), { method: "DELETE" }));
 			}
-			/** 按账号与审核状态列出爆款池条目（所有批次拍平）。 */
-			async listViralItems(accountId, status) {
-				return (await this.listViralBatches(accountId, status)).flatMap((batch) => batch.items);
+			scopeParams(scope) {
+				return typeof scope === "string" ? { persona: scope } : { account: scope.accountId };
 			}
-			/** 按采集批次列出爆款池（每批含条目）；status 过滤条目。 */
-			async listViralBatches(accountId, status) {
+			/** 按人设与审核状态列出爆款池条目（所有批次拍平）。 */
+			async listViralItems(scope, status) {
+				return (await this.listViralBatches(scope, status)).flatMap((batch) => batch.items);
+			}
+			/** 按采集批次列出爆款池（每批含条目）；status 过滤条目。personaId 为主参数，兼容显式 { accountId }。 */
+			async listViralBatches(scope, status) {
 				return (await readJson(await fetch(XHS_API.viral + query({
-					account: accountId,
+					...this.scopeParams(scope),
 					status
 				})))).batches;
 			}
 			/** 删除整个采集批次（该批全部条目）。 */
-			async deleteViralBatch(accountId, batchId) {
+			async deleteViralBatch(scope, batchId) {
 				return (await readJson(await fetch(XHS_API.viral + query({
-					account: accountId,
+					...this.scopeParams(scope),
 					batch: batchId
 				}), { method: "DELETE" }))).deleted;
 			}
@@ -134,9 +188,9 @@ window.__ModuleLoader__.load({
 				}))).items;
 			}
 			/** 审核爆款条目为 accepted / ignored。 */
-			async reviewViralItem(accountId, itemId, status) {
+			async reviewViralItem(scope, itemId, status) {
 				return (await readJson(await fetch(XHS_API.viral + query({
-					account: accountId,
+					...this.scopeParams(scope),
 					item: itemId
 				}), {
 					method: "PATCH",
@@ -144,18 +198,66 @@ window.__ModuleLoader__.load({
 					body: JSON.stringify({ status })
 				}))).item;
 			}
-			async listNotes(accountId) {
-				return (await readJson(await fetch(XHS_API.notes + query({ account: accountId })))).notes;
+			/** 手动新增爆款（personaId 为主参数）。 */
+			async addManualViral(personaId, payload) {
+				return (await readJson(await fetch(XHS_API.viralManual, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						personaId,
+						...payload
+					})
+				}))).item;
 			}
-			async setNoteWeight(accountId, noteId, weight) {
+			/** 显式转移爆款到目标人设。 */
+			async transferVirals(personaId, targetPersonaId, itemIds) {
+				return (await readJson(await fetch(XHS_API.viralTransfer, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						personaId,
+						targetPersonaId,
+						itemIds
+					})
+				}))).items;
+			}
+			async listNotes(scope) {
+				return (await readJson(await fetch(XHS_API.notes + query(this.scopeParams(scope))))).notes;
+			}
+			async setNoteWeight(scope, noteId, weight) {
 				await readJson(await fetch(XHS_API.notes + query({
-					account: accountId,
+					...this.scopeParams(scope),
 					note: noteId
 				}), {
 					method: "PATCH",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({ weight })
 				}));
+			}
+			/** 显式转移已发布笔记到目标人设。 */
+			async transferNotes(personaId, targetPersonaId, noteIds) {
+				return (await readJson(await fetch(XHS_API.notesTransfer, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						personaId,
+						targetPersonaId,
+						noteIds
+					})
+				}))).notes;
+			}
+			async listPending() {
+				return (await readJson(await fetch(XHS_API.pendingOwnership))).pending;
+			}
+			async assignPending(id, targetPersonaId) {
+				return (await readJson(await fetch(XHS_API.pendingOwnership, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						id,
+						targetPersonaId
+					})
+				}))).asset;
 			}
 			async listMetrics(accountId, noteId) {
 				return (await readJson(await fetch(XHS_API.metrics + query({
@@ -204,17 +306,20 @@ window.__ModuleLoader__.load({
 				}));
 			}
 			/**
-			* 流式发送创作指令（SSE）：onDelta 收到文本增量；完成后 resolve 含
-			* messageId/coverPrompt/evidence 的摘要。
+			* 流式发送创作指令（结构化 SSE）：按完整空白行分隔解析类型化事件，
+			* 跨 chunk 保留缓冲区；onEvent 按顺序收到 type/phase/evidence/plan_delta/
+			* content_delta/quality/done/error。错误事件抛 XhsApiError；done 提供
+			* messageId/coverPrompt/personaId。requestId 透传到请求体用于幂等去重。
 			*/
-			async studioSendStream(accountId, input, mode, onDelta) {
+			async studioSendStream(accountId, input, mode, onEvent, requestId) {
 				const response = await fetch(XHS_API.studioMessages + query({ account: accountId }), {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({
 						input,
 						mode,
-						stream: true
+						stream: true,
+						requestId
 					})
 				});
 				if (!response.ok) {
@@ -233,14 +338,22 @@ window.__ModuleLoader__.load({
 					buffer += decoder.decode(value, { stream: true });
 					let boundary;
 					while ((boundary = buffer.indexOf("\n\n")) >= 0) {
-						const event = buffer.slice(0, boundary);
+						const eventText = buffer.slice(0, boundary);
 						buffer = buffer.slice(boundary + 2);
-						for (const line of event.split("\n")) {
+						for (const rawLine of eventText.split("\n")) {
+							const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
 							if (!line.startsWith("data: ")) continue;
-							const payload = JSON.parse(line.slice(6));
-							if (typeof payload.delta === "string") onDelta(payload.delta);
-							if (payload.error !== void 0) failed = payload.error;
-							if (payload.done === true) summary = payload;
+							const event = parseSseEvent(line.slice(6));
+							if (event === void 0) continue;
+							onEvent(event);
+							if (event.type === "error") failed = event.message;
+							if (event.type === "done") summary = {
+								messageId: event.messageId,
+								coverPrompt: event.coverPrompt ?? "",
+								evidence: event.evidence,
+								personaId: event.personaId,
+								quality: event.quality
+							};
 						}
 					}
 				}
@@ -360,122 +473,122 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"studioSend": "XLBeMq_studioSend",
-			"success": "XLBeMq_success",
-			"viewHost": "XLBeMq_viewHost",
-			"msg": "XLBeMq_msg",
-			"postMeta": "XLBeMq_postMeta",
-			"personaDesc": "XLBeMq_personaDesc",
-			"tab": "XLBeMq_tab",
-			"accountName": "XLBeMq_accountName",
-			"dialogRow": "XLBeMq_dialogRow",
-			"topicTitle": "XLBeMq_topicTitle",
-			"bubble": "XLBeMq_bubble",
-			"libBody": "XLBeMq_libBody",
-			"personaLayout": "XLBeMq_personaLayout",
-			"messages": "XLBeMq_messages",
-			"badgeWarn": "XLBeMq_badgeWarn",
-			"metrics": "XLBeMq_metrics",
-			"navIcon": "XLBeMq_navIcon",
-			"draftLayout": "XLBeMq_draftLayout",
-			"topbarSub": "XLBeMq_topbarSub",
-			"muted": "XLBeMq_muted",
-			"chathead": "XLBeMq_chathead",
-			"statusDot": "XLBeMq_statusDot",
-			"navItem": "XLBeMq_navItem",
-			"below": "XLBeMq_below",
-			"context": "XLBeMq_context",
-			"topbar": "XLBeMq_topbar",
-			"overlay": "XLBeMq_overlay",
-			"meter": "XLBeMq_meter",
 			"studioResult": "XLBeMq_studioResult",
-			"card": "XLBeMq_card",
-			"post": "XLBeMq_post",
-			"error": "XLBeMq_error",
-			"tag": "XLBeMq_tag",
-			"contextCard": "XLBeMq_contextCard",
-			"filterRow": "XLBeMq_filterRow",
-			"ok": "XLBeMq_ok",
-			"overview": "XLBeMq_overview",
-			"viewGrid": "XLBeMq_viewGrid",
-			"panel": "XLBeMq_panel",
-			"dialogClose": "XLBeMq_dialogClose",
-			"libRow": "XLBeMq_libRow",
-			"pillWarn": "XLBeMq_pillWarn",
-			"rowActions": "XLBeMq_rowActions",
-			"accountItem": "XLBeMq_accountItem",
-			"personaName": "XLBeMq_personaName",
-			"brandLogo": "XLBeMq_brandLogo",
-			"personaAvatar": "XLBeMq_personaAvatar",
-			"chat": "XLBeMq_chat",
-			"modeSwitch": "XLBeMq_modeSwitch",
-			"libMeta": "XLBeMq_libMeta",
-			"draftEditor": "XLBeMq_draftEditor",
-			"content": "XLBeMq_content",
-			"field": "XLBeMq_field",
-			"source": "XLBeMq_source",
-			"filter": "XLBeMq_filter",
-			"thumb": "XLBeMq_thumb",
-			"studioComposer": "XLBeMq_studioComposer",
-			"studioMain": "XLBeMq_studioMain",
-			"me": "XLBeMq_me",
-			"group": "XLBeMq_group",
-			"postTitle": "XLBeMq_postTitle",
-			"studioTop": "XLBeMq_studioTop",
-			"warn": "XLBeMq_warn",
-			"msgAvatar": "XLBeMq_msgAvatar",
-			"bar": "XLBeMq_bar",
-			"scoreLow": "XLBeMq_scoreLow",
-			"libTitle": "XLBeMq_libTitle",
-			"topbarRight": "XLBeMq_topbarRight",
-			"empty": "XLBeMq_empty",
-			"active": "XLBeMq_active",
-			"badgeGray": "XLBeMq_badgeGray",
-			"contextLine": "XLBeMq_contextLine",
-			"face": "XLBeMq_face",
-			"sidebar": "XLBeMq_sidebar",
-			"tabActive": "XLBeMq_tabActive",
-			"badgeDanger": "XLBeMq_badgeDanger",
-			"chips": "XLBeMq_chips",
-			"brand": "XLBeMq_brand",
-			"spacer": "XLBeMq_spacer",
-			"contextline": "XLBeMq_contextline",
-			"topicReason": "XLBeMq_topicReason",
-			"chatInput": "XLBeMq_chatInput",
-			"sourcePanel": "XLBeMq_sourcePanel",
-			"weightBadge": "XLBeMq_weightBadge",
-			"dangerBtn": "XLBeMq_dangerBtn",
-			"dialog": "XLBeMq_dialog",
-			"ghostBtn": "XLBeMq_ghostBtn",
-			"idle": "XLBeMq_idle",
-			"workspace": "XLBeMq_workspace",
 			"on": "XLBeMq_on",
-			"panelTitle": "XLBeMq_panelTitle",
-			"input": "XLBeMq_input",
-			"primary": "XLBeMq_primary",
-			"dialogRowActions": "XLBeMq_dialogRowActions",
-			"badge": "XLBeMq_badge",
-			"personaItem": "XLBeMq_personaItem",
+			"chathead": "XLBeMq_chathead",
+			"card": "XLBeMq_card",
+			"dangerBtn": "XLBeMq_dangerBtn",
+			"score": "XLBeMq_score",
+			"ghostBtn": "XLBeMq_ghostBtn",
+			"thumb": "XLBeMq_thumb",
+			"overview": "XLBeMq_overview",
+			"brand": "XLBeMq_brand",
+			"ok": "XLBeMq_ok",
+			"overlay": "XLBeMq_overlay",
+			"bubble": "XLBeMq_bubble",
+			"bar": "XLBeMq_bar",
+			"msgAvatar": "XLBeMq_msgAvatar",
+			"draftLayout": "XLBeMq_draftLayout",
+			"group": "XLBeMq_group",
+			"topbarSub": "XLBeMq_topbarSub",
+			"studioMain": "XLBeMq_studioMain",
+			"studioSend": "XLBeMq_studioSend",
+			"navItem": "XLBeMq_navItem",
+			"meter": "XLBeMq_meter",
+			"personaLayout": "XLBeMq_personaLayout",
+			"modeSwitch": "XLBeMq_modeSwitch",
+			"muted": "XLBeMq_muted",
+			"active": "XLBeMq_active",
+			"libBody": "XLBeMq_libBody",
+			"scoreLow": "XLBeMq_scoreLow",
+			"spacer": "XLBeMq_spacer",
+			"badgeGray": "XLBeMq_badgeGray",
+			"topbarRight": "XLBeMq_topbarRight",
+			"libTitle": "XLBeMq_libTitle",
+			"topicReason": "XLBeMq_topicReason",
 			"accountAdd": "XLBeMq_accountAdd",
-			"chatSend": "XLBeMq_chatSend",
-			"msgBubble": "XLBeMq_msgBubble",
-			"weight": "XLBeMq_weight",
+			"dialogRowActions": "XLBeMq_dialogRowActions",
+			"filterRow": "XLBeMq_filterRow",
+			"weightBadge": "XLBeMq_weightBadge",
+			"viewHost": "XLBeMq_viewHost",
+			"badge": "XLBeMq_badge",
+			"draftEditor": "XLBeMq_draftEditor",
 			"badgeGreen": "XLBeMq_badgeGreen",
-			"editbar": "XLBeMq_editbar",
+			"statusDot": "XLBeMq_statusDot",
+			"topicTitle": "XLBeMq_topicTitle",
+			"viewGrid": "XLBeMq_viewGrid",
+			"chips": "XLBeMq_chips",
+			"error": "XLBeMq_error",
+			"msgBubble": "XLBeMq_msgBubble",
+			"panel": "XLBeMq_panel",
+			"studioSendGhost": "XLBeMq_studioSendGhost",
+			"personaName": "XLBeMq_personaName",
+			"workspace": "XLBeMq_workspace",
+			"chatInput": "XLBeMq_chatInput",
+			"content": "XLBeMq_content",
+			"postMeta": "XLBeMq_postMeta",
+			"personaItem": "XLBeMq_personaItem",
+			"success": "XLBeMq_success",
+			"textarea": "XLBeMq_textarea",
+			"metric": "XLBeMq_metric",
+			"field": "XLBeMq_field",
+			"libMeta": "XLBeMq_libMeta",
+			"sidebar": "XLBeMq_sidebar",
+			"pillWarn": "XLBeMq_pillWarn",
+			"danger": "XLBeMq_danger",
+			"sourcePanel": "XLBeMq_sourcePanel",
+			"postTitle": "XLBeMq_postTitle",
+			"personaAvatar": "XLBeMq_personaAvatar",
 			"button": "XLBeMq_button",
+			"chatSend": "XLBeMq_chatSend",
+			"post": "XLBeMq_post",
+			"tag": "XLBeMq_tag",
+			"weight": "XLBeMq_weight",
+			"filter": "XLBeMq_filter",
+			"tabActive": "XLBeMq_tabActive",
 			"studioTopSub": "XLBeMq_studioTopSub",
 			"topicItem": "XLBeMq_topicItem",
-			"score": "XLBeMq_score",
-			"metric": "XLBeMq_metric",
+			"contextLine": "XLBeMq_contextLine",
+			"contextline": "XLBeMq_contextline",
+			"dialogClose": "XLBeMq_dialogClose",
+			"input": "XLBeMq_input",
+			"studioTop": "XLBeMq_studioTop",
 			"personaList": "XLBeMq_personaList",
-			"textarea": "XLBeMq_textarea",
+			"tab": "XLBeMq_tab",
+			"empty": "XLBeMq_empty",
+			"chat": "XLBeMq_chat",
+			"dialog": "XLBeMq_dialog",
+			"badgeDanger": "XLBeMq_badgeDanger",
+			"topbar": "XLBeMq_topbar",
+			"personaDesc": "XLBeMq_personaDesc",
+			"source": "XLBeMq_source",
+			"libRow": "XLBeMq_libRow",
+			"navIcon": "XLBeMq_navIcon",
 			"postBody": "XLBeMq_postBody",
-			"tabs": "XLBeMq_tabs",
-			"studioSendGhost": "XLBeMq_studioSendGhost",
+			"brandLogo": "XLBeMq_brandLogo",
+			"idle": "XLBeMq_idle",
+			"msg": "XLBeMq_msg",
+			"contextCard": "XLBeMq_contextCard",
+			"badgeWarn": "XLBeMq_badgeWarn",
+			"panelTitle": "XLBeMq_panelTitle",
+			"editbar": "XLBeMq_editbar",
+			"primary": "XLBeMq_primary",
+			"face": "XLBeMq_face",
+			"warn": "XLBeMq_warn",
 			"pill": "XLBeMq_pill",
-			"danger": "XLBeMq_danger",
+			"accountItem": "XLBeMq_accountItem",
+			"me": "XLBeMq_me",
+			"rowActions": "XLBeMq_rowActions",
+			"miniThumb": "XLBeMq_miniThumb",
+			"below": "XLBeMq_below",
 			"studioLayout": "XLBeMq_studioLayout",
-			"miniThumb": "XLBeMq_miniThumb"
+			"dialogRow": "XLBeMq_dialogRow",
+			"tabs": "XLBeMq_tabs",
+			"messages": "XLBeMq_messages",
+			"accountName": "XLBeMq_accountName",
+			"studioComposer": "XLBeMq_studioComposer",
+			"context": "XLBeMq_context",
+			"metrics": "XLBeMq_metrics"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -2159,8 +2272,8 @@ window.__ModuleLoader__.load({
 				setCoverPrompt("");
 				setError("");
 				try {
-					const summary = await api.studioSendStream(accountId, prompt, mode, (delta) => {
-						setStreamText((prev) => prev + delta);
+					const summary = await api.studioSendStream(accountId, prompt, mode, (event) => {
+						if (event.type === "content_delta") setStreamText((prev) => prev + event.delta);
 					});
 					setEvidence(summary.evidence);
 					setCoverPrompt(summary.coverPrompt ?? "");

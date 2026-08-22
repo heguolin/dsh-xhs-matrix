@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
+import type { NoteWeight } from '../../types.ts'
 import css from './panel.module.css'
 import { ImportDialog } from './ImportDialog.tsx'
 
@@ -59,7 +60,7 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
     }
   }
 
-  const setWeight = async (noteId: string, weight: number): Promise<void> => {
+  const setWeight = async (noteId: string, weight: NoteWeight): Promise<void> => {
     try {
       await api.setNoteWeight(accountId, noteId, weight)
       setNotice(`已设置权重 ${weight}，将影响下一次推荐。`)
