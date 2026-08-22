@@ -1,0 +1,133 @@
+{
+  "description": "内容质量评估集：两阶段去 AI 味 + 人设违禁词质量门。每例须满足 requiredFacts 仍在最终稿、forbiddenFacts 不新增、人设违禁词命中为 0。",
+  "samples": [
+    {
+      "id": "s01-template-phrases",
+      "rawDraft": "必看！很多人都想知道如何早起。我每天早上7点起床，用3个步骤。震惊，效率真的提升了不少！",
+      "requiredFacts": ["每天早上7点", "3个步骤"],
+      "forbiddenFacts": ["提升300%", "瘦了10斤"],
+      "persona": {
+        "id": "p-eval-1",
+        "name": "干货风",
+        "prompt": "专业、数据支撑、不废话",
+        "writingStyles": ["清晰结构", "数据支撑"],
+        "endingHookConstraints": "结尾自然邀请读者一起学习，不要命令式关注",
+        "endingHookExamples": ["可以一起来学习学习", "欢迎评论区交流"],
+        "forbiddenWords": ["必看", "震惊"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s02-mechanical-parallelism",
+      "rawDraft": "这个办法太绝了！一定要试试！只要20分钟就能搞定。学会这个，你就赢了。赢在起跑线。",
+      "requiredFacts": ["20分钟"],
+      "forbiddenFacts": ["3天速成", "零基础包会"],
+      "persona": {
+        "id": "p-eval-2",
+        "name": "实用派",
+        "prompt": "实用、高效、可落地",
+        "writingStyles": ["step by step"],
+        "endingHookConstraints": "结尾自然收束，不要命令式关注",
+        "endingHookExamples": ["你也可以试试看"],
+        "forbiddenWords": ["一定要", "绝了"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s03-over-exclamation",
+      "rawDraft": "全网最好用的收纳方法！太惊艳了！我整理了5个技巧，个个都好用！",
+      "requiredFacts": ["5个技巧"],
+      "forbiddenFacts": ["永远不失败", "全球第一"],
+      "persona": {
+        "id": "p-eval-3",
+        "name": "生活家",
+        "prompt": "生活感、真实、不夸张",
+        "writingStyles": ["真实对比"],
+        "endingHookConstraints": "结尾邀请读者私信交流，不要强制点赞关注",
+        "endingHookExamples": ["有问题评论区聊"],
+        "forbiddenWords": ["全网最好", "太惊艳了"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s04-self-description",
+      "rawDraft": "很多人问我怎么选鞋子，这里分享我的挑选顺序，重点看评论区。",
+      "requiredFacts": ["评论区"],
+      "forbiddenFacts": ["我是语言模型", "我是人工智能"],
+      "persona": {
+        "id": "p-eval-4",
+        "name": "好物党",
+        "prompt": "真诚、直接、有依据",
+        "writingStyles": ["经验清单"],
+        "endingHookConstraints": "结尾自然引导，不强制关注",
+        "endingHookExamples": ["欢迎一起交流"],
+        "forbiddenWords": ["必点", "求关注"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s05-force-follow",
+      "rawDraft": "记住第二个方法就够了。记得关注我，点赞关注才能看到更多。",
+      "requiredFacts": ["第二个方法"],
+      "forbiddenFacts": ["年薪百万", "月入过万"],
+      "persona": {
+        "id": "p-eval-5",
+        "name": "成长派",
+        "prompt": "成长、方法、可执行",
+        "writingStyles": ["教程结构"],
+        "endingHookConstraints": "结尾自然邀请读者一起练习，不要命令式关注",
+        "endingHookExamples": ["一起实践起来吧"],
+        "forbiddenWords": ["点赞", "关注我"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s06-numeric-facts",
+      "rawDraft": "这个楼梯有12个台阶，走上去要注意节奏。用对方法可以省不少力气。",
+      "requiredFacts": ["12个台阶"],
+      "forbiddenFacts": ["100%", "完全有效"],
+      "persona": {
+        "id": "p-eval-6",
+        "name": "健康风",
+        "prompt": "科学、安全、克制",
+        "writingStyles": ["真实对比"],
+        "endingHookConstraints": "结尾温和收束，不强制互动",
+        "endingHookExamples": ["保持习惯就好"],
+        "forbiddenWords": ["秘籍"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s07-short-draft",
+      "rawDraft": "雨天出门，带好伞和防滑鞋就对了。",
+      "requiredFacts": ["雨天出行"],
+      "forbiddenFacts": ["防滑神器"],
+      "persona": {
+        "id": "p-eval-7",
+        "name": "出行家",
+        "prompt": "实用提醒、简洁自然",
+        "writingStyles": ["简洁"],
+        "endingHookConstraints": "结尾自然提醒，不强制",
+        "endingHookExamples": ["出行注意安全"],
+        "forbiddenWords": ["必买"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "s08-long-running-habit",
+      "rawDraft": "我开始跑步的时候已经40岁了，坚持下来后发现身体状况变好。",
+      "requiredFacts": ["40岁", "跑步"],
+      "forbiddenFacts": ["每天5公里", "减重20斤"],
+      "persona": {
+        "id": "p-eval-8",
+        "name": "生活感悟派",
+        "prompt": "真诚、克制、有共鸣",
+        "writingStyles": ["经验清单"],
+        "endingHookConstraints": "结尾温和，不强求",
+        "endingHookExamples": ["慢慢来就好"],
+        "forbiddenWords": ["最硬核"],
+        "createdAt": "2026-08-22T00:00:00.000Z"
+      }
+    }
+  ]
+}
