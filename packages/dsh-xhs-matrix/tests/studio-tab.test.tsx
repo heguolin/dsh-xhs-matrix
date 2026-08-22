@@ -32,6 +32,7 @@ interface StreamHarness {
   api: XhsApi
   emit: (event: StudioSseEvent) => void
   release: () => void
+  saveCount: number
 }
 function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
   let onEvent: ((e: StudioSseEvent) => void) | null = null
@@ -39,6 +40,7 @@ function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
   let didError = false
   let errMsg = ''
   let didDone = false
+  let saveCount = 0
   const hold = new Promise<void>(resolve => { releaseFn = resolve })
   const api = {
     listStudioMessages: async () => [],
@@ -54,7 +56,7 @@ function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
       // 违禁词命中：无 done，客户端将抛「流式响应未正常结束」。
       throw new Error('流式响应未正常结束')
     },
-    studioSaveDraft: async () => ({ id: 'd1' }),
+    studioSaveDraft: async () => { saveCount += 1; return { id: 'd1' } },
     listDrafts: async () => [],
   } as unknown as XhsApi
   return {
@@ -65,6 +67,7 @@ function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
       onEvent?.(e)
     },
     release: () => { releaseFn?.() },
+    get saveCount() { return saveCount },
   }
 }
 
@@ -240,6 +243,57 @@ describe('StudioTab 结构化流式创作与智能跟随底部', () => {
     await settle()
     expect(state.scrollTop).toBe(1000)
     expect(findButton(host, '回到最新')).toBeUndefined()
+
+    unmount(root, host)
+  })
+
+  it('切换账号/人设后重置跟随并滚到底部', async () => {
+    const harness = makeHarness()
+    const { host, root } = await mount(harness.api)
+    typeInto(textarea(host), '帮写一篇')
+    clickSend(host)
+    await settle()
+    const el = scroller(host)
+    const { state } = mockScroll(el, 1000, 200)
+    // 主动上滚超阈值，进入暂停跟随态。
+    state.scrollTop = 120
+    el.dispatchEvent(new Event('scroll', { bubbles: true }))
+    await settle()
+    expect(findButton(host, '回到最新')).toBeDefined()
+
+    // 切换人设（same account, 组件不卸载）→ 必须重置跟随并滚到底部。
+    root.render(<StudioTab api={harness.api} accountId="a1" personaId="p2" onOpenDraft={() => {}} />)
+    await settle()
+    expect(findButton(host, '回到最新')).toBeUndefined()
+    expect(state.scrollTop).toBe(1000)
+
+    harness.release()
+    unmount(root, host)
+  })
+
+  it('流式中断（无 done/quality）时禁用保存且点击为 no-op', async () => {
+    const harness = makeHarness()
+    const { host, root } = await mount(harness.api)
+    typeInto(textarea(host), '帮写一篇')
+    clickSend(host)
+    await settle()
+    const finalBody = host.querySelector('[data-testid="studio-final"]')
+    expect(finalBody).not.toBeNull()
+
+    // 只收到部分 content_delta，然后中断（无 done / quality）→ 保存按钮必须禁用。
+    harness.emit({ type: 'content_delta', delta: '半截最终稿' })
+    harness.release()
+    await settle()
+
+    expect(host.querySelector('[data-testid="studio-final"]')?.textContent).toContain('半截最终稿')
+    const saveBtn = findButton(host, '保存为草稿')
+    expect(saveBtn).toBeDefined()
+    expect(saveBtn!.disabled).toBe(true)
+
+    // 点击为 no-op：即使触发也不会落库。
+    saveBtn!.click()
+    await settle()
+    expect(harness.saveCount).toBe(0)
 
     unmount(root, host)
   })

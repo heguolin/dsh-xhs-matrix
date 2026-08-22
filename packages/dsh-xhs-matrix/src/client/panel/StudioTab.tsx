@@ -87,6 +87,12 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
     if (follow) scrollToBottom()
   }, [follow, scrollToBottom, messages, live])
 
+  // 切换账号/人设时重置跟随状态：即使之前主动上滚暂停，新会话的历史加载后也应滚到底。
+  useEffect(() => {
+    setFollow(true)
+    setBackToLatest(false)
+  }, [accountId, personaId])
+
   const refresh = useCallback(async () => {
     if (accountId === '') { setMessages([]); setContext(EMPTY_CONTEXT); return }
     try {
@@ -160,8 +166,11 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
   }
 
   const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
-  const saveCopy = live !== null ? live.final : (lastAssistant?.content ?? '')
-  const saveDisabled = sending || !qualityAllowed || saveCopy === ''
+  // 只有「完成态」才允许保存：进行中或中断（无 done）的当前 run 视为未完成，禁用保存。
+  // saveCopy 取已落库的最近助手消息，而不是流式中的半截 final，避免把不完整内容入库。
+  const currentRunIncomplete = live !== null && !live.hasDone
+  const saveCopy = lastAssistant?.content ?? ''
+  const saveDisabled = sending || error !== '' || !qualityAllowed || currentRunIncomplete || saveCopy === ''
 
   const saveLastAsDraft = async (): Promise<void> => {
     if (saveCopy === '') { setError('还没有生成结果可保存'); return }
