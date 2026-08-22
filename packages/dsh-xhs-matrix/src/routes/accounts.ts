@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { isLoopbackRequest } from '../loopback.ts'
 import { XHS_API } from '../protocol.ts'
+import { PersonaAssetService } from '../persona-assets.ts'
 import { MatrixStore, type AccountPayload } from '../store.ts'
 import { fail, guard, queryParam, readJsonBody, writeJson } from './shared.ts'
 
@@ -17,6 +18,7 @@ export function makeAccountsRoutes(store: MatrixStore): WebRoute[] {
     path,
     handler,
   })
+  const service = new PersonaAssetService(store)
 
   return [
     // ------------------------------------------------------------ 账号
@@ -59,10 +61,11 @@ export function makeAccountsRoutes(store: MatrixStore): WebRoute[] {
         const account = store.listAccounts().find(item => item.id === body.accountId)
         if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + body.accountId }); return }
         if (account.personaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
-        const { applyPublishedNoteImport, parsePublishedNoteImport } = await import('../importer.ts')
+        const { parsePublishedNoteImport } = await import('../importer.ts')
         const records = parsePublishedNoteImport(body.content, body.format)
-        applyPublishedNoteImport(store, account.personaId, records, account.id, account.name)
-        writeJson(res, 201, { imported: records.length })
+        // 集中写路径：通过 PersonaAssetService.importNotes 落库，避免与 importer 重复维护写路径。
+        const notes = service.importNotes(account.personaId, records, account.id, account.name)
+        writeJson(res, 201, { imported: notes.length })
       } catch (error) { fail(res, error) }
     }),
   ]

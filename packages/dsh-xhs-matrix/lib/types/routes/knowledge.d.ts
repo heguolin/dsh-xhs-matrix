@@ -1,4 +1,4 @@
-/** /notes 与 /metrics 路由：已发布笔记知识库（权重）与指标快照、按账号采集。 */
+/** /notes 与 /metrics 路由：已发布笔记知识库（权重）、显式转移与指标快照、按账号采集。 */
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';
 import { CollectionScheduler } from '../metrics.ts';
 import { MatrixStore } from '../store.ts';

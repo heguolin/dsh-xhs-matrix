@@ -1,4 +1,4 @@
-/** /viral 爆款池路由：列表、采集入库、审核。 */
+/** /viral 爆款池路由：列表、采集入库、审核、手动新增、转移与批次删除。 */
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
@@ -6,9 +6,10 @@ import { rankViralItems } from '../collector/rank.ts'
 import type { ViralProvider } from '../collector/provider.ts'
 import { isLoopbackRequest } from '../loopback.ts'
 import { XHS_API } from '../protocol.ts'
+import { PersonaAssetService } from '../persona-assets.ts'
 import type { MatrixStore, ViralItemPayload } from '../store.ts'
 import type { ViralStatus } from '../types.ts'
-import { fail, queryParam, readJsonBody, writeJson } from './shared.ts'
+import { fail, guard, HttpError, queryParam, readJsonBody, resolvePersonaScope, writeJson } from './shared.ts'
 
 /** 合法审核状态。 */
 const VIRAL_STATUSES: readonly ViralStatus[] = ['pending', 'accepted', 'ignored']
@@ -28,44 +29,88 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
     path,
     handler,
   })
+  const service = new PersonaAssetService(store)
 
   return [
+    // ------------------------------------------------------------ 手动新增爆款
+    route(XHS_API.viralManual, async (req, res) => {
+      if (!guard(req, res, 'POST')) return
+      const body = await readJsonBody(req)
+      if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
+      const personaId = typeof body.personaId === 'string' && body.personaId !== '' ? body.personaId : ''
+      const title = typeof body.title === 'string' ? body.title.trim() : ''
+      const bodyText = typeof body.body === 'string' ? body.body.trim() : ''
+      if (personaId === '' || title === '' || bodyText === '') { writeJson(res, 400, { error: 'personaId、title 与 body 必填' }); return }
+      try {
+        resolvePersonaScope(store, undefined, personaId)
+        const reasons = Array.isArray(body.reasons) ? (body.reasons.filter((value: unknown) => typeof value === 'string') as string[]) : undefined
+        const item = service.addManualViral(personaId, {
+          title,
+          body: bodyText,
+          sourceUrl: typeof body.sourceUrl === 'string' && body.sourceUrl !== '' ? body.sourceUrl : undefined,
+          publishedAt: typeof body.publishedAt === 'string' && body.publishedAt !== '' ? body.publishedAt : undefined,
+          reasons,
+        })
+        writeJson(res, 201, { item })
+      } catch (error) { fail(res, error) }
+    }),
+    // ------------------------------------------------------------ 显式转移爆款
+    route(XHS_API.viralTransfer, async (req, res) => {
+      if (!guard(req, res, 'POST')) return
+      const body = await readJsonBody(req)
+      if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
+      const personaId = typeof body.personaId === 'string' && body.personaId !== '' ? body.personaId : ''
+      const targetPersonaId = typeof body.targetPersonaId === 'string' && body.targetPersonaId !== '' ? body.targetPersonaId : ''
+      const itemIds = Array.isArray(body.itemIds) ? (body.itemIds.filter((value: unknown) => typeof value === 'string') as string[]) : []
+      if (personaId === '' || targetPersonaId === '' || itemIds.length === 0) { writeJson(res, 400, { error: 'personaId、targetPersonaId 与 itemIds 必填' }); return }
+      try {
+        resolvePersonaScope(store, undefined, personaId)
+        if (!store.listPersonas().some(item => item.id === targetPersonaId)) throw new HttpError(404, '人设不存在：' + targetPersonaId)
+        const items = service.transferVirals(personaId, itemIds, targetPersonaId)
+        writeJson(res, 200, { items })
+      } catch (error) { fail(res, error) }
+    }),
+    // ------------------------------------------------------------ 爆款池主路由
     route(XHS_API.viral, async (req, res) => {
       if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'forbidden: loopback-only' }); return }
       const method = req.method ?? 'GET'
       const url = new URL(req.url ?? '/', 'http://localhost')
       const accountId = queryParam(url, 'account')
+      const personaId = queryParam(url, 'persona')
 
       // ------------------------------------------------------------ 爆款列表（按批次分组）
       if (method === 'GET') {
-        if (accountId === undefined) { writeJson(res, 400, { error: 'account 查询参数必填' }); return }
-        let status: ViralStatus | undefined
-        const statusRaw = queryParam(url, 'status')
-        if (statusRaw !== undefined) {
-          if (!VIRAL_STATUSES.includes(statusRaw as ViralStatus)) {
-            writeJson(res, 400, { error: 'status 必须是 pending/accepted/ignored' }); return
+        try {
+          const resolved = resolvePersonaScope(store, accountId, personaId)
+          let status: ViralStatus | undefined
+          const statusRaw = queryParam(url, 'status')
+          if (statusRaw !== undefined) {
+            if (!VIRAL_STATUSES.includes(statusRaw as ViralStatus)) {
+              writeJson(res, 400, { error: 'status 必须是 pending/accepted/ignored' }); return
+            }
+            status = statusRaw as ViralStatus
           }
-          status = statusRaw as ViralStatus
-        }
-        const account = store.listAccounts().find(entry => entry.id === accountId)
-        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
-        const personaId = account.personaId
-        if (personaId === '') { writeJson(res, 200, { batches: [] }); return }
-        const batches = store.listViralBatches(personaId).map(batch => ({
-          ...batch,
-          items: store.listViralItems(personaId, status, batch.id),
-        }))
-        writeJson(res, 200, { batches })
+          if (resolved === '') { writeJson(res, 200, { batches: [], resolvedPersonaId: '' }); return }
+          const batches = service.listBatches(resolved).map(batch => ({
+            ...batch,
+            items: service.listVirals(resolved, status, batch.id),
+          }))
+          writeJson(res, 200, { batches, resolvedPersonaId: resolved })
+        } catch (error) { fail(res, error) }
         return
       }
 
       // ------------------------------------------------------------ 删除整批
       if (method === 'DELETE') {
         const batchId = queryParam(url, 'batch')
-        if (accountId === undefined || batchId === undefined) { writeJson(res, 400, { error: 'account 与 batch 查询参数必填' }); return }
+        if (batchId === undefined || (accountId === undefined && personaId === undefined)) { writeJson(res, 400, { error: 'batch 与 account/persona 查询参数必填' }); return }
         try {
-          const personaId = store.listAccounts().find(entry => entry.id === accountId)?.personaId ?? ''
-          const deleted = personaId === '' ? 0 : store.deleteViralBatch(personaId, batchId)
+          const resolved = resolvePersonaScope(store, accountId, personaId)
+          if (resolved === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
+          if (!service.listBatches(resolved).some(batch => batch.id === batchId)) {
+            writeJson(res, 404, { error: '批次不存在或不属于该人设：' + batchId }); return
+          }
+          const deleted = service.deleteBatch(resolved, batchId)
           writeJson(res, 200, { deleted })
         } catch (error) { fail(res, error) }
         return
@@ -74,39 +119,37 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
       // ------------------------------------------------------------ 审核
       if (method === 'PATCH') {
         const itemId = queryParam(url, 'item')
-        if (accountId === undefined || itemId === undefined) { writeJson(res, 400, { error: 'account 与 item 查询参数必填' }); return }
+        if (itemId === undefined || (accountId === undefined && personaId === undefined)) { writeJson(res, 400, { error: 'account/persona 与 item 查询参数必填' }); return }
         const body = await readJsonBody(req)
         if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
         const status = body.status
         if (status !== 'accepted' && status !== 'ignored') { writeJson(res, 400, { error: 'status 必须是 accepted 或 ignored' }); return }
         try {
-          const account = store.listAccounts().find(entry => entry.id === accountId)
-          if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
-          const personaId = account.personaId
-          if (personaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
-          const item = store.reviewViralItem(personaId, itemId, status)
+          const resolved = resolvePersonaScope(store, accountId, personaId)
+          if (resolved === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
+          const item = service.reviewViral(resolved, itemId, status as 'accepted' | 'ignored')
           // 采纳时若搜索接口未带回正文（常见），用笔记链接抓详情补全，
           // 并按补全后的完整内容重算相关性评分——创作参考用真实全文而非标题。
           if (status === 'accepted' && provider?.fetchNoteDetail !== undefined && item.body === '' && item.sourceUrl !== undefined) {
             const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => undefined)
             if (detail !== undefined) {
-              const persona = store.listPersonas().find(entry => entry.id === personaId)
+              const persona = store.listPersonas().find(entry => entry.id === resolved)
               if (persona !== undefined) {
-                const notes = store.listPublishedNotes(personaId)
+                const notes = store.listPublishedNotes(resolved)
                 const ranked = rankViralItems(persona, notes, [detail])
                 const best = ranked[0]
-                store.updateViralItem(personaId, itemId, {
+                store.updateViralItem(resolved, itemId, {
                   title: detail.title,
                   body: detail.body ?? '',
                   score: best !== undefined ? best.score : item.score,
                   reasons: best !== undefined ? best.reasons : item.reasons,
                 })
               } else {
-                store.updateViralItem(personaId, itemId, { title: detail.title, body: detail.body ?? '' })
+                store.updateViralItem(resolved, itemId, { title: detail.title, body: detail.body ?? '' })
               }
             }
           }
-          writeJson(res, 200, { item: store.listViralItems(personaId).find(entry => entry.id === itemId) ?? item })
+          writeJson(res, 200, { item: service.listVirals(resolved).find(entry => entry.id === itemId) ?? item })
         } catch (error) { fail(res, error) }
         return
       }
@@ -122,14 +165,11 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
       if (account === undefined) { writeJson(res, 400, { error: `账号不存在：${targetAccountId}` }); return }
       const persona = store.listPersonas().find(item => item.id === account.personaId)
       if (persona === undefined) { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
-      // 未显式传 query 时按人设方向降级生成搜索词。
       const query = typeof body.query === 'string' && body.query.trim() !== '' ? body.query.trim() : (persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name)
       const maxItems = typeof body.maxItems === 'number' && body.maxItems > 0 ? body.maxItems : 10
       try {
         const result = await provider.search({ accountId: targetAccountId, query, maxItems })
         if (result.status === 'failed') { writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE }); return }
-        // 搜索接口通常不含完整正文：逐条用笔记链接抓详情补全全文
-        // （并发受限避免触发数据源限流），失败的单条退回搜索结果。
         let items = result.items
         const fetchDetail = provider.fetchNoteDetail
         if (fetchDetail !== undefined) {
@@ -141,7 +181,6 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         }
         const notes = store.listPublishedNotes(persona.id)
         const ranked = rankViralItems(persona, notes, items)
-        // 每次采集生成独立批次：整批可单独删除，不影响其他批次。
         const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
         const savedItems = ranked.map(item => {
           const payload: ViralItemPayload = {

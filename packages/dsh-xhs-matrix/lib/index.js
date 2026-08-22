@@ -414,11 +414,104 @@ const XHS_API = {
 	accountImport: "/api/dsh-xhs-matrix/accounts/import",
 	personas: "/api/dsh-xhs-matrix/personas",
 	notes: "/api/dsh-xhs-matrix/notes",
+	notesTransfer: "/api/dsh-xhs-matrix/notes/transfer",
 	viral: "/api/dsh-xhs-matrix/viral",
+	viralManual: "/api/dsh-xhs-matrix/viral/manual",
+	viralTransfer: "/api/dsh-xhs-matrix/viral/transfer",
+	pendingOwnership: "/api/dsh-xhs-matrix/pending-ownership",
 	metrics: "/api/dsh-xhs-matrix/metrics",
 	studio: "/api/dsh-xhs-matrix/studio",
 	studioMessages: "/api/dsh-xhs-matrix/studio/messages",
 	drafts: "/api/dsh-xhs-matrix/drafts"
+};
+//#endregion
+//#region src/persona-assets.ts
+/**
+* 人设资产服务：路由与工具操作人设资产（知识库、爆款池、批次、权重、显式转移与待归属）的唯一入口。
+* 所有公开方法以 personaId 为主键，集中执行人设存在性与内容归属校验。
+*
+* 语义：人设是可复用内容资产的所有者；账号是发布与采集的运营载体。
+* 多个账号绑定同一人设时共享知识库、知识库权重、爆款池、爆款权重。
+*/
+/** 人设资产服务：单一写入/查询入口。 */
+var PersonaAssetService = class {
+	store;
+	constructor(store) {
+		this.store = store;
+	}
+	/** 读取人设；不存在则抛错。 */
+	getPersona(personaId) {
+		const persona = this.store.listPersonas().find((item) => item.id === personaId);
+		if (persona === void 0) throw new MatrixStoreError("人设不存在：" + personaId);
+		return persona;
+	}
+	/** 人设下已发布笔记知识库（共享集合）。 */
+	listNotes(personaId) {
+		return this.store.listPublishedNotes(personaId);
+	}
+	/**
+	* 导入一批笔记到指定人设。
+	* @param personaId - 目标人设（显式归属，不依赖账号当前人设）。
+	* @param sourceAccountId - 可选来源账号（追踪与指标采集）。
+	* @param sourceAccountName - 可选来源账号名快照。
+	*/
+	importNotes(personaId, payloads, sourceAccountId, sourceAccountName) {
+		const prepared = payloads.map((payload) => ({
+			...payload,
+			personaId,
+			sourceAccountId,
+			sourceAccountName
+		}));
+		return this.store.importPublishedNotes(personaId, prepared);
+	}
+	/** 调整笔记人工权重（0-5）。 */
+	setNoteWeight(personaId, noteId, weight) {
+		return this.store.setNoteWeight(personaId, noteId, weight);
+	}
+	/** 显式把若干笔记转移到目标人设。 */
+	transferNotes(personaId, noteIds, targetPersonaId) {
+		return this.store.transferNotes(personaId, noteIds, targetPersonaId);
+	}
+	/** 查询人设爆款池条目。 */
+	listVirals(personaId, status, batchId) {
+		return this.store.listViralItems(personaId, status, batchId);
+	}
+	/** 查询人设爆款批次。 */
+	listBatches(personaId, sourceAccountId) {
+		return this.store.listViralBatches(personaId, sourceAccountId);
+	}
+	/** 手动新增爆款：默认 accepted + weight 5。 */
+	addManualViral(personaId, payload) {
+		return this.store.addManualViral(personaId, payload);
+	}
+	/** 审核爆款条目。 */
+	reviewViral(personaId, itemId, status) {
+		return this.store.reviewViralItem(personaId, itemId, status);
+	}
+	/** 调整爆款人工权重（0-5）。 */
+	setViralWeight(personaId, itemId, weight) {
+		return this.store.setViralWeight(personaId, itemId, weight);
+	}
+	/** 整批删除爆款条目；返回删除数量。 */
+	deleteBatch(personaId, batchId) {
+		return this.store.deleteViralBatch(personaId, batchId);
+	}
+	/** 显式把若干爆款条目转移到目标人设。 */
+	transferVirals(personaId, itemIds, targetPersonaId) {
+		return this.store.transferViralItems(personaId, itemIds, targetPersonaId);
+	}
+	/** 待归属记录列表。 */
+	listPending() {
+		return this.store.listPendingOwnership();
+	}
+	/** 把一条待归属记录原子地归属到目标人设。 */
+	assignPending(id, targetPersonaId) {
+		return this.store.assignPendingOwnership(id, targetPersonaId);
+	}
+	/** 人设使用情况（绑定账号、知识库与爆款数量）。 */
+	personaInUse(personaId) {
+		return this.store.personaInUse(personaId);
+	}
 };
 //#endregion
 //#region src/routes/shared.ts
@@ -468,9 +561,46 @@ function guard(req, res, method) {
 	}
 	return true;
 }
-/** 把错误渲染为 400 响应。 */
+/** 带状态码的路由错误：供错误映射按 400/404/409 精确渲染。 */
+var HttpError = class extends Error {
+	status;
+	constructor(status, message) {
+		super(message);
+		this.status = status;
+		this.name = "HttpError";
+	}
+};
+/** 把错误渲染为对应状态响应：HttpError 用自身状态码，其余按参数错误 400。 */
 function fail(res, error) {
+	if (error instanceof HttpError) {
+		writeJson(res, error.status, { error: error.message });
+		return;
+	}
 	writeJson(res, 400, { error: error instanceof Error ? error.message : String(error) });
+}
+/**
+* 解析人设作用域：兼容期按 accountId 反查账号当前人设，或直接用 personaId。
+* - account 与 persona 同时传入且不一致：返回 409，绝不静默选择其一。
+* - 显式 personaId 或 accountId 指向不存在的资源：返回 404。
+* - 什么都不传：返回 400。
+* 仅按 account 解析时，返回账号当前 personaId（可为空字符串，由调用方决定空人设语义）。
+*/
+function resolvePersonaScope(store, accountId, personaId) {
+	const hasAccount = accountId !== void 0 && accountId !== "";
+	const hasPersona = personaId !== void 0 && personaId !== "";
+	if (!hasAccount && !hasPersona) throw new HttpError(400, "account 或 persona 查询参数必填");
+	let accountPersona;
+	if (hasAccount) {
+		const account = store.listAccounts().find((item) => item.id === accountId);
+		if (account === void 0) throw new HttpError(404, "账号不存在：" + accountId);
+		accountPersona = account.personaId;
+	}
+	if (hasPersona) {
+		if (!store.listPersonas().some((item) => item.id === personaId)) throw new HttpError(404, "人设不存在：" + personaId);
+		if (hasAccount && accountPersona !== personaId) throw new HttpError(409, "account 与 persona 不一致：账号属于人设 " + (accountPersona === "" ? "（未分配）" : accountPersona) + "，而非 " + personaId);
+		return personaId;
+	}
+	return accountPersona ?? "";
 }
 //#endregion
 //#region src/routes/accounts.ts
@@ -484,6 +614,7 @@ function makeAccountsRoutes(store) {
 		path,
 		handler
 	});
+	const service = new PersonaAssetService(store);
 	return [route(XHS_API.accounts, async (req, res) => {
 		const method = req.method ?? "GET";
 		if (!isLoopbackRequest(req)) {
@@ -539,10 +670,9 @@ function makeAccountsRoutes(store) {
 				writeJson(res, 400, { error: "该账号尚未分配人设" });
 				return;
 			}
-			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-ByNmotL5.js");
+			const { parsePublishedNoteImport } = await import("./importer-CbJ3zqor.js");
 			const records = parsePublishedNoteImport(body.content, body.format);
-			applyPublishedNoteImport(store, account.personaId, records, account.id, account.name);
-			writeJson(res, 201, { imported: records.length });
+			writeJson(res, 201, { imported: service.importNotes(account.personaId, records, account.id, account.name).length });
 		} catch (error) {
 			fail(res, error);
 		}
@@ -710,6 +840,7 @@ function makeKnowledgeRoutes(store, scheduler) {
 		path,
 		handler
 	});
+	const service = new PersonaAssetService(store);
 	return [
 		route(XHS_API.notes, async (req, res) => {
 			const method = req.method ?? "GET";
@@ -719,26 +850,26 @@ function makeKnowledgeRoutes(store, scheduler) {
 			}
 			const url = new URL(req.url ?? "/", "http://localhost");
 			const accountId = queryParam(url, "account");
+			const personaId = queryParam(url, "persona");
 			const noteId = queryParam(url, "note");
 			if (method === "GET") {
-				if (accountId === void 0) {
-					writeJson(res, 400, { error: "account 查询参数必填" });
-					return;
+				try {
+					const resolved = resolvePersonaScope(store, accountId, personaId);
+					writeJson(res, 200, {
+						notes: service.listNotes(resolved),
+						resolvedPersonaId: resolved
+					});
+				} catch (error) {
+					fail(res, error);
 				}
-				const account = store.listAccounts().find((item) => item.id === accountId);
-				if (account === void 0) {
-					writeJson(res, 400, { error: "账号不存在：" + accountId });
-					return;
-				}
-				writeJson(res, 200, { notes: store.listPublishedNotes(account.personaId) });
 				return;
 			}
 			if (method !== "PATCH") {
 				writeJson(res, 405, { error: `method not allowed: ${method}` });
 				return;
 			}
-			if (accountId === void 0 || noteId === void 0) {
-				writeJson(res, 400, { error: "account 与 note 查询参数必填" });
+			if (noteId === void 0 || accountId === void 0 && personaId === void 0) {
+				writeJson(res, 400, { error: "account/persona 与 note 查询参数必填" });
 				return;
 			}
 			const body = await readJsonBody(req);
@@ -752,12 +883,34 @@ function makeKnowledgeRoutes(store, scheduler) {
 				return;
 			}
 			try {
-				const account = store.listAccounts().find((item) => item.id === accountId);
-				if (account === void 0) {
-					writeJson(res, 400, { error: "账号不存在：" + accountId });
+				const resolved = resolvePersonaScope(store, accountId, personaId);
+				if (resolved === "") {
+					writeJson(res, 400, { error: "该账号尚未分配人设" });
 					return;
 				}
-				writeJson(res, 200, { note: store.setNoteWeight(account.personaId, noteId, weight) });
+				writeJson(res, 200, { note: service.setNoteWeight(resolved, noteId, weight) });
+			} catch (error) {
+				fail(res, error);
+			}
+		}),
+		route(XHS_API.notesTransfer, async (req, res) => {
+			if (!guard(req, res, "POST")) return;
+			const body = await readJsonBody(req);
+			if (body === void 0) {
+				writeJson(res, 400, { error: "invalid JSON body" });
+				return;
+			}
+			const personaId = typeof body.personaId === "string" && body.personaId !== "" ? body.personaId : "";
+			const targetPersonaId = typeof body.targetPersonaId === "string" && body.targetPersonaId !== "" ? body.targetPersonaId : "";
+			const noteIds = Array.isArray(body.noteIds) ? body.noteIds.filter((value) => typeof value === "string") : [];
+			if (personaId === "" || targetPersonaId === "" || noteIds.length === 0) {
+				writeJson(res, 400, { error: "personaId、targetPersonaId 与 noteIds 必填" });
+				return;
+			}
+			try {
+				resolvePersonaScope(store, void 0, personaId);
+				if (!store.listPersonas().some((item) => item.id === targetPersonaId)) throw new HttpError(404, "人设不存在：" + targetPersonaId);
+				writeJson(res, 200, { notes: service.transferNotes(personaId, noteIds, targetPersonaId) });
 			} catch (error) {
 				fail(res, error);
 			}
@@ -842,6 +995,7 @@ function makePersonasRoutes(store) {
 		path,
 		handler
 	});
+	const service = new PersonaAssetService(store);
 	return [route(XHS_API.personas, async (req, res) => {
 		const method = req.method ?? "GET";
 		if (!isLoopbackRequest(req)) {
@@ -871,9 +1025,49 @@ function makePersonasRoutes(store) {
 					writeJson(res, 400, { error: "persona 查询参数必填" });
 					return;
 				}
+				if (!store.listPersonas().some((item) => item.id === id)) throw new HttpError(404, "人设不存在：" + id);
+				const usage = service.personaInUse(id);
+				if (usage.accountCount > 0 || usage.noteCount > 0 || usage.viralCount > 0) {
+					writeJson(res, 409, {
+						error: "该人设仍有绑定账号或内容资产，请先转移或处理",
+						usage
+					});
+					return;
+				}
 				store.deletePersona(id);
 				writeJson(res, 200, { ok: true });
 			} else writeJson(res, 405, { error: `method not allowed: ${method}` });
+		} catch (error) {
+			fail(res, error);
+		}
+	}), route(XHS_API.pendingOwnership, async (req, res) => {
+		const method = req.method ?? "GET";
+		if (!isLoopbackRequest(req)) {
+			writeJson(res, 403, { error: "forbidden: loopback-only" });
+			return;
+		}
+		if (method === "GET") {
+			writeJson(res, 200, { pending: service.listPending() });
+			return;
+		}
+		if (method !== "POST") {
+			writeJson(res, 405, { error: `method not allowed: ${method}` });
+			return;
+		}
+		const body = await readJsonBody(req);
+		if (body === void 0) {
+			writeJson(res, 400, { error: "invalid JSON body" });
+			return;
+		}
+		const id = typeof body.id === "string" && body.id !== "" ? body.id : "";
+		const targetPersonaId = typeof body.targetPersonaId === "string" && body.targetPersonaId !== "" ? body.targetPersonaId : "";
+		if (id === "" || targetPersonaId === "") {
+			writeJson(res, 400, { error: "id 与 targetPersonaId 必填" });
+			return;
+		}
+		try {
+			if (!store.listPersonas().some((item) => item.id === targetPersonaId)) throw new HttpError(404, "人设不存在：" + targetPersonaId);
+			writeJson(res, 200, { asset: service.assignPending(id, targetPersonaId) });
 		} catch (error) {
 			fail(res, error);
 		}
@@ -1130,62 +1324,173 @@ function makeViralRoutes(store, provider) {
 		path,
 		handler
 	});
-	return [route(XHS_API.viral, async (req, res) => {
-		if (!isLoopbackRequest(req)) {
-			writeJson(res, 403, { error: "forbidden: loopback-only" });
-			return;
-		}
-		const method = req.method ?? "GET";
-		const url = new URL(req.url ?? "/", "http://localhost");
-		const accountId = queryParam(url, "account");
-		if (method === "GET") {
-			if (accountId === void 0) {
-				writeJson(res, 400, { error: "account 查询参数必填" });
+	const service = new PersonaAssetService(store);
+	return [
+		route(XHS_API.viralManual, async (req, res) => {
+			if (!guard(req, res, "POST")) return;
+			const body = await readJsonBody(req);
+			if (body === void 0) {
+				writeJson(res, 400, { error: "invalid JSON body" });
 				return;
 			}
-			let status;
-			const statusRaw = queryParam(url, "status");
-			if (statusRaw !== void 0) {
-				if (!VIRAL_STATUSES$1.includes(statusRaw)) {
-					writeJson(res, 400, { error: "status 必须是 pending/accepted/ignored" });
-					return;
-				}
-				status = statusRaw;
-			}
-			const account = store.listAccounts().find((entry) => entry.id === accountId);
-			if (account === void 0) {
-				writeJson(res, 400, { error: "账号不存在：" + accountId });
-				return;
-			}
-			const personaId = account.personaId;
-			if (personaId === "") {
-				writeJson(res, 200, { batches: [] });
-				return;
-			}
-			writeJson(res, 200, { batches: store.listViralBatches(personaId).map((batch) => ({
-				...batch,
-				items: store.listViralItems(personaId, status, batch.id)
-			})) });
-			return;
-		}
-		if (method === "DELETE") {
-			const batchId = queryParam(url, "batch");
-			if (accountId === void 0 || batchId === void 0) {
-				writeJson(res, 400, { error: "account 与 batch 查询参数必填" });
+			const personaId = typeof body.personaId === "string" && body.personaId !== "" ? body.personaId : "";
+			const title = typeof body.title === "string" ? body.title.trim() : "";
+			const bodyText = typeof body.body === "string" ? body.body.trim() : "";
+			if (personaId === "" || title === "" || bodyText === "") {
+				writeJson(res, 400, { error: "personaId、title 与 body 必填" });
 				return;
 			}
 			try {
-				const personaId = store.listAccounts().find((entry) => entry.id === accountId)?.personaId ?? "";
-				writeJson(res, 200, { deleted: personaId === "" ? 0 : store.deleteViralBatch(personaId, batchId) });
+				resolvePersonaScope(store, void 0, personaId);
+				const reasons = Array.isArray(body.reasons) ? body.reasons.filter((value) => typeof value === "string") : void 0;
+				writeJson(res, 201, { item: service.addManualViral(personaId, {
+					title,
+					body: bodyText,
+					sourceUrl: typeof body.sourceUrl === "string" && body.sourceUrl !== "" ? body.sourceUrl : void 0,
+					publishedAt: typeof body.publishedAt === "string" && body.publishedAt !== "" ? body.publishedAt : void 0,
+					reasons
+				}) });
 			} catch (error) {
 				fail(res, error);
 			}
-			return;
-		}
-		if (method === "PATCH") {
-			const itemId = queryParam(url, "item");
-			if (accountId === void 0 || itemId === void 0) {
-				writeJson(res, 400, { error: "account 与 item 查询参数必填" });
+		}),
+		route(XHS_API.viralTransfer, async (req, res) => {
+			if (!guard(req, res, "POST")) return;
+			const body = await readJsonBody(req);
+			if (body === void 0) {
+				writeJson(res, 400, { error: "invalid JSON body" });
+				return;
+			}
+			const personaId = typeof body.personaId === "string" && body.personaId !== "" ? body.personaId : "";
+			const targetPersonaId = typeof body.targetPersonaId === "string" && body.targetPersonaId !== "" ? body.targetPersonaId : "";
+			const itemIds = Array.isArray(body.itemIds) ? body.itemIds.filter((value) => typeof value === "string") : [];
+			if (personaId === "" || targetPersonaId === "" || itemIds.length === 0) {
+				writeJson(res, 400, { error: "personaId、targetPersonaId 与 itemIds 必填" });
+				return;
+			}
+			try {
+				resolvePersonaScope(store, void 0, personaId);
+				if (!store.listPersonas().some((item) => item.id === targetPersonaId)) throw new HttpError(404, "人设不存在：" + targetPersonaId);
+				writeJson(res, 200, { items: service.transferVirals(personaId, itemIds, targetPersonaId) });
+			} catch (error) {
+				fail(res, error);
+			}
+		}),
+		route(XHS_API.viral, async (req, res) => {
+			if (!isLoopbackRequest(req)) {
+				writeJson(res, 403, { error: "forbidden: loopback-only" });
+				return;
+			}
+			const method = req.method ?? "GET";
+			const url = new URL(req.url ?? "/", "http://localhost");
+			const accountId = queryParam(url, "account");
+			const personaId = queryParam(url, "persona");
+			if (method === "GET") {
+				try {
+					const resolved = resolvePersonaScope(store, accountId, personaId);
+					let status;
+					const statusRaw = queryParam(url, "status");
+					if (statusRaw !== void 0) {
+						if (!VIRAL_STATUSES$1.includes(statusRaw)) {
+							writeJson(res, 400, { error: "status 必须是 pending/accepted/ignored" });
+							return;
+						}
+						status = statusRaw;
+					}
+					if (resolved === "") {
+						writeJson(res, 200, {
+							batches: [],
+							resolvedPersonaId: ""
+						});
+						return;
+					}
+					writeJson(res, 200, {
+						batches: service.listBatches(resolved).map((batch) => ({
+							...batch,
+							items: service.listVirals(resolved, status, batch.id)
+						})),
+						resolvedPersonaId: resolved
+					});
+				} catch (error) {
+					fail(res, error);
+				}
+				return;
+			}
+			if (method === "DELETE") {
+				const batchId = queryParam(url, "batch");
+				if (batchId === void 0 || accountId === void 0 && personaId === void 0) {
+					writeJson(res, 400, { error: "batch 与 account/persona 查询参数必填" });
+					return;
+				}
+				try {
+					const resolved = resolvePersonaScope(store, accountId, personaId);
+					if (resolved === "") {
+						writeJson(res, 400, { error: "该账号尚未分配人设" });
+						return;
+					}
+					if (!service.listBatches(resolved).some((batch) => batch.id === batchId)) {
+						writeJson(res, 404, { error: "批次不存在或不属于该人设：" + batchId });
+						return;
+					}
+					writeJson(res, 200, { deleted: service.deleteBatch(resolved, batchId) });
+				} catch (error) {
+					fail(res, error);
+				}
+				return;
+			}
+			if (method === "PATCH") {
+				const itemId = queryParam(url, "item");
+				if (itemId === void 0 || accountId === void 0 && personaId === void 0) {
+					writeJson(res, 400, { error: "account/persona 与 item 查询参数必填" });
+					return;
+				}
+				const body = await readJsonBody(req);
+				if (body === void 0) {
+					writeJson(res, 400, { error: "invalid JSON body" });
+					return;
+				}
+				const status = body.status;
+				if (status !== "accepted" && status !== "ignored") {
+					writeJson(res, 400, { error: "status 必须是 accepted 或 ignored" });
+					return;
+				}
+				try {
+					const resolved = resolvePersonaScope(store, accountId, personaId);
+					if (resolved === "") {
+						writeJson(res, 400, { error: "该账号尚未分配人设" });
+						return;
+					}
+					const item = service.reviewViral(resolved, itemId, status);
+					if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
+						const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
+						if (detail !== void 0) {
+							const persona = store.listPersonas().find((entry) => entry.id === resolved);
+							if (persona !== void 0) {
+								const best = rankViralItems(persona, store.listPublishedNotes(resolved), [detail])[0];
+								store.updateViralItem(resolved, itemId, {
+									title: detail.title,
+									body: detail.body ?? "",
+									score: best !== void 0 ? best.score : item.score,
+									reasons: best !== void 0 ? best.reasons : item.reasons
+								});
+							} else store.updateViralItem(resolved, itemId, {
+								title: detail.title,
+								body: detail.body ?? ""
+							});
+						}
+					}
+					writeJson(res, 200, { item: service.listVirals(resolved).find((entry) => entry.id === itemId) ?? item });
+				} catch (error) {
+					fail(res, error);
+				}
+				return;
+			}
+			if (method !== "POST") {
+				writeJson(res, 405, { error: `method not allowed: ${method}` });
+				return;
+			}
+			if (provider === void 0) {
+				writeJson(res, 400, { error: "未配置爆款数据源" });
 				return;
 			}
 			const body = await readJsonBody(req);
@@ -1193,125 +1498,72 @@ function makeViralRoutes(store, provider) {
 				writeJson(res, 400, { error: "invalid JSON body" });
 				return;
 			}
-			const status = body.status;
-			if (status !== "accepted" && status !== "ignored") {
-				writeJson(res, 400, { error: "status 必须是 accepted 或 ignored" });
+			const targetAccountId = typeof body.accountId === "string" && body.accountId.trim() !== "" ? body.accountId : "";
+			if (targetAccountId === "") {
+				writeJson(res, 400, { error: "accountId 必填" });
 				return;
 			}
+			const account = store.listAccounts().find((item) => item.id === targetAccountId);
+			if (account === void 0) {
+				writeJson(res, 400, { error: `账号不存在：${targetAccountId}` });
+				return;
+			}
+			const persona = store.listPersonas().find((item) => item.id === account.personaId);
+			if (persona === void 0) {
+				writeJson(res, 400, { error: "该账号尚未分配人设" });
+				return;
+			}
+			const query = typeof body.query === "string" && body.query.trim() !== "" ? body.query.trim() : persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name;
+			const maxItems = typeof body.maxItems === "number" && body.maxItems > 0 ? body.maxItems : 10;
 			try {
-				const account = store.listAccounts().find((entry) => entry.id === accountId);
-				if (account === void 0) {
-					writeJson(res, 400, { error: "账号不存在：" + accountId });
+				const result = await provider.search({
+					accountId: targetAccountId,
+					query,
+					maxItems
+				});
+				if (result.status === "failed") {
+					writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE });
 					return;
 				}
-				const personaId = account.personaId;
-				if (personaId === "") {
-					writeJson(res, 400, { error: "该账号尚未分配人设" });
-					return;
-				}
-				const item = store.reviewViralItem(personaId, itemId, status);
-				if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
-					const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
-					if (detail !== void 0) {
-						const persona = store.listPersonas().find((entry) => entry.id === personaId);
-						if (persona !== void 0) {
-							const best = rankViralItems(persona, store.listPublishedNotes(personaId), [detail])[0];
-							store.updateViralItem(personaId, itemId, {
-								title: detail.title,
-								body: detail.body ?? "",
-								score: best !== void 0 ? best.score : item.score,
-								reasons: best !== void 0 ? best.reasons : item.reasons
-							});
-						} else store.updateViralItem(personaId, itemId, {
-							title: detail.title,
-							body: detail.body ?? ""
-						});
+				let items = result.items;
+				const fetchDetail = provider.fetchNoteDetail;
+				if (fetchDetail !== void 0) items = await mapLimit(items, 3, async (item) => {
+					if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
+					return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
+				});
+				const ranked = rankViralItems(persona, store.listPublishedNotes(persona.id), items);
+				const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+				const savedItems = ranked.map((item) => {
+					const payload = {
+						personaId: persona.id,
+						sourceAccountId: targetAccountId,
+						sourceAccountName: account.name,
+						title: item.title,
+						body: item.body ?? "",
+						sourceUrl: item.sourceUrl,
+						source: item.source === "manual" ? "manual" : "apify",
+						publishedAt: item.publishedAt,
+						score: item.score,
+						reasons: item.reasons,
+						status: "pending",
+						batchId
+					};
+					return store.saveViralItem(payload);
+				});
+				writeJson(res, 201, {
+					items: savedItems,
+					batch: {
+						id: batchId,
+						accountId: targetAccountId,
+						collectedAt: savedItems[0]?.collectedAt ?? (/* @__PURE__ */ new Date()).toISOString(),
+						itemCount: savedItems.length
 					}
-				}
-				writeJson(res, 200, { item: store.listViralItems(personaId).find((entry) => entry.id === itemId) ?? item });
+				});
 			} catch (error) {
 				fail(res, error);
 			}
-			return;
-		}
-		if (method !== "POST") {
-			writeJson(res, 405, { error: `method not allowed: ${method}` });
-			return;
-		}
-		if (provider === void 0) {
-			writeJson(res, 400, { error: "未配置爆款数据源" });
-			return;
-		}
-		const body = await readJsonBody(req);
-		if (body === void 0) {
-			writeJson(res, 400, { error: "invalid JSON body" });
-			return;
-		}
-		const targetAccountId = typeof body.accountId === "string" && body.accountId.trim() !== "" ? body.accountId : "";
-		if (targetAccountId === "") {
-			writeJson(res, 400, { error: "accountId 必填" });
-			return;
-		}
-		const account = store.listAccounts().find((item) => item.id === targetAccountId);
-		if (account === void 0) {
-			writeJson(res, 400, { error: `账号不存在：${targetAccountId}` });
-			return;
-		}
-		const persona = store.listPersonas().find((item) => item.id === account.personaId);
-		if (persona === void 0) {
-			writeJson(res, 400, { error: "该账号尚未分配人设" });
-			return;
-		}
-		const query = typeof body.query === "string" && body.query.trim() !== "" ? body.query.trim() : persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name;
-		const maxItems = typeof body.maxItems === "number" && body.maxItems > 0 ? body.maxItems : 10;
-		try {
-			const result = await provider.search({
-				accountId: targetAccountId,
-				query,
-				maxItems
-			});
-			if (result.status === "failed") {
-				writeJson(res, 502, { error: result.error ?? COLLECT_FAILED_MESSAGE });
-				return;
-			}
-			let items = result.items;
-			const fetchDetail = provider.fetchNoteDetail;
-			if (fetchDetail !== void 0) items = await mapLimit(items, 3, async (item) => {
-				if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
-				return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
-			});
-			const ranked = rankViralItems(persona, store.listPublishedNotes(persona.id), items);
-			const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-			const savedItems = ranked.map((item) => {
-				const payload = {
-					personaId: persona.id,
-					sourceAccountId: targetAccountId,
-					sourceAccountName: account.name,
-					title: item.title,
-					body: item.body ?? "",
-					sourceUrl: item.sourceUrl,
-					source: item.source === "manual" ? "manual" : "apify",
-					publishedAt: item.publishedAt,
-					score: item.score,
-					reasons: item.reasons,
-					status: "pending",
-					batchId
-				};
-				return store.saveViralItem(payload);
-			});
-			writeJson(res, 201, {
-				items: savedItems,
-				batch: {
-					id: batchId,
-					accountId: targetAccountId,
-					collectedAt: savedItems[0]?.collectedAt ?? (/* @__PURE__ */ new Date()).toISOString(),
-					itemCount: savedItems.length
-				}
-			});
-		} catch (error) {
-			fail(res, error);
-		}
-	})];
+		})
+	];
 }
 /** 并发受限的 map：同一时刻最多 limit 个异步任务，保持结果顺序。 */
 async function mapLimit(items, limit, fn) {
@@ -1573,6 +1825,29 @@ function composeBrief(persona, viralItems, accountName) {
 	].join("\n");
 }
 //#endregion
+//#region src/content-quality.ts
+/**
+* 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
+* 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
+*/
+function scanForbiddenWords(text, forbiddenWords) {
+	const hits = [];
+	for (const word of forbiddenWords) {
+		if (word === "") continue;
+		let from = 0;
+		for (;;) {
+			const index = text.indexOf(word, from);
+			if (index < 0) break;
+			hits.push({
+				word,
+				position: index
+			});
+			from = index + word.length;
+		}
+	}
+	return hits.sort((a, b) => a.position - b.position || (a.word < b.word ? -1 : a.word > b.word ? 1 : 0));
+}
+//#endregion
 //#region src/events.ts
 /** 发射反馈事件。 */
 function emitFeedback(ctx, event) {
@@ -1604,16 +1879,32 @@ const VIRAL_STATUSES = [
 	"ignored"
 ];
 /**
-* 构建 7 个模型工具。
+* 构建 模型工具。
 * @param deps - 存储与上下文。
 * @returns 工具定义数组。
 */
 function makeTools(deps) {
 	const { store, ctx } = deps;
+	const service = new PersonaAssetService(store);
 	const accountsOf = () => {
 		return store.listAccounts().filter((a) => a.enabled);
 	};
 	const personaOf = (personaId) => store.listPersonas().find((p) => p.id === personaId);
+	/** 人设作用域解析（账号兼容 + 直接人设查询）：冲突时返回 error，由调用方渲染。 */
+	const resolveToolScope = (args) => {
+		const hasAccount = args.accountId !== void 0 && args.accountId !== "";
+		const hasPersona = args.personaId !== void 0 && args.personaId !== "";
+		if (!hasAccount && !hasPersona) return { error: "accountId 或 personaId 必填" };
+		if (hasPersona && !store.listPersonas().some((p) => p.id === args.personaId)) return { error: "人设不存在：" + args.personaId };
+		let accountPersona = "";
+		if (hasAccount) {
+			const account = store.listAccounts().find((a) => a.id === args.accountId);
+			if (account === void 0) return { error: "账号不存在：" + args.accountId };
+			accountPersona = account.personaId;
+		}
+		if (hasAccount && hasPersona && accountPersona !== args.personaId) return { error: "account 与 persona 不一致：账号属于 " + (accountPersona === "" ? "（未分配）" : accountPersona) + "，而非 " + args.personaId };
+		return { personaId: hasPersona ? args.personaId : accountPersona };
+	};
 	return [
 		defineTool({
 			name: "xhs_today",
@@ -1686,7 +1977,7 @@ function makeTools(deps) {
 		}),
 		defineTool({
 			name: "xhs_draft_save",
-			description: "保存草稿：按 xhs_today 简报撰写的文案与封面提示词落库。同账号 + 当日已存在草稿时拒绝（除非 force: true 覆盖）。",
+			description: "保存草稿：按 xhs_today 简报撰写的文案与封面提示词落库。同账号 + 当日已存在草稿时拒绝（除非 force: true 覆盖）；落库前执行与创作台一致的人设违禁词质量门。",
 			parameters: {
 				accountId: {
 					type: "string",
@@ -1742,11 +2033,21 @@ function makeTools(deps) {
 						draftId: ""
 					};
 				}
-				if (!store.listAccounts().some((a) => a.id === args.accountId)) return {
+				const account = store.listAccounts().find((a) => a.id === args.accountId);
+				if (account === void 0) return {
 					ok: false,
 					message: `账号不存在：${args.accountId}`,
 					draftId: ""
 				};
+				const persona = personaOf(account.personaId);
+				if (persona !== void 0) {
+					const hits = scanForbiddenWords(args.copy, persona.forbiddenWords ?? []);
+					if (hits.length > 0) return {
+						ok: false,
+						message: `命中人设违禁词，禁止保存草稿：${hits.map((h) => h.word).join("、")}（位置 ${hits.map((h) => h.position).join(",")}）`,
+						draftId: ""
+					};
+				}
 				const date = today();
 				const existing = store.findDraft(args.accountId, date);
 				if (existing !== void 0 && args.force !== true) return {
@@ -1755,11 +2056,19 @@ function makeTools(deps) {
 					draftId: existing.id
 				};
 				if (existing !== void 0) store.deleteDraft(existing.id);
+				const qualityReport = persona !== void 0 ? {
+					reviewStatus: "passed",
+					forbiddenWordHits: [],
+					checkedAt: (/* @__PURE__ */ new Date()).toISOString(),
+					personaSnapshot: persona.name
+				} : void 0;
 				const draft = store.saveDraft({
 					accountId: args.accountId,
 					date,
 					copy: args.copy,
-					coverPrompt: args.coverPrompt
+					coverPrompt: args.coverPrompt,
+					personaIdSnapshot: persona?.id,
+					qualityReport
 				});
 				return {
 					ok: true,
@@ -1770,12 +2079,15 @@ function makeTools(deps) {
 		}),
 		defineTool({
 			name: "xhs_virals",
-			description: "查询指定账号的爆款池条目（标题/正文/来源链接/审核状态/推荐分/理由），可按审核状态过滤。爆款池是创作简报的素材来源。",
+			description: "查询爆款池条目（标题/正文/来源链接/审核状态/推荐分/理由），可按审核状态过滤。支持直接按 personaId 查询，或按 accountId 兼容解析账号当前人设。爆款池是创作简报的素材来源。",
 			parameters: {
 				accountId: {
 					type: "string",
-					required: true,
-					description: "账号 id"
+					description: "账号 id（兼容：解析账号当前人设）"
+				},
+				personaId: {
+					type: "string",
+					description: "人设 id（直接按人设查询）"
 				},
 				status: {
 					type: "string",
@@ -1821,19 +2133,22 @@ function makeTools(deps) {
 			},
 			isConcurrencySafe: () => true,
 			async execute(args, _exec) {
-				if (!store.listAccounts().some((account) => account.id === args.accountId)) return {
-					ok: false,
-					message: `账号不存在：${args.accountId}`,
-					items: []
-				};
 				if (args.status !== void 0 && !VIRAL_STATUSES.includes(args.status)) return {
 					ok: false,
 					message: `status 必须是 pending/accepted/ignored：${args.status}`,
 					items: []
 				};
-				const personaId = store.listAccounts().find((account) => account.id === args.accountId)?.personaId ?? "";
+				const resolved = resolveToolScope({
+					accountId: args.accountId,
+					personaId: args.personaId
+				});
+				if ("error" in resolved) return {
+					ok: false,
+					message: resolved.error,
+					items: []
+				};
 				const status = args.status;
-				const items = store.listViralItems(personaId, status).map((item) => ({
+				const items = service.listVirals(resolved.personaId, status).map((item) => ({
 					id: item.id,
 					title: item.title,
 					body: item.body,
@@ -1844,8 +2159,201 @@ function makeTools(deps) {
 				}));
 				return {
 					ok: true,
-					message: (items.length === 0 ? ["该账号爆款池为空"] : items.map((item) => `${item.id}\t${item.status}\t分数 ${item.score}\t${item.title}${item.sourceUrl !== void 0 ? `\t${item.sourceUrl}` : ""}`)).join("\n"),
+					message: (items.length === 0 ? ["该人设爆款池为空"] : items.map((item) => `${item.id}\t${item.status}\t分数 ${item.score}\t${item.title}${item.sourceUrl !== void 0 ? `\t${item.sourceUrl}` : ""}`)).join("\n"),
 					items
+				};
+			}
+		}),
+		defineTool({
+			name: "xhs_viral_add",
+			description: "手动向指定人设新增爆款笔记（至少标题 + 正文；来源链接与发布时间可选）。手动爆款默认已采纳且权重为 5，立即作为创作参考。",
+			parameters: {
+				personaId: {
+					type: "string",
+					required: true,
+					description: "人设 id"
+				},
+				title: {
+					type: "string",
+					required: true,
+					description: "标题"
+				},
+				body: {
+					type: "string",
+					required: true,
+					description: "正文"
+				},
+				sourceUrl: {
+					type: "string",
+					description: "来源链接"
+				},
+				publishedAt: {
+					type: "string",
+					description: "发布时间（YYYY-MM-DD）"
+				},
+				reasons: {
+					type: "array",
+					items: { type: "string" },
+					description: "推荐理由"
+				}
+			},
+			output: {
+				schema: {
+					type: "object",
+					additionalProperties: false,
+					properties: {
+						ok: {
+							type: "boolean",
+							required: true
+						},
+						message: {
+							type: "string",
+							required: true
+						},
+						item: {
+							type: "object",
+							additionalProperties: false,
+							properties: {
+								id: { type: "string" },
+								personaId: { type: "string" },
+								title: { type: "string" },
+								sourceUrl: { type: "string" },
+								status: { type: "string" },
+								weight: { type: "number" },
+								source: { type: "string" }
+							}
+						}
+					}
+				},
+				render: (_args, value) => render(value)
+			},
+			isConcurrencySafe: () => true,
+			async execute(args, _exec) {
+				const personaId = typeof args.personaId === "string" ? args.personaId.trim() : "";
+				const title = typeof args.title === "string" ? args.title.trim() : "";
+				const body = typeof args.body === "string" ? args.body.trim() : "";
+				if (personaId === "" || title === "" || body === "") return {
+					ok: false,
+					message: "personaId、title 与 body 必填",
+					item: void 0
+				};
+				if (!store.listPersonas().some((p) => p.id === personaId)) return {
+					ok: false,
+					message: "人设不存在：" + personaId,
+					item: void 0
+				};
+				const item = service.addManualViral(personaId, {
+					title,
+					body,
+					sourceUrl: typeof args.sourceUrl === "string" && args.sourceUrl !== "" ? args.sourceUrl : void 0,
+					publishedAt: typeof args.publishedAt === "string" && args.publishedAt !== "" ? args.publishedAt : void 0,
+					reasons: Array.isArray(args.reasons) ? args.reasons.filter((v) => typeof v === "string") : void 0
+				});
+				return {
+					ok: true,
+					message: `手动爆款已保存：${item.id}（已采纳，权重 5）`,
+					item: {
+						id: item.id,
+						personaId: item.personaId,
+						title: item.title,
+						sourceUrl: item.sourceUrl,
+						status: item.status,
+						weight: item.weight,
+						source: item.source
+					}
+				};
+			}
+		}),
+		defineTool({
+			name: "xhs_pending_ownership",
+			description: "查询待归属数据（迁移时无法解析人位的知识库/爆款条目），并按 targetPersonaId 显式归属。传 id + targetPersonaId 时把该记录移入目标人设，否则列出全部待归属记录。",
+			parameters: {
+				id: {
+					type: "string",
+					description: "待归属记录 id（归属时必填）"
+				},
+				targetPersonaId: {
+					type: "string",
+					description: "目标人设 id（归属时必填）"
+				}
+			},
+			output: {
+				schema: {
+					type: "object",
+					additionalProperties: false,
+					properties: {
+						ok: {
+							type: "boolean",
+							required: true
+						},
+						message: {
+							type: "string",
+							required: true
+						},
+						pending: {
+							type: "array",
+							required: true,
+							items: {
+								type: "object",
+								additionalProperties: false,
+								properties: {
+									id: { type: "string" },
+									kind: { type: "string" },
+									reason: { type: "string" }
+								}
+							}
+						},
+						asset: {
+							type: "object",
+							additionalProperties: false,
+							properties: {
+								id: { type: "string" },
+								personaId: { type: "string" }
+							}
+						}
+					}
+				},
+				render: (_args, value) => render(value)
+			},
+			isConcurrencySafe: () => true,
+			async execute(args, _exec) {
+				if (args.id !== void 0 && args.id !== "" && args.targetPersonaId !== void 0 && args.targetPersonaId !== "") {
+					if (!store.listPersonas().some((p) => p.id === args.targetPersonaId)) return {
+						ok: false,
+						message: "人设不存在：" + args.targetPersonaId,
+						pending: [],
+						asset: void 0
+					};
+					try {
+						const asset = service.assignPending(args.id, args.targetPersonaId);
+						return {
+							ok: true,
+							message: `已归属 ${asset.id} 到人设 ${args.targetPersonaId}`,
+							pending: [],
+							asset: {
+								id: asset.id,
+								personaId: asset.personaId
+							}
+						};
+					} catch (error) {
+						return {
+							ok: false,
+							message: error instanceof Error ? error.message : String(error),
+							pending: [],
+							asset: void 0
+						};
+					}
+				}
+				const pending = service.listPending().map((entry) => ({
+					id: entry.id,
+					kind: entry.kind,
+					reason: entry.reason
+				}));
+				return {
+					ok: true,
+					message: (pending.length === 0 ? ["暂无待归属记录"] : pending.map((p) => `${p.id}\t${p.kind}\t${p.reason}`)).join("\n"),
+					pending,
+					asset: void 0
 				};
 			}
 		}),
@@ -1993,12 +2501,17 @@ function makeTools(deps) {
 		}),
 		defineTool({
 			name: "xhs_notes",
-			description: "查询指定账号的已发布笔记知识库（含标题、权重、最近指标摘要）。",
-			parameters: { accountId: {
-				type: "string",
-				required: true,
-				description: "账号 id"
-			} },
+			description: "查询已发布笔记知识库（含标题、权重、最近指标摘要）。支持直接按 personaId 查询，或按 accountId 兼容解析账号当前人设。",
+			parameters: {
+				accountId: {
+					type: "string",
+					description: "账号 id（兼容：解析账号当前人设）"
+				},
+				personaId: {
+					type: "string",
+					description: "人设 id（直接按人设查询）"
+				}
+			},
 			output: {
 				schema: {
 					type: "object",
@@ -2023,15 +2536,19 @@ function makeTools(deps) {
 			},
 			isConcurrencySafe: () => true,
 			async execute(args, _exec) {
-				if (!store.listAccounts().some((account) => account.id === args.accountId)) return {
+				const resolved = resolveToolScope({
+					accountId: args.accountId,
+					personaId: args.personaId
+				});
+				if ("error" in resolved) return {
 					ok: false,
-					message: `账号不存在：${args.accountId}`,
+					message: resolved.error,
 					notes: []
 				};
-				const personaId = store.listAccounts().find((account) => account.id === args.accountId)?.personaId ?? "";
-				const notes = store.listPublishedNotes(personaId);
-				const lines = notes.length === 0 ? ["该账号还没有已发布笔记"] : notes.map((note) => {
-					const metric = store.listMetricSnapshots(args.accountId, note.id).at(-1);
+				const notes = service.listNotes(resolved.personaId);
+				const accountId = args.accountId;
+				const lines = notes.length === 0 ? ["该人设还没有已发布笔记"] : notes.map((note) => {
+					const metric = accountId !== void 0 ? store.listMetricSnapshots(accountId, note.id).at(-1) : void 0;
 					return `${note.id}\t权重 ${note.weight}\t${note.title}${metric !== void 0 ? `\t阅读 ${metric.reads}` : ""}`;
 				});
 				return {

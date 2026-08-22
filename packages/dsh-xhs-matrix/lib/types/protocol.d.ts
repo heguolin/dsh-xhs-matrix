@@ -6,7 +6,11 @@ export declare const XHS_API: {
     readonly accountImport: string;
     readonly personas: string;
     readonly notes: string;
+    readonly notesTransfer: string;
     readonly viral: string;
+    readonly viralManual: string;
+    readonly viralTransfer: string;
+    readonly pendingOwnership: string;
     readonly metrics: string;
     readonly studio: string;
     readonly studioMessages: string;

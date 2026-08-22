@@ -56,6 +56,11 @@ async function json(path: string, init?: RequestInit): Promise<{ status: number;
   return { status: response.status, body }
 }
 
+/** POST JSON 请求体辅助（新契约测试用）。 */
+function post(body: unknown): RequestInit {
+  return { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }
+}
+
 /** 建一个已分配人设的账号；返回账号 id。 */
 async function seedAccount(): Promise<string> {
   const personaRes = await json('/api/dsh-xhs-matrix/personas', {
@@ -383,5 +388,104 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(res.status).toBe(201)
     expect(searchCalls[0].query).toBe('大模型应用')
     expect(searchCalls[0].maxItems).toBe(10)
+  })
+
+  it('按账号兼容查询知识库返回 resolvedPersonaId', async () => {
+    const accountId = await seedAccount()
+    store.savePublishedNote({ personaId: personaIdOf(accountId), title: '笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const res = await json(`/api/dsh-xhs-matrix/notes?account=${accountId}`)
+    expect(res.status).toBe(200)
+    const body = res.body as { notes: unknown[]; resolvedPersonaId: string }
+    expect(body.notes).toHaveLength(1)
+    expect(body.resolvedPersonaId).toBe(personaIdOf(accountId))
+  })
+
+  it('account 与 persona 不一致返回 409', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号A', personaId: personaA.persona.id, enabled: true }))
+    const accountA = (accRes.body as { account: { id: string } }).account.id
+    const res = await json(`/api/dsh-xhs-matrix/notes?account=${accountA}&persona=${personaB.persona.id}`)
+    expect(res.status).toBe(409)
+  })
+
+  it('手动爆款按 persona 保存为 accepted+5', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    const res = await json('/api/dsh-xhs-matrix/viral/manual', post({ personaId, title: '手动', body: '正文' }))
+    expect(res.status).toBe(201)
+    expect((res.body as { item: Record<string, unknown> }).item).toMatchObject({ personaId, source: 'manual', status: 'accepted', weight: 5 })
+  })
+
+  it('人设删除：有绑定账号或内容资产返回 409 和计数', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号A', personaId, enabled: true }))
+    const del = await json(`/api/dsh-xhs-matrix/personas?persona=${personaId}`, { method: 'DELETE' })
+    expect(del.status).toBe(409)
+    const usage = (del.body as { usage: { accountCount: number; noteCount: number; viralCount: number } }).usage
+    expect(usage.accountCount).toBe(1)
+    // 人设仍存在，未被删除
+    const personasLeft = (await json('/api/dsh-xhs-matrix/personas')).body as { personas: unknown[] }
+    expect(personasLeft.personas).toHaveLength(1)
+  })
+
+  it('人设删除：无账号与内容资产时删除成功', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '空闲人设', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const del = await json(`/api/dsh-xhs-matrix/personas?persona=${personaRes.persona.id}`, { method: 'DELETE' })
+    expect(del.status).toBe(200)
+    expect(((await json('/api/dsh-xhs-matrix/personas')).body as { personas: unknown[] }).personas).toHaveLength(0)
+  })
+
+  it('待归属：列表与显式归属到人设', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    store.stashPendingOwnership({
+      kind: 'published-note',
+      payload: { id: 'n1', title: '待归属笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 0, createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-20T00:00:00.000Z' },
+      reason: '迁移无法确定人设',
+    })
+    const list = await json('/api/dsh-xhs-matrix/pending-ownership')
+    expect(list.status).toBe(200)
+    const pending = (list.body as { pending: Array<{ id: string }> }).pending
+    expect(pending).toHaveLength(1)
+    const assigned = await json('/api/dsh-xhs-matrix/pending-ownership', post({ id: pending[0].id, targetPersonaId: personaId }))
+    expect(assigned.status).toBe(200)
+    expect(((await json('/api/dsh-xhs-matrix/pending-ownership')).body as { pending: unknown[] }).pending).toHaveLength(0)
+    expect(store.listPublishedNotes(personaId)).toHaveLength(1)
+  })
+
+  it('笔记转移：移动到目标人设', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    store.savePublishedNote({ personaId: personaA.persona.id, title: '笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const noteId = store.listPublishedNotes(personaA.persona.id)[0].id
+    const res = await json('/api/dsh-xhs-matrix/notes/transfer', post({ personaId: personaA.persona.id, targetPersonaId: personaB.persona.id, noteIds: [noteId] }))
+    expect(res.status).toBe(200)
+    expect(store.listPublishedNotes(personaA.persona.id)).toHaveLength(0)
+    expect(store.listPublishedNotes(personaB.persona.id)).toHaveLength(1)
+  })
+
+  it('爆款转移：移动到目标人设', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    store.saveViralItem({ personaId: personaA.persona.id, title: '爆款', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    const itemId = store.listViralItems(personaA.persona.id)[0].id
+    const res = await json('/api/dsh-xhs-matrix/viral/transfer', post({ personaId: personaA.persona.id, targetPersonaId: personaB.persona.id, itemIds: [itemId] }))
+    expect(res.status).toBe(200)
+    expect(store.listViralItems(personaA.persona.id)).toHaveLength(0)
+    expect(store.listViralItems(personaB.persona.id)).toHaveLength(1)
+  })
+
+  it('删除批次：跨人设 batch id 返回 404', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    store.saveViralItem({ personaId, title: '爆款', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'], batchId: 'batch-1' })
+    const otherPersona = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const res = await json(`/api/dsh-xhs-matrix/viral?persona=${otherPersona.persona.id}&batch=batch-1`, { method: 'DELETE' })
+    expect(res.status).toBe(404)
+    const ok = await json(`/api/dsh-xhs-matrix/viral?persona=${personaId}&batch=batch-1`, { method: 'DELETE' })
+    expect(ok.status).toBe(200)
+    expect(store.listViralItems(personaId)).toHaveLength(0)
   })
 })

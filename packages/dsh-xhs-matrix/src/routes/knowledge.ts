@@ -1,13 +1,14 @@
-/** /notes 与 /metrics 路由：已发布笔记知识库（权重）与指标快照、按账号采集。 */
+/** /notes 与 /metrics 路由：已发布笔记知识库（权重）、显式转移与指标快照、按账号采集。 */
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { isLoopbackRequest } from '../loopback.ts'
 import { XHS_API } from '../protocol.ts'
 import { CollectionScheduler, validateMetricSnapshot, type MetricSnapshotInput } from '../metrics.ts'
+import { PersonaAssetService } from '../persona-assets.ts'
 import { MatrixStore } from '../store.ts'
 import type { NoteWeight } from '../types.ts'
-import { fail, guard, queryParam, readJsonBody, writeJson } from './shared.ts'
+import { fail, guard, HttpError, queryParam, readJsonBody, resolvePersonaScope, writeJson } from './shared.ts'
 
 /** 构建知识库与指标路由。
  * @param store - 矩阵存储。
@@ -20,24 +21,29 @@ export function makeKnowledgeRoutes(store: MatrixStore, scheduler?: CollectionSc
     path,
     handler,
   })
+  const service = new PersonaAssetService(store)
 
   return [
-    // ------------------------------------------------------------ 已发布笔记
     route(XHS_API.notes, async (req, res) => {
       const method = req.method ?? 'GET'
       if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'forbidden: loopback-only' }); return }
       const url = new URL(req.url ?? '/', 'http://localhost')
       const accountId = queryParam(url, 'account')
+      const personaId = queryParam(url, 'persona')
       const noteId = queryParam(url, 'note')
+
       if (method === 'GET') {
-        if (accountId === undefined) { writeJson(res, 400, { error: 'account 查询参数必填' }); return }
-        const account = store.listAccounts().find(item => item.id === accountId)
-        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
-        writeJson(res, 200, { notes: store.listPublishedNotes(account.personaId) })
+        try {
+          const resolved = resolvePersonaScope(store, accountId, personaId)
+          writeJson(res, 200, { notes: service.listNotes(resolved), resolvedPersonaId: resolved })
+        } catch (error) { fail(res, error) }
         return
       }
+
       if (method !== 'PATCH') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
-      if (accountId === undefined || noteId === undefined) { writeJson(res, 400, { error: 'account 与 note 查询参数必填' }); return }
+      if (noteId === undefined || (accountId === undefined && personaId === undefined)) {
+        writeJson(res, 400, { error: 'account/persona 与 note 查询参数必填' }); return
+      }
       const body = await readJsonBody(req)
       if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
       const weight = body.weight
@@ -45,13 +51,27 @@ export function makeKnowledgeRoutes(store: MatrixStore, scheduler?: CollectionSc
         writeJson(res, 400, { error: 'weight 必须是 0-5 的整数' }); return
       }
       try {
-        const account = store.listAccounts().find(item => item.id === accountId)
-        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + accountId }); return }
-        const note = store.setNoteWeight(account.personaId, noteId, weight as NoteWeight)
+        const resolved = resolvePersonaScope(store, accountId, personaId)
+        if (resolved === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
+        const note = service.setNoteWeight(resolved, noteId, weight as NoteWeight)
         writeJson(res, 200, { note })
       } catch (error) { fail(res, error) }
     }),
-    // ------------------------------------------------------------ 指标
+    route(XHS_API.notesTransfer, async (req, res) => {
+      if (!guard(req, res, 'POST')) return
+      const body = await readJsonBody(req)
+      if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
+      const personaId = typeof body.personaId === 'string' && body.personaId !== '' ? body.personaId : ''
+      const targetPersonaId = typeof body.targetPersonaId === 'string' && body.targetPersonaId !== '' ? body.targetPersonaId : ''
+      const noteIds = Array.isArray(body.noteIds) ? (body.noteIds.filter((value: unknown) => typeof value === 'string') as string[]) : []
+      if (personaId === '' || targetPersonaId === '' || noteIds.length === 0) { writeJson(res, 400, { error: 'personaId、targetPersonaId 与 noteIds 必填' }); return }
+      try {
+        resolvePersonaScope(store, undefined, personaId)
+        if (!store.listPersonas().some(item => item.id === targetPersonaId)) throw new HttpError(404, '人设不存在：' + targetPersonaId)
+        const notes = service.transferNotes(personaId, noteIds, targetPersonaId)
+        writeJson(res, 200, { notes })
+      } catch (error) { fail(res, error) }
+    }),
     route(XHS_API.metrics, async (req, res) => {
       const method = req.method ?? 'GET'
       if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'forbidden: loopback-only' }); return }
@@ -76,7 +96,6 @@ export function makeKnowledgeRoutes(store: MatrixStore, scheduler?: CollectionSc
         writeJson(res, 201, { metric: saved })
       } catch (error) { fail(res, error) }
     }),
-    // ------------------------------------------------------------ 指标采集
     route(XHS_API.metrics + '/collect', async (req, res) => {
       if (!guard(req, res, 'POST')) return
       const body = await readJsonBody(req)
