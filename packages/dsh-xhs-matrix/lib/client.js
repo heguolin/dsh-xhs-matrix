@@ -463,8 +463,8 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/.superpowers/worktrees/xhs-persona-v4/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.XLBeMq_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.XLBeMq_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.XLBeMq_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.XLBeMq_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.XLBeMq_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.XLBeMq_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.XLBeMq_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.XLBeMq_accountItem:hover{border-color:var(--xhs-red)}.XLBeMq_accountItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.XLBeMq_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.XLBeMq_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.XLBeMq_statusDot.XLBeMq_ok{background:#31ae7e}.XLBeMq_statusDot.XLBeMq_warn{background:#f2a43e}.XLBeMq_statusDot.XLBeMq_error{background:#e25662}.XLBeMq_statusDot.XLBeMq_idle{background:#e4d9db}.XLBeMq_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.XLBeMq_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.XLBeMq_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_navItem.XLBeMq_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.XLBeMq_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.XLBeMq_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.XLBeMq_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.XLBeMq_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.XLBeMq_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.XLBeMq_topbarRight{align-items:center;gap:10px;display:flex}.XLBeMq_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.XLBeMq_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.XLBeMq_modeSwitch button.XLBeMq_on{background:var(--xhs-red);color:#fff;font-weight:600}.XLBeMq_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.XLBeMq_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.XLBeMq_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.XLBeMq_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.XLBeMq_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.XLBeMq_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.XLBeMq_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.XLBeMq_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_post:first-of-type{border-top:0}.XLBeMq_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.XLBeMq_postBody{flex:1;min-width:0}.XLBeMq_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.XLBeMq_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.XLBeMq_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.XLBeMq_chat{flex-direction:column;height:100%;min-height:0;display:flex}.XLBeMq_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.XLBeMq_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.XLBeMq_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_bubble.XLBeMq_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.XLBeMq_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.XLBeMq_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.XLBeMq_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.XLBeMq_chips{flex-wrap:wrap;gap:6px;display:flex}.XLBeMq_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_contextline:first-of-type{border-top:0}.XLBeMq_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.XLBeMq_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.XLBeMq_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.XLBeMq_studioTop strong{color:var(--xhs-text);font-size:14px}.XLBeMq_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.XLBeMq_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.XLBeMq_msg.XLBeMq_me{flex-direction:row-reverse;margin-left:auto}.XLBeMq_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgAvatar{background:var(--xhs-face);color:#8a3945}.XLBeMq_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.XLBeMq_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.XLBeMq_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.XLBeMq_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.XLBeMq_studioSend:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.XLBeMq_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.XLBeMq_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.XLBeMq_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.XLBeMq_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.XLBeMq_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.XLBeMq_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.XLBeMq_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.XLBeMq_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.XLBeMq_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.XLBeMq_tag.XLBeMq_on{background:var(--xhs-red);color:#fff}.XLBeMq_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.XLBeMq_filter.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.XLBeMq_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.XLBeMq_libBody{flex:1;min-width:0}.XLBeMq_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.XLBeMq_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.XLBeMq_weight{gap:4px;margin-top:8px;display:flex}.XLBeMq_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.XLBeMq_weight button:hover{border-color:var(--xhs-red)}.XLBeMq_weight button.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.XLBeMq_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.XLBeMq_topicItem:first-of-type{border-top:0}.XLBeMq_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.XLBeMq_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.XLBeMq_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.XLBeMq_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.XLBeMq_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.XLBeMq_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.XLBeMq_personaItem:hover{border-color:var(--xhs-red)}.XLBeMq_personaItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.XLBeMq_personaName{font-size:13px;font-weight:700}.XLBeMq_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.XLBeMq_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.XLBeMq_draftEditor,.XLBeMq_sourcePanel{min-width:0}.XLBeMq_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.XLBeMq_source:first-of-type{border-top:0}.XLBeMq_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.XLBeMq_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.XLBeMq_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.XLBeMq_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.XLBeMq_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.XLBeMq_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.XLBeMq_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.XLBeMq_dialogClose:hover{color:var(--xhs-red)}.XLBeMq_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.XLBeMq_dialogRow .XLBeMq_face{width:28px;height:28px}.XLBeMq_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.XLBeMq_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.XLBeMq_field label{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.XLBeMq_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.XLBeMq_primary:hover{background:var(--xhs-red-deep)}.XLBeMq_primary:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.XLBeMq_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.XLBeMq_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.XLBeMq_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.XLBeMq_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.XLBeMq_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.XLBeMq_muted{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.XLBeMq_rowActions{flex:none;align-items:center;gap:8px;display:flex}.XLBeMq_spacer{flex:1}";
-		const tagId = "dsh-xhs-matrix/panel.module.css?v=79764f53";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.XLBeMq_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.XLBeMq_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.XLBeMq_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.XLBeMq_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.XLBeMq_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.XLBeMq_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.XLBeMq_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.XLBeMq_accountItem:hover{border-color:var(--xhs-red)}.XLBeMq_accountItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.XLBeMq_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.XLBeMq_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.XLBeMq_statusDot.XLBeMq_ok{background:#31ae7e}.XLBeMq_statusDot.XLBeMq_warn{background:#f2a43e}.XLBeMq_statusDot.XLBeMq_error{background:#e25662}.XLBeMq_statusDot.XLBeMq_idle{background:#e4d9db}.XLBeMq_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.XLBeMq_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.XLBeMq_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_navItem.XLBeMq_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.XLBeMq_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.XLBeMq_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.XLBeMq_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.XLBeMq_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.XLBeMq_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.XLBeMq_topbarRight{align-items:center;gap:10px;display:flex}.XLBeMq_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.XLBeMq_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.XLBeMq_modeSwitch button.XLBeMq_on{background:var(--xhs-red);color:#fff;font-weight:600}.XLBeMq_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.XLBeMq_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.XLBeMq_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.XLBeMq_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.XLBeMq_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.XLBeMq_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.XLBeMq_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.XLBeMq_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_post:first-of-type{border-top:0}.XLBeMq_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.XLBeMq_postBody{flex:1;min-width:0}.XLBeMq_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.XLBeMq_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.XLBeMq_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.XLBeMq_chat{flex-direction:column;height:100%;min-height:0;display:flex}.XLBeMq_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.XLBeMq_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.XLBeMq_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_bubble.XLBeMq_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.XLBeMq_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.XLBeMq_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.XLBeMq_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.XLBeMq_chips{flex-wrap:wrap;gap:6px;display:flex}.XLBeMq_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_contextline:first-of-type{border-top:0}.XLBeMq_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.XLBeMq_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.XLBeMq_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.XLBeMq_studioTop strong{color:var(--xhs-text);font-size:14px}.XLBeMq_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.XLBeMq_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.XLBeMq_msg.XLBeMq_me{flex-direction:row-reverse;margin-left:auto}.XLBeMq_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgAvatar{background:var(--xhs-face);color:#8a3945}.XLBeMq_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.XLBeMq_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.XLBeMq_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.XLBeMq_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.XLBeMq_studioSend:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.XLBeMq_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.XLBeMq_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.XLBeMq_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.XLBeMq_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.XLBeMq_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.XLBeMq_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.XLBeMq_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.XLBeMq_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.XLBeMq_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.XLBeMq_tag.XLBeMq_on{background:var(--xhs-red);color:#fff}.XLBeMq_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.XLBeMq_filter.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.XLBeMq_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.XLBeMq_libBody{flex:1;min-width:0}.XLBeMq_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.XLBeMq_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.XLBeMq_weight{gap:4px;margin-top:8px;display:flex}.XLBeMq_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.XLBeMq_weight button:hover{border-color:var(--xhs-red)}.XLBeMq_weight button.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.XLBeMq_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.XLBeMq_topicItem:first-of-type{border-top:0}.XLBeMq_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.XLBeMq_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.XLBeMq_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.XLBeMq_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.XLBeMq_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.XLBeMq_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.XLBeMq_personaItem:hover{border-color:var(--xhs-red)}.XLBeMq_personaItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.XLBeMq_personaName{font-size:13px;font-weight:700}.XLBeMq_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.XLBeMq_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.XLBeMq_draftEditor,.XLBeMq_sourcePanel{min-width:0}.XLBeMq_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.XLBeMq_source:first-of-type{border-top:0}.XLBeMq_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.XLBeMq_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.XLBeMq_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.XLBeMq_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.XLBeMq_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.XLBeMq_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.XLBeMq_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.XLBeMq_dialogClose:hover{color:var(--xhs-red)}.XLBeMq_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.XLBeMq_dialogRow .XLBeMq_face{width:28px;height:28px}.XLBeMq_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.XLBeMq_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.XLBeMq_field label{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.XLBeMq_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.XLBeMq_primary:hover{background:var(--xhs-red-deep)}.XLBeMq_primary:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.XLBeMq_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.XLBeMq_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.XLBeMq_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.XLBeMq_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.XLBeMq_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.XLBeMq_muted{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.XLBeMq_rowActions{flex:none;align-items:center;gap:8px;display:flex}.XLBeMq_spacer{flex:1}.XLBeMq_scopeBand{border-left:4px solid var(--xhs-red);background:var(--xhs-red-soft2);border-radius:0 12px 12px 0;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;margin-bottom:18px;padding:16px 18px;display:grid}.XLBeMq_scopeBand h2{color:var(--xhs-text);margin:0 0 3px;font-size:15px}.XLBeMq_scopeBand p{color:var(--xhs-text-sub);margin:0;font-size:12px}.XLBeMq_scopeStats{gap:18px;display:flex}.XLBeMq_scopeStats b{color:var(--xhs-red-text);font-size:17px;display:block}.XLBeMq_scopeStats span{color:var(--xhs-text-sub);font-size:10px}.XLBeMq_toolbar{flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;display:flex}.XLBeMq_noteGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;display:grid}.XLBeMq_noteCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;padding:16px}.XLBeMq_noteCard h3{color:var(--xhs-text);margin:10px 0 6px;font-size:14px}.XLBeMq_noteCard p{color:#6c5d60;margin:0 0 10px;font-size:12px}.XLBeMq_chip{color:#67595c;background:#f0ecea;border-radius:999px;align-items:center;gap:5px;padding:4px 8px;font-size:11px;display:inline-flex}.XLBeMq_chipRed{color:var(--xhs-red-text);background:#ffe7ec}.XLBeMq_chipGreen{color:var(--xhs-green);background:#e7f6ef}.XLBeMq_chipAmber{color:#9a5b08;background:#fff0d9}.XLBeMq_split{grid-template-columns:210px minmax(0,1fr);align-items:start;gap:14px;display:grid}.XLBeMq_batchList{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;overflow:hidden}.XLBeMq_panelHead{border-bottom:1px solid var(--xhs-border);justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;display:flex}.XLBeMq_panelHead h3{color:var(--xhs-text);margin:0;font-size:13px}.XLBeMq_batch{background:var(--xhs-card);text-align:left;cursor:pointer;border:0;border-bottom:1px solid #f2e9e7;width:100%;padding:12px 14px}.XLBeMq_batch:last-child{border-bottom:0}.XLBeMq_batch.XLBeMq_active{box-shadow:inset 3px 0 var(--xhs-red);background:#fff8f8}.XLBeMq_batch strong{color:var(--xhs-text);margin-bottom:4px;font-size:12px;display:block}.XLBeMq_batch small{color:var(--xhs-text-sub)}.XLBeMq_batchCount{float:right;color:var(--xhs-red-text);font-weight:800}.XLBeMq_item{border-bottom:1px solid #f0e7e5;padding:15px 16px}.XLBeMq_item:last-child{border-bottom:0}.XLBeMq_itemTop{justify-content:space-between;align-items:flex-start;gap:12px;display:flex}.XLBeMq_item h4{color:var(--xhs-text);margin:0 0 5px;font-size:14px}.XLBeMq_meta{color:var(--xhs-text-sub);flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:11px;display:flex}.XLBeMq_excerpt{color:#5c4d50;margin:10px 0;font-size:12px}.XLBeMq_itemActions{flex-wrap:wrap;align-items:center;gap:10px;display:flex}.XLBeMq_textAction{color:#78696c;cursor:pointer;background:0 0;border:0;padding:4px;font-size:11px}.XLBeMq_textAction:hover{color:var(--xhs-red-text)}.XLBeMq_warning{color:#8b570f;background:#fff6e8;border-left:3px solid #e7a746;border-radius:0 8px 8px 0;margin-top:10px;padding:7px 9px;font-size:11px}@media (width<=860px){.XLBeMq_noteGrid,.XLBeMq_split{grid-template-columns:1fr}}";
+		const tagId = "dsh-xhs-matrix/panel.module.css?v=0925ff89";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "dsh-xhs-matrix";
@@ -473,131 +473,161 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"accountAdd": "XLBeMq_accountAdd",
-			"statusDot": "XLBeMq_statusDot",
-			"me": "XLBeMq_me",
-			"personaLayout": "XLBeMq_personaLayout",
-			"studioLayout": "XLBeMq_studioLayout",
-			"muted": "XLBeMq_muted",
-			"field": "XLBeMq_field",
-			"studioMain": "XLBeMq_studioMain",
-			"brandLogo": "XLBeMq_brandLogo",
-			"contextline": "XLBeMq_contextline",
-			"weight": "XLBeMq_weight",
-			"personaAvatar": "XLBeMq_personaAvatar",
-			"topbarRight": "XLBeMq_topbarRight",
-			"brand": "XLBeMq_brand",
-			"sourcePanel": "XLBeMq_sourcePanel",
-			"studioTopSub": "XLBeMq_studioTopSub",
-			"content": "XLBeMq_content",
-			"score": "XLBeMq_score",
-			"tabs": "XLBeMq_tabs",
-			"personaDesc": "XLBeMq_personaDesc",
-			"draftEditor": "XLBeMq_draftEditor",
-			"context": "XLBeMq_context",
-			"spacer": "XLBeMq_spacer",
-			"idle": "XLBeMq_idle",
-			"panel": "XLBeMq_panel",
-			"input": "XLBeMq_input",
-			"studioComposer": "XLBeMq_studioComposer",
-			"metrics": "XLBeMq_metrics",
-			"modeSwitch": "XLBeMq_modeSwitch",
-			"dialogClose": "XLBeMq_dialogClose",
-			"ghostBtn": "XLBeMq_ghostBtn",
-			"accountItem": "XLBeMq_accountItem",
-			"ok": "XLBeMq_ok",
-			"metric": "XLBeMq_metric",
-			"overlay": "XLBeMq_overlay",
-			"face": "XLBeMq_face",
-			"badgeWarn": "XLBeMq_badgeWarn",
-			"personaName": "XLBeMq_personaName",
-			"studioSend": "XLBeMq_studioSend",
-			"tab": "XLBeMq_tab",
-			"tabActive": "XLBeMq_tabActive",
-			"tag": "XLBeMq_tag",
-			"msgBubble": "XLBeMq_msgBubble",
-			"warn": "XLBeMq_warn",
-			"topbar": "XLBeMq_topbar",
-			"empty": "XLBeMq_empty",
-			"group": "XLBeMq_group",
-			"active": "XLBeMq_active",
-			"overview": "XLBeMq_overview",
-			"below": "XLBeMq_below",
-			"topicReason": "XLBeMq_topicReason",
-			"pill": "XLBeMq_pill",
-			"bar": "XLBeMq_bar",
-			"card": "XLBeMq_card",
-			"success": "XLBeMq_success",
-			"miniThumb": "XLBeMq_miniThumb",
-			"primary": "XLBeMq_primary",
-			"sidebar": "XLBeMq_sidebar",
 			"panelTitle": "XLBeMq_panelTitle",
-			"topicItem": "XLBeMq_topicItem",
-			"libTitle": "XLBeMq_libTitle",
-			"accountName": "XLBeMq_accountName",
-			"thumb": "XLBeMq_thumb",
-			"libMeta": "XLBeMq_libMeta",
-			"meter": "XLBeMq_meter",
-			"chips": "XLBeMq_chips",
-			"messages": "XLBeMq_messages",
-			"topicTitle": "XLBeMq_topicTitle",
-			"postBody": "XLBeMq_postBody",
-			"danger": "XLBeMq_danger",
-			"chat": "XLBeMq_chat",
-			"badgeGray": "XLBeMq_badgeGray",
-			"studioSendGhost": "XLBeMq_studioSendGhost",
-			"scoreLow": "XLBeMq_scoreLow",
-			"postTitle": "XLBeMq_postTitle",
-			"msgAvatar": "XLBeMq_msgAvatar",
-			"dialogRow": "XLBeMq_dialogRow",
-			"libBody": "XLBeMq_libBody",
-			"msg": "XLBeMq_msg",
-			"chatSend": "XLBeMq_chatSend",
-			"dangerBtn": "XLBeMq_dangerBtn",
-			"weightBadge": "XLBeMq_weightBadge",
-			"badgeDanger": "XLBeMq_badgeDanger",
-			"rowActions": "XLBeMq_rowActions",
+			"studioSend": "XLBeMq_studioSend",
 			"chathead": "XLBeMq_chathead",
-			"personaList": "XLBeMq_personaList",
-			"viewHost": "XLBeMq_viewHost",
-			"contextLine": "XLBeMq_contextLine",
-			"editbar": "XLBeMq_editbar",
-			"badge": "XLBeMq_badge",
-			"on": "XLBeMq_on",
-			"source": "XLBeMq_source",
-			"navItem": "XLBeMq_navItem",
-			"pillWarn": "XLBeMq_pillWarn",
-			"filterRow": "XLBeMq_filterRow",
-			"draftLayout": "XLBeMq_draftLayout",
-			"studioTop": "XLBeMq_studioTop",
-			"chatInput": "XLBeMq_chatInput",
-			"dialogRowActions": "XLBeMq_dialogRowActions",
-			"post": "XLBeMq_post",
-			"filter": "XLBeMq_filter",
-			"contextCard": "XLBeMq_contextCard",
-			"bubble": "XLBeMq_bubble",
-			"button": "XLBeMq_button",
+			"empty": "XLBeMq_empty",
 			"libRow": "XLBeMq_libRow",
+			"personaName": "XLBeMq_personaName",
+			"modeSwitch": "XLBeMq_modeSwitch",
+			"tag": "XLBeMq_tag",
+			"studioComposer": "XLBeMq_studioComposer",
+			"score": "XLBeMq_score",
 			"viewGrid": "XLBeMq_viewGrid",
-			"personaItem": "XLBeMq_personaItem",
-			"error": "XLBeMq_error",
-			"dialog": "XLBeMq_dialog",
-			"textarea": "XLBeMq_textarea",
-			"navIcon": "XLBeMq_navIcon",
+			"group": "XLBeMq_group",
+			"libMeta": "XLBeMq_libMeta",
+			"sourcePanel": "XLBeMq_sourcePanel",
+			"primary": "XLBeMq_primary",
+			"face": "XLBeMq_face",
+			"postBody": "XLBeMq_postBody",
+			"filter": "XLBeMq_filter",
+			"on": "XLBeMq_on",
+			"thumb": "XLBeMq_thumb",
+			"me": "XLBeMq_me",
+			"sidebar": "XLBeMq_sidebar",
+			"bar": "XLBeMq_bar",
+			"miniThumb": "XLBeMq_miniThumb",
+			"field": "XLBeMq_field",
+			"spacer": "XLBeMq_spacer",
+			"statusDot": "XLBeMq_statusDot",
+			"warning": "XLBeMq_warning",
+			"source": "XLBeMq_source",
+			"chipRed": "XLBeMq_chipRed",
 			"postMeta": "XLBeMq_postMeta",
-			"topbarSub": "XLBeMq_topbarSub",
+			"dialogRow": "XLBeMq_dialogRow",
+			"badge": "XLBeMq_badge",
+			"context": "XLBeMq_context",
+			"active": "XLBeMq_active",
 			"badgeGreen": "XLBeMq_badgeGreen",
+			"msgBubble": "XLBeMq_msgBubble",
+			"messages": "XLBeMq_messages",
+			"dialog": "XLBeMq_dialog",
+			"idle": "XLBeMq_idle",
+			"pill": "XLBeMq_pill",
+			"brandLogo": "XLBeMq_brandLogo",
+			"chatInput": "XLBeMq_chatInput",
+			"contextLine": "XLBeMq_contextLine",
+			"studioLayout": "XLBeMq_studioLayout",
+			"textarea": "XLBeMq_textarea",
+			"tabActive": "XLBeMq_tabActive",
+			"scopeBand": "XLBeMq_scopeBand",
+			"tabs": "XLBeMq_tabs",
+			"noteCard": "XLBeMq_noteCard",
+			"postTitle": "XLBeMq_postTitle",
+			"topbar": "XLBeMq_topbar",
+			"chatSend": "XLBeMq_chatSend",
+			"studioMain": "XLBeMq_studioMain",
+			"personaList": "XLBeMq_personaList",
+			"weightBadge": "XLBeMq_weightBadge",
+			"weight": "XLBeMq_weight",
+			"dialogClose": "XLBeMq_dialogClose",
+			"libBody": "XLBeMq_libBody",
+			"meta": "XLBeMq_meta",
+			"panel": "XLBeMq_panel",
+			"studioTop": "XLBeMq_studioTop",
+			"metric": "XLBeMq_metric",
+			"batch": "XLBeMq_batch",
+			"navItem": "XLBeMq_navItem",
+			"draftLayout": "XLBeMq_draftLayout",
+			"itemActions": "XLBeMq_itemActions",
+			"batchCount": "XLBeMq_batchCount",
+			"dangerBtn": "XLBeMq_dangerBtn",
+			"overlay": "XLBeMq_overlay",
+			"ghostBtn": "XLBeMq_ghostBtn",
+			"personaLayout": "XLBeMq_personaLayout",
+			"badgeWarn": "XLBeMq_badgeWarn",
+			"textAction": "XLBeMq_textAction",
+			"navIcon": "XLBeMq_navIcon",
+			"msg": "XLBeMq_msg",
+			"panelHead": "XLBeMq_panelHead",
+			"meter": "XLBeMq_meter",
+			"brand": "XLBeMq_brand",
+			"contextline": "XLBeMq_contextline",
+			"filterRow": "XLBeMq_filterRow",
+			"topicTitle": "XLBeMq_topicTitle",
 			"studioResult": "XLBeMq_studioResult",
-			"workspace": "XLBeMq_workspace"
+			"batchList": "XLBeMq_batchList",
+			"muted": "XLBeMq_muted",
+			"card": "XLBeMq_card",
+			"scopeStats": "XLBeMq_scopeStats",
+			"badgeGray": "XLBeMq_badgeGray",
+			"accountName": "XLBeMq_accountName",
+			"button": "XLBeMq_button",
+			"toolbar": "XLBeMq_toolbar",
+			"chip": "XLBeMq_chip",
+			"item": "XLBeMq_item",
+			"chipAmber": "XLBeMq_chipAmber",
+			"success": "XLBeMq_success",
+			"editbar": "XLBeMq_editbar",
+			"personaDesc": "XLBeMq_personaDesc",
+			"viewHost": "XLBeMq_viewHost",
+			"personaAvatar": "XLBeMq_personaAvatar",
+			"ok": "XLBeMq_ok",
+			"rowActions": "XLBeMq_rowActions",
+			"accountAdd": "XLBeMq_accountAdd",
+			"studioSendGhost": "XLBeMq_studioSendGhost",
+			"below": "XLBeMq_below",
+			"danger": "XLBeMq_danger",
+			"split": "XLBeMq_split",
+			"noteGrid": "XLBeMq_noteGrid",
+			"topicReason": "XLBeMq_topicReason",
+			"contextCard": "XLBeMq_contextCard",
+			"accountItem": "XLBeMq_accountItem",
+			"topbarRight": "XLBeMq_topbarRight",
+			"chat": "XLBeMq_chat",
+			"chipGreen": "XLBeMq_chipGreen",
+			"draftEditor": "XLBeMq_draftEditor",
+			"studioTopSub": "XLBeMq_studioTopSub",
+			"warn": "XLBeMq_warn",
+			"personaItem": "XLBeMq_personaItem",
+			"itemTop": "XLBeMq_itemTop",
+			"chips": "XLBeMq_chips",
+			"metrics": "XLBeMq_metrics",
+			"overview": "XLBeMq_overview",
+			"topbarSub": "XLBeMq_topbarSub",
+			"badgeDanger": "XLBeMq_badgeDanger",
+			"content": "XLBeMq_content",
+			"tab": "XLBeMq_tab",
+			"post": "XLBeMq_post",
+			"input": "XLBeMq_input",
+			"dialogRowActions": "XLBeMq_dialogRowActions",
+			"scoreLow": "XLBeMq_scoreLow",
+			"bubble": "XLBeMq_bubble",
+			"error": "XLBeMq_error",
+			"workspace": "XLBeMq_workspace",
+			"msgAvatar": "XLBeMq_msgAvatar",
+			"libTitle": "XLBeMq_libTitle",
+			"topicItem": "XLBeMq_topicItem",
+			"pillWarn": "XLBeMq_pillWarn",
+			"excerpt": "XLBeMq_excerpt"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
-		/** 后台数据导入简化版：标题（每行一个）+ 正文（与标题行号对应），构造 JSON 数组导入当前账号已发布笔记。 */
-		function ImportDialog({ api, accountId, onDone }) {
+		/**
+		* 已在盘知识库导入（v4 人设资产视图）：导入目标为当前人设作用域。
+		* - 「归属人设」只读展示当前选中人设名（作用域由父级 XhsPanel/KnowledgeTab 持有）。
+		* - 标题（每行一个）+ 正文（与标题行号对应）构造 JSON 数组，经账号导入路由落到账号当前人设。
+		* - 若用户临时切换过人设，账号导入仍走账号自身绑定人设（见 report「导入目标」歧义说明）。
+		*/
+		function ImportDialog({ api, accountId, personaId, onDone }) {
+			const [personaName, setPersonaName] = (0, react.useState)("");
 			const [titles, setTitles] = (0, react.useState)("");
 			const [copies, setCopies] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
 			const [notice, setNotice] = (0, react.useState)("");
+			(0, react.useEffect)(() => {
+				api.listPersonas().then((list) => setPersonaName(list.find((p) => p.id === personaId)?.name ?? personaId)).catch(() => setPersonaName(personaId));
+			}, [api, personaId]);
 			const run = async () => {
 				const titleRows = titles.split("\n").map((line, index) => ({
 					line: line.trim(),
@@ -639,6 +669,14 @@ window.__ModuleLoader__.load({
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default.field,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "归属人设" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						className: panel_module_css_default.input,
+						value: personaName,
+						readOnly: true
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: panel_module_css_default.field,
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题（每行一个，必填）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 						className: panel_module_css_default.input,
 						rows: 5,
@@ -657,10 +695,13 @@ window.__ModuleLoader__.load({
 						placeholder: "与左侧标题逐行对应的正文内容\n（标题与正文都必填，按行对应）"
 					})]
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: panel_module_css_default.primary,
-					onClick: () => void run(),
-					children: "导入"
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.rowActions,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						className: panel_module_css_default.primary,
+						onClick: () => void run(),
+						children: "导入"
+					})
 				})
 			] });
 		}
@@ -974,6 +1015,7 @@ window.__ModuleLoader__.load({
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImportDialog, {
 								api,
 								accountId: importingId,
+								personaId: accounts.find((account) => account.id === importingId)?.personaId ?? "",
 								onDone: () => {
 									onChanged();
 									setImportingId(null);
@@ -1421,7 +1463,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region src/client/panel/KnowledgeTab.tsx
-		const WEIGHTS = [
+		const WEIGHTS$1 = [
 			0,
 			1,
 			2,
@@ -1429,102 +1471,104 @@ window.__ModuleLoader__.load({
 			4,
 			5
 		];
-		const FILTERS = [
-			{
-				id: "all",
-				label: "全部"
-			},
-			{
-				id: "high",
-				label: "权重高"
-			},
-			{
-				id: "pending",
-				label: "待补指标"
-			},
-			{
-				id: "recent",
-				label: "最近发布"
-			}
-		];
-		/**
-		* 已发布知识库（设计稿 content/detail-surfaces.html）：
-		* 筛选 chips + 笔记行（缩略图/指标/0-5 权重），权重即控制杆。
-		*/
+		/** 返回文本中命中的违禁词列表（仅用于参考素材警告，不阻止收录）。 */
+		function forbiddenHit$1(text, words) {
+			return words.filter((word) => word !== "" && text.includes(word));
+		}
+		/** 已发布知识库（v4 人设资产视图，设计稿 persona-owned-content-ui-reference）： */
 		function KnowledgeTab({ api, accountId, personaId, onPersonaChange }) {
 			const [notes, setNotes] = (0, react.useState)([]);
-			const [metrics, setMetrics] = (0, react.useState)([]);
-			const [filter, setFilter] = (0, react.useState)("all");
+			const [allPersonas, setAllPersonas] = (0, react.useState)([]);
+			const [sharedAccounts, setSharedAccounts] = (0, react.useState)(0);
+			const [pending, setPending] = (0, react.useState)([]);
+			const [search, setSearch] = (0, react.useState)("");
+			const [sourceFilter, setSourceFilter] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
-			const [notice, setNotice] = (0, react.useState)("");
 			const [importing, setImporting] = (0, react.useState)(false);
+			const [transferNote, setTransferNote] = (0, react.useState)(null);
+			const [transferTarget, setTransferTarget] = (0, react.useState)("");
+			const [pendingOpen, setPendingOpen] = (0, react.useState)(false);
+			const [assignTarget, setAssignTarget] = (0, react.useState)("");
+			const [busy, setBusy] = (0, react.useState)(false);
+			const persona = allPersonas.find((p) => p.id === personaId);
 			const refresh = (0, react.useCallback)(async () => {
-				if (accountId === "" || personaId === "") {
+				if (personaId === "") {
 					setNotes([]);
-					setMetrics([]);
 					return;
 				}
 				try {
-					const [noteList, metricList] = await Promise.all([api.listNotes(personaId), api.listMetrics(accountId)]);
-					setNotes(noteList);
-					setMetrics(metricList);
+					setNotes(await api.listNotes(personaId));
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [
-				api,
-				accountId,
-				personaId
-			]);
+			}, [api, personaId]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
-			/** 手动录入浏览量（运维用）：来源标记 manual，追加一条指标快照。 */
-			const recordReads = async (noteId) => {
-				const input = window.prompt("录入这篇笔记的浏览量（数字）", "");
-				if (input === null) return;
-				const reads = Number(input.trim());
-				if (!Number.isFinite(reads) || reads < 0) {
-					setError("请输入非负数字");
-					return;
-				}
-				try {
-					await api.saveMetricSnapshot(accountId, noteId, Math.round(reads));
-					setNotice(`已录入浏览量 ${Math.round(reads)}。`);
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
+			(0, react.useEffect)(() => {
+				api.listPersonas().then((list) => setAllPersonas(list.map((p) => ({
+					id: p.id,
+					name: p.name,
+					forbiddenWords: p.forbiddenWords ?? []
+				})))).catch(() => setAllPersonas([]));
+			}, [api]);
+			(0, react.useEffect)(() => {
+				api.listAccounts().then((list) => setSharedAccounts(list.filter((a) => a.personaId === personaId).length)).catch(() => setSharedAccounts(0));
+			}, [api, personaId]);
+			(0, react.useEffect)(() => {
+				api.listPending().then((list) => setPending(list)).catch(() => setPending([]));
+			}, [api]);
 			const setWeight = async (noteId, weight) => {
 				try {
 					await api.setNoteWeight(personaId, noteId, weight);
-					setNotice(`已设置权重 ${weight}，将影响下一次推荐。`);
+					setError("");
 					await refresh();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			const latestByNote = /* @__PURE__ */ new Map();
-			for (const m of metrics) {
-				const prev = latestByNote.get(m.noteId);
-				if (prev === void 0 || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m);
-			}
-			const filtered = [...notes].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).filter((note) => {
-				if (filter === "high") return note.weight >= 4;
-				if (filter === "pending") return latestByNote.get(note.id) === void 0;
-				if (filter === "recent") return Date.now() - Date.parse(note.publishedAt) < 720 * 60 * 60 * 1e3;
+			const transfer = async () => {
+				if (transferNote === null) return;
+				if (transferTarget === "" || transferTarget === personaId) return;
+				setBusy(true);
+				try {
+					await api.transferNotes(personaId, transferTarget, [transferNote.id]);
+					setTransferNote(null);
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setBusy(false);
+				}
+			};
+			const assign = async (pendingId, kind) => {
+				if (assignTarget === "") return;
+				try {
+					await api.assignPending(pendingId, assignTarget);
+					setPending((prev) => prev.filter((entry) => entry.id !== pendingId));
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			const sourceAccounts = (0, react.useMemo)(() => {
+				const set = /* @__PURE__ */ new Set();
+				for (const note of notes) if (note.sourceAccountName !== void 0) set.add(note.sourceAccountName);
+				return Array.from(set);
+			}, [notes]);
+			const highCount = notes.filter((note) => note.weight >= 4).length;
+			const filtered = notes.filter((note) => {
+				if (search !== "" && !(note.title.includes(search) || note.copy.includes(search))) return false;
+				if (sourceFilter !== "" && note.sourceAccountName !== sourceFilter) return false;
 				return true;
-			});
+			}).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+			const personaName = persona?.name ?? (personaId === "" ? "未分配" : personaId);
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
-				}),
-				notice !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: panel_module_css_default.success,
-					children: notice
 				}),
 				accountId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.empty,
@@ -1540,107 +1584,250 @@ window.__ModuleLoader__.load({
 						className: panel_module_css_default.empty,
 						children: "该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。"
 					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.filterRow,
-						children: [
-							FILTERS.map((f) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: filter === f.id ? `${panel_module_css_default.filter} ${panel_module_css_default.on}` : panel_module_css_default.filter,
-								onClick: () => setFilter(f.id),
-								children: f.label
-							}, f.id)),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.primary,
-								onClick: () => setImporting(true),
-								children: "＋ 导入笔记"
-							})
-						]
-					}),
-					notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.empty,
-						children: "该人设还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据到该人设。"
-					}),
-					notes.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.muted,
-						children: "当前筛选下没有笔记。"
-					}),
-					filtered.map((note) => {
-						const metric = latestByNote.get(note.id);
-						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.libRow,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: panel_module_css_default.miniThumb }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.libBody,
+					personaId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.scopeBand,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("h2", { children: [personaName, " · 已发布知识库"] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "同一人设下的账号共同复用；发布账号作为来源快照保留。" })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.scopeStats,
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-										className: panel_module_css_default.libTitle,
-										children: note.title
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: notes.length }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "已发布" })] }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: highCount }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "高权重" })] }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: sharedAccounts }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "共享账号" })] })
+								]
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.toolbar,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									style: { width: 180 },
+									placeholder: "搜索标题或正文",
+									value: search,
+									onChange: (e) => setSearch(e.target.value)
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									className: panel_module_css_default.input,
+									"aria-label": "来源账号",
+									value: sourceFilter,
+									onChange: (e) => setSourceFilter(e.target.value),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "全部来源账号"
+									}), sourceAccounts.map((name) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: name,
+										children: name
+									}, name))]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.spacer }),
+								pending.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									className: panel_module_css_default.button,
+									onClick: () => {
+										setPendingOpen(true);
+										setAssignTarget("");
+									},
+									children: ["待归属 ", pending.length]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									onClick: () => setImporting(true),
+									children: "导入已发布笔记"
+								})
+							]
+						}),
+						notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.empty,
+							children: "该人设还没有已发布笔记。点击「导入已发布笔记」导入后台数据到该人设。"
+						}),
+						notes.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.muted,
+							children: "当前筛选下没有笔记。"
+						}),
+						filtered.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.noteGrid,
+							children: filtered.map((note) => {
+								const hits = forbiddenHit$1(note.title + note.copy, persona?.forbiddenWords ?? []);
+								return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.noteCard,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.meta,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												className: panel_module_css_default.chipGreen,
+												children: "已发布"
+											}), note.sourceAccountName !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												className: panel_module_css_default.chip,
+												children: ["来源：", note.sourceAccountName]
+											})]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: note.title }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: note.copy.length > 90 ? `${note.copy.slice(0, 90)}…` : note.copy }),
+										hits.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.warning,
+											children: [
+												"参考素材命中人设违禁词「",
+												hits[0],
+												"」：只警告，不阻止收录；生成内容会强制拦截。"
+											]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.itemActions,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: panel_module_css_default.muted,
+													children: "参考权重"
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													className: panel_module_css_default.weight,
+													children: WEIGHTS$1.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														className: note.weight === weight ? panel_module_css_default.on : void 0,
+														title: `权重 ${weight}`,
+														onClick: () => void setWeight(note.id, weight),
+														children: weight
+													}, weight))
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													className: panel_module_css_default.textAction,
+													onClick: () => {
+														setTransferNote(note);
+														setTransferTarget("");
+													},
+													children: "转移人设"
+												})
+											]
+										})
+									]
+								}, note.id);
+							})
+						}),
+						importing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								marginTop: 14,
+								padding: 14,
+								border: "1px solid var(--xhs-border)",
+								borderRadius: 12,
+								background: "var(--xhs-card)"
+							},
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImportDialog, {
+								api,
+								accountId,
+								personaId,
+								onDone: () => {
+									refresh();
+									setImporting(false);
+								}
+							})
+						}),
+						transferNote !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.overlay,
+							onClick: () => setTransferNote(null),
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.dialog,
+								onClick: (e) => e.stopPropagation(),
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.dialogClose,
+										onClick: () => setTransferNote(null),
+										"aria-label": "关闭",
+										children: "×"
 									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "转移笔记到其他人设" }),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.libMeta,
-										style: {
-											display: "flex",
-											alignItems: "center",
-											gap: 8,
-											flexWrap: "wrap"
-										},
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-											"发布 ",
-											note.publishedAt.slice(0, 10),
-											metric !== void 0 ? ` · 浏览 ${metric.reads.toLocaleString()} · 点赞 ${metric.likes} · 收藏 ${metric.favorites} · 评论 ${metric.comments}` : " · 指标待更新",
-											note.topic !== void 0 && ` · ${note.topic}`
-										] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: panel_module_css_default.ghostBtn,
-											style: {
-												padding: "2px 10px",
-												fontSize: 11,
-												whiteSpace: "nowrap",
-												flex: "none"
-											},
-											onClick: () => void recordReads(note.id),
-											children: "录入浏览量"
+										className: panel_module_css_default.field,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "目标人设" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+											className: panel_module_css_default.input,
+											"aria-label": "转移目标人设",
+											value: transferTarget,
+											onChange: (e) => setTransferTarget(e.target.value),
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: "",
+												children: "选择目标人设"
+											}), allPersonas.filter((p) => p.id !== personaId).map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+												value: p.id,
+												children: p.name
+											}, p.id))]
 										})]
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: panel_module_css_default.weight,
-										children: [WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											className: note.weight === weight ? panel_module_css_default.on : void 0,
-											onClick: () => void setWeight(note.id, weight),
-											title: `权重 ${weight}`,
-											children: weight
-										}, weight)), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-											className: panel_module_css_default.muted,
-											style: {
-												marginLeft: 8,
-												alignSelf: "center"
-											},
-											children: [
-												"权重 ",
-												note.weight,
-												" / 5"
-											]
+										className: panel_module_css_default.rowActions,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.primary,
+											disabled: busy || transferTarget === "" || transferTarget === personaId,
+											onClick: () => void transfer(),
+											children: "确认转移"
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => setTransferNote(null),
+											children: "取消"
 										})]
 									})
 								]
-							})]
-						}, note.id);
-					}),
-					importing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						style: {
-							marginTop: 14,
-							padding: 14,
-							border: "1px solid var(--xhs-border)",
-							borderRadius: 12,
-							background: "var(--xhs-card)"
-						},
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImportDialog, {
-							api,
-							accountId,
-							onDone: () => {
-								refresh();
-								setImporting(false);
-							}
+							})
+						}),
+						pendingOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.overlay,
+							onClick: () => setPendingOpen(false),
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.dialog,
+								onClick: (e) => e.stopPropagation(),
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										className: panel_module_css_default.dialogClose,
+										onClick: () => setPendingOpen(false),
+										"aria-label": "关闭",
+										children: "×"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "待归属数据" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.muted,
+										style: { marginBottom: 10 },
+										children: "以下内容在迁移时无法解析人设，请显式归属到目标人设。"
+									}),
+									pending.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.muted,
+										children: "没有待归属数据。"
+									}),
+									pending.map((entry) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.field,
+										style: {
+											borderTop: "1px solid var(--xhs-border)",
+											paddingTop: 10
+										},
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: entry.payload.title ?? entry.kind }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+												className: panel_module_css_default.input,
+												"aria-label": "归属目标人设",
+												value: assignTarget,
+												onChange: (e) => setAssignTarget(e.target.value),
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+													value: "",
+													children: "选择目标人设"
+												}), allPersonas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+													value: p.id,
+													children: p.name
+												}, p.id))]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.primary,
+												style: { marginTop: 8 },
+												onClick: () => void assign(entry.id, entry.kind),
+												children: "归属到该人设"
+											})
+										]
+									}, entry.id)),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: panel_module_css_default.rowActions,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.ghostBtn,
+											onClick: () => setPendingOpen(false),
+											children: "关闭"
+										})
+									})
+								]
+							})
 						})
-					})
+					] })
 				] })
 			] });
 		}
@@ -2582,105 +2769,53 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region src/client/panel/ViralTab.tsx
-		/** 正文摘要的截断长度（字符）。 */
-		const BODY_PREVIEW_LENGTH = 120;
-		/** 单条爆款的展示行：标题、正文摘要、来源链接、推荐分、匹配理由、状态与审核按钮。 */
-		function ViralRow({ item, busy, onReview }) {
-			const bodyPreview = item.body.length > BODY_PREVIEW_LENGTH ? `${item.body.slice(0, BODY_PREVIEW_LENGTH)}…` : item.body;
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: panel_module_css_default.topicItem,
-				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-						className: panel_module_css_default.topicTitle,
-						children: item.title
-					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.topicReason,
-						children: bodyPreview === "" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: panel_module_css_default.muted,
-							children: "（无正文摘要）"
-						}) : bodyPreview
-					}),
-					item.sourceUrl !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.topicReason,
-						style: { marginTop: 4 },
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
-							href: item.sourceUrl,
-							target: "_blank",
-							rel: "noreferrer",
-							style: { color: "var(--xhs-red)" },
-							children: "来源链接 ↗"
-						})
-					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default.topicReason,
-						style: { marginTop: 4 },
-						children: ["匹配：", item.reasons.length > 0 ? item.reasons.join(" · ") : "未说明"]
-					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						style: {
-							display: "flex",
-							alignItems: "center",
-							gap: 8,
-							marginTop: 6
-						},
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-								className: item.score >= 60 ? panel_module_css_default.score : `${panel_module_css_default.score} ${panel_module_css_default.scoreLow}`,
-								children: ["推荐分 ", item.score]
-							}),
-							item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeWarn,
-								children: "待审核"
-							}),
-							item.status === "accepted" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeGreen,
-								children: "已采纳（创作参考）"
-							}),
-							item.status === "ignored" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.badgeGray,
-								children: "已忽略"
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { style: { flex: 1 } }),
-							item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.primary,
-								disabled: busy,
-								onClick: () => onReview(item.id, "accepted"),
-								children: "采纳"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								className: panel_module_css_default.ghostBtn,
-								disabled: busy,
-								onClick: () => onReview(item.id, "ignored"),
-								children: "忽略"
-							})] })
-						]
-					})
-				]
-			});
+		const WEIGHTS = [
+			0,
+			1,
+			2,
+			3,
+			4,
+			5
+		];
+		const BODY_PREVIEW_LENGTH = 90;
+		const SOURCE_LABEL = {
+			apify: "自动采集",
+			manual: "手动新增",
+			import: "导入"
+		};
+		function forbiddenHit(text, words) {
+			return words.filter((word) => word !== "" && text.includes(word));
 		}
-		/**
-		* 爆款池（v3 取代趋势选题页）：
-		* 顶部为状态筛选与「采集爆款」「配置 Apify」操作；列表按账号展示爆款条目，
-		* 待审核条目可「采纳 / 忽略」，采集与审核后自动刷新。
-		*/
 		function ViralTab({ api, accountId, personaId, onPersonaChange }) {
 			const [batches, setBatches] = (0, react.useState)([]);
+			const [allPersonas, setAllPersonas] = (0, react.useState)([]);
+			const [sharedAccounts, setSharedAccounts] = (0, react.useState)(0);
+			const [pending, setPending] = (0, react.useState)([]);
 			const [filter, setFilter] = (0, react.useState)("");
+			const [sourceFilter, setSourceFilter] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
+			const [expandedBatchId, setExpandedBatchId] = (0, react.useState)(null);
+			const [manualOpen, setManualOpen] = (0, react.useState)(false);
+			const [manualTitle, setManualTitle] = (0, react.useState)("");
+			const [manualBody, setManualBody] = (0, react.useState)("");
+			const [manualSourceUrl, setManualSourceUrl] = (0, react.useState)("");
+			const [manualPublishedAt, setManualPublishedAt] = (0, react.useState)("");
+			const [transferItem, setTransferItem] = (0, react.useState)(null);
+			const [transferTarget, setTransferTarget] = (0, react.useState)("");
+			const [pendingOpen, setPendingOpen] = (0, react.useState)(false);
+			const [assignTarget, setAssignTarget] = (0, react.useState)("");
+			const [busy, setBusy] = (0, react.useState)(false);
 			const [collecting, setCollecting] = (0, react.useState)(false);
 			const [reviewingId, setReviewingId] = (0, react.useState)("");
-			const [expandedBatchId, setExpandedBatchId] = (0, react.useState)(null);
 			const [configOpen, setConfigOpen] = (0, react.useState)(false);
 			const [apifyConfigured, setApifyConfigured] = (0, react.useState)(false);
 			const [actorId, setActorId] = (0, react.useState)("");
 			const [apiToken, setApiToken] = (0, react.useState)("");
 			const [maxItems, setMaxItems] = (0, react.useState)("10");
 			const [savingConfig, setSavingConfig] = (0, react.useState)(false);
-			/** 按账号与当前筛选状态重新拉取爆款池（按采集批次分组）。 */
 			const refresh = (0, react.useCallback)(async () => {
 				if (personaId === "") {
 					setBatches([]);
-					setError("");
 					return;
 				}
 				try {
@@ -2697,6 +2832,19 @@ window.__ModuleLoader__.load({
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
+			(0, react.useEffect)(() => {
+				api.listPersonas().then((list) => setAllPersonas(list.map((p) => ({
+					id: p.id,
+					name: p.name,
+					forbiddenWords: p.forbiddenWords ?? []
+				})))).catch(() => setAllPersonas([]));
+			}, [api]);
+			(0, react.useEffect)(() => {
+				api.listAccounts().then((list) => setSharedAccounts(list.filter((a) => a.personaId === personaId).length)).catch(() => setSharedAccounts(0));
+			}, [api, personaId]);
+			(0, react.useEffect)(() => {
+				api.listPending().then((list) => setPending(list)).catch(() => setPending([]));
+			}, [api]);
 			const initialBatchSet = (0, react.useRef)(false);
 			(0, react.useEffect)(() => {
 				if (!initialBatchSet.current && batches.length > 0) {
@@ -2712,7 +2860,96 @@ window.__ModuleLoader__.load({
 					setMaxItems(String(config.maxItems ?? 10));
 				}).catch(() => {});
 			}, [api]);
-			/** 打开配置弹窗，先回填当前配置。 */
+			const collect = async () => {
+				if (accountId === "") {
+					setError("请先在左侧选择账号");
+					return;
+				}
+				setCollecting(true);
+				try {
+					await api.collectViral(accountId);
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setCollecting(false);
+				}
+			};
+			const review = async (itemId, status) => {
+				setReviewingId(itemId);
+				try {
+					await api.reviewViralItem(personaId, itemId, status);
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setReviewingId("");
+				}
+			};
+			const deleteBatch = async (batchId) => {
+				if (!window.confirm("确定删除这个采集批次？该批次的全部爆款（含已采纳）将被移除，不影响其他批次。")) return;
+				try {
+					await api.deleteViralBatch(personaId, batchId);
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
+			const addManual = async () => {
+				if (manualTitle.trim() === "" || manualBody.trim() === "") {
+					setError("标题与正文必填");
+					return;
+				}
+				const payload = {
+					title: manualTitle.trim(),
+					body: manualBody.trim()
+				};
+				if (manualSourceUrl.trim() !== "") payload.sourceUrl = manualSourceUrl.trim();
+				if (manualPublishedAt !== "") payload.publishedAt = manualPublishedAt;
+				setBusy(true);
+				try {
+					await api.addManualViral(personaId, payload);
+					setManualOpen(false);
+					setManualTitle("");
+					setManualBody("");
+					setManualSourceUrl("");
+					setManualPublishedAt("");
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setBusy(false);
+				}
+			};
+			const transfer = async () => {
+				if (transferItem === null) return;
+				if (transferTarget === "" || transferTarget === personaId) return;
+				setBusy(true);
+				try {
+					await api.transferVirals(personaId, transferTarget, [transferItem.id]);
+					setTransferItem(null);
+					setError("");
+					await refresh();
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				} finally {
+					setBusy(false);
+				}
+			};
+			const assign = async (pendingId) => {
+				if (assignTarget === "") return;
+				try {
+					await api.assignPending(pendingId, assignTarget);
+					setPending((prev) => prev.filter((entry) => entry.id !== pendingId));
+					setError("");
+				} catch (e) {
+					setError(e instanceof Error ? e.message : String(e));
+				}
+			};
 			const openConfig = () => {
 				api.getApifyConfig().then((config) => {
 					setActorId(config.actorId);
@@ -2727,7 +2964,7 @@ window.__ModuleLoader__.load({
 					return;
 				}
 				if (!actorId.includes("/")) {
-					setError("Actor ID 格式应为「用户名/Actor名」，如 kuaima/xiaohongshu-search（不是 Apify User ID）");
+					setError("Actor ID 格式应为「用户名/Actor名」");
 					return;
 				}
 				setSavingConfig(true);
@@ -2746,51 +2983,22 @@ window.__ModuleLoader__.load({
 					setSavingConfig(false);
 				}
 			};
-			/** 采集爆款入库（query/maxItems 由后端按人设方向降级），完成后刷新列表。 */
-			const collect = async () => {
-				if (accountId === "") {
-					setError("请先在左侧选择账号");
-					return;
-				}
-				setCollecting(true);
-				try {
-					await api.collectViral(accountId);
-					setError("");
-					await refresh();
-				} catch (e) {
-					const message = e instanceof Error ? e.message : String(e);
-					if (/\b401\b|\b403\b/.test(message)) setError(`${message}。API Token 无效或已过期：请打开 apify.com → Settings → API & Integrations，点击 API token 右侧的「复制」按钮（不要复制掩码星号），回到「配置 Apify」重新粘贴后重试。`);
-					else if (/未配置/.test(message)) setError(`${message}。请先点击「配置 Apify」填写 Actor ID 与 API Token。`);
-					else if (/尚未分配人设/.test(message)) setError(`${message}。请先到「人设配置」为该账号绑定人设后再采集。`);
-					else setError(message);
-				} finally {
-					setCollecting(false);
-				}
+			const persona = allPersonas.find((p) => p.id === personaId);
+			const personaName = persona?.name ?? (personaId === "" ? "未分配" : personaId);
+			const allItems = (0, react.useMemo)(() => batches.flatMap((batch) => batch.items), [batches]);
+			const acceptedCount = allItems.filter((item) => item.status === "accepted").length;
+			const pendingCount = allItems.filter((item) => item.status === "pending").length;
+			const avgWeight = allItems.length === 0 ? "0" : (allItems.reduce((sum, item) => sum + item.weight, 0) / allItems.length).toFixed(1);
+			const expandedBatch = batches.find((batch) => batch.id === expandedBatchId) ?? null;
+			const filterSource = (item) => {
+				if (sourceFilter === "") return true;
+				return (item.source === "apify" ? "auto" : "manual") === sourceFilter;
 			};
-			/** 审核条目为 accepted / ignored，完成后刷新列表。 */
-			const review = async (itemId, status) => {
-				setReviewingId(itemId);
-				try {
-					await api.reviewViralItem(personaId, itemId, status);
-					setError("");
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				} finally {
-					setReviewingId("");
-				}
-			};
-			/** 删除整个采集批次（含已采纳条目），不影响其他批次。 */
-			const deleteBatch = async (batchId) => {
-				if (!window.confirm("确定删除这个采集批次？该批次的全部爆款（含已采纳）将被移除，不影响其他批次。")) return;
-				try {
-					await api.deleteViralBatch(personaId, batchId);
-					setError("");
-					await refresh();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			};
+			const visibleItems = (batch) => batch.items.filter((item) => {
+				if (!filterSource(item)) return false;
+				if (filter !== "" && item.status !== filter) return false;
+				return true;
+			});
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
@@ -2805,114 +3013,458 @@ window.__ModuleLoader__.load({
 					className: panel_module_css_default.empty,
 					children: "该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。"
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-					className: panel_module_css_default.panel,
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.panelTitle,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "爆款池" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: {
-									display: "flex",
-									gap: 6,
-									alignItems: "center"
-								},
+				personaId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.scopeBand,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("h2", { children: [personaName, " · 共享爆款池"] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", { children: [
+							"由 ",
+							sharedAccounts,
+							" 个账号共同使用；切换账号不会搬移或复制内容。"
+						] })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.scopeStats,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: acceptedCount }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "已采纳" })] }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: pendingCount }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "待审核" })] }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: avgWeight }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "平均权重" })] })
+							]
+						})]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.toolbar,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								className: panel_module_css_default.input,
+								value: filter,
+								onChange: (e) => setFilter(e.target.value),
+								"aria-label": "状态",
 								children: [
-									!apifyConfigured && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: panel_module_css_default.badgeWarn,
-										children: "未配置数据源"
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "全部状态"
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-										className: panel_module_css_default.input,
-										style: { width: 130 },
-										value: filter,
-										onChange: (e) => setFilter(e.target.value),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "accepted",
+										children: "已采纳"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "pending",
+										children: "待审核"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "ignored",
+										children: "已忽略"
+									})
+								]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								className: panel_module_css_default.input,
+								value: sourceFilter,
+								onChange: (e) => setSourceFilter(e.target.value),
+								"aria-label": "来源",
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "全部来源"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "auto",
+										children: "自动采集"
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "manual",
+										children: "手动新增"
+									})
+								]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.spacer }),
+							pending.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								className: panel_module_css_default.button,
+								onClick: () => {
+									setPendingOpen(true);
+									setAssignTarget("");
+								},
+								children: ["待归属 ", pending.length]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.ghostBtn,
+								onClick: openConfig,
+								children: "配置 Apify"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
+								onClick: () => void collect(),
+								disabled: collecting,
+								children: collecting ? "采集中…" : "采集爆款"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.primary,
+								onClick: () => setManualOpen(true),
+								children: "＋ 手动新增"
+							})
+						]
+					}),
+					batches.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.muted,
+						children: ["爆款池为空。点击「采集爆款」从外部数据源拉取内容并按当前人设与知识库排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
+					}),
+					batches.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.split,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+							className: panel_module_css_default.batchList,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.panelHead,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "采集批次" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+									className: panel_module_css_default.muted,
+									children: [batches.length, " 批"]
+								})]
+							}), batches.map((batch) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								className: expandedBatchId === batch.id ? panel_module_css_default.batch + " " + panel_module_css_default.active : panel_module_css_default.batch,
+								onClick: () => setExpandedBatchId(batch.id),
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: panel_module_css_default.batchCount,
+										children: batch.items.length
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: batch.query !== void 0 && batch.query !== "" ? batch.query : batch.id }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: ["自动采集 · ", batch.collectedAt.slice(0, 16).replace("T", " ")] })
+								]
+							}, batch.id))]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("section", {
+							className: panel_module_css_default.panel,
+							children: expandedBatch === null ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								style: { padding: 16 },
+								children: "选择一个批次查看条目。"
+							}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.panelHead,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: expandedBatch.query !== void 0 && expandedBatch.query !== "" ? expandedBatch.query : expandedBatch.id }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: panel_module_css_default.chipAmber,
+											children: [visibleItems(expandedBatch).filter((item) => item.status === "pending").length, " 待审核"]
+										}),
+										" ",
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+											className: panel_module_css_default.chipGreen,
+											children: [visibleItems(expandedBatch).filter((item) => item.status === "accepted").length, " 已采纳"]
+										})
+									] })]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.dangerBtn,
+									style: {
+										border: 0,
+										borderBottom: "1px solid var(--xhs-border)",
+										borderRadius: 0,
+										width: "100%"
+									},
+									onClick: () => void deleteBatch(expandedBatch.id),
+									children: "删除该批次"
+								}),
+								visibleItems(expandedBatch).length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: panel_module_css_default.muted,
+									style: { padding: 16 },
+									children: "该批次在当前筛选下没有条目。"
+								}),
+								visibleItems(expandedBatch).map((item) => {
+									const hits = forbiddenHit(item.title + item.body, persona?.forbiddenWords ?? []);
+									const preview = item.body.length > BODY_PREVIEW_LENGTH ? item.body.slice(0, BODY_PREVIEW_LENGTH) + "…" : item.body;
+									return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.item,
 										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-												value: "",
-												children: "全部"
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												className: panel_module_css_default.itemTop,
+												children: [
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h4", { children: item.title }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+														className: panel_module_css_default.meta,
+														children: [
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: item.source === "manual" ? panel_module_css_default.chipRed : panel_module_css_default.chip,
+																children: SOURCE_LABEL[item.source] ?? item.source
+															}),
+															item.sourceAccountName !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["来源：", item.sourceAccountName] }),
+															/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["机器评分 ", item.score] })
+														]
+													})] }),
+													item.status === "accepted" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: panel_module_css_default.chipGreen,
+														children: "已采纳"
+													}),
+													item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: panel_module_css_default.chipAmber,
+														children: "待审核"
+													}),
+													item.status === "ignored" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: panel_module_css_default.chip,
+														children: "已忽略"
+													})
+												]
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-												value: "pending",
-												children: "待审核"
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+												className: panel_module_css_default.excerpt,
+												children: preview === "" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: panel_module_css_default.muted,
+													children: "（无正文摘要）"
+												}) : preview
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-												value: "accepted",
-												children: "已采纳"
+											item.sourceUrl !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+												className: panel_module_css_default.excerpt,
+												style: { marginTop: 0 },
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
+													href: item.sourceUrl,
+													target: "_blank",
+													rel: "noreferrer",
+													style: { color: "var(--xhs-red)" },
+													children: "来源链接 ↗"
+												})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-												value: "ignored",
-												children: "已忽略"
+											hits.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												className: panel_module_css_default.warning,
+												children: [
+													"参考素材命中人设违禁词「",
+													hits[0],
+													"」：只警告，不阻止收录；生成内容会强制拦截。"
+												]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												className: panel_module_css_default.itemActions,
+												children: [
+													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: panel_module_css_default.muted,
+														children: "人工权重"
+													}),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+														className: panel_module_css_default.weight,
+														children: WEIGHTS.map((weight) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+															className: item.weight === weight ? panel_module_css_default.on : void 0,
+															title: "权重 " + weight,
+															disabled: reviewingId === item.id,
+															children: weight
+														}, weight))
+													}),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+														className: panel_module_css_default.muted,
+														children: [
+															"权重 ",
+															item.weight,
+															" / 5"
+														]
+													}),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														className: panel_module_css_default.textAction,
+														onClick: () => {
+															setTransferItem(item);
+															setTransferTarget("");
+														},
+														children: "转移人设"
+													}),
+													item.status === "pending" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														className: panel_module_css_default.primary,
+														disabled: reviewingId === item.id,
+														onClick: () => void review(item.id, "accepted"),
+														children: "采纳"
+													}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														className: panel_module_css_default.ghostBtn,
+														disabled: reviewingId === item.id,
+														onClick: () => void review(item.id, "ignored"),
+														children: "忽略"
+													})] })
+												]
 											})
 										]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: panel_module_css_default.ghostBtn,
-										onClick: openConfig,
-										children: "配置 Apify"
+									}, item.id);
+								})
+							] })
+						})]
+					})
+				] }),
+				manualOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.overlay,
+					onClick: () => setManualOpen(false),
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.dialog,
+						onClick: (e) => e.stopPropagation(),
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.dialogClose,
+								onClick: () => setManualOpen(false),
+								"aria-label": "关闭",
+								children: "×"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "手动新增爆款笔记" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "归属人设" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: personaName,
+									readOnly: true
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "标题" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: manualTitle,
+									onChange: (e) => setManualTitle(e.target.value),
+									placeholder: "爆款标题"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									className: panel_module_css_default.textarea,
+									rows: 4,
+									value: manualBody,
+									onChange: (e) => setManualBody(e.target.value),
+									placeholder: "粘贴或输入爆款笔记正文。"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "来源链接 · 可选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									value: manualSourceUrl,
+									onChange: (e) => setManualSourceUrl(e.target.value),
+									placeholder: "https://"
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "发布时间 · 可选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									className: panel_module_css_default.input,
+									type: "date",
+									value: manualPublishedAt,
+									onChange: (e) => setManualPublishedAt(e.target.value)
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								className: panel_module_css_default.helper,
+								children: "默认已采纳 · 权重 5"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.rowActions,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => setManualOpen(false),
+									children: "取消"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									disabled: busy,
+									onClick: () => void addManual(),
+									children: "保存到该人设"
+								})]
+							})
+						]
+					})
+				}),
+				transferItem !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.overlay,
+					onClick: () => setTransferItem(null),
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.dialog,
+						onClick: (e) => e.stopPropagation(),
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.dialogClose,
+								onClick: () => setTransferItem(null),
+								"aria-label": "关闭",
+								children: "×"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "转移到其他人设" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "目标人设" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									className: panel_module_css_default.input,
+									"aria-label": "转移目标人设",
+									value: transferTarget,
+									onChange: (e) => setTransferTarget(e.target.value),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: "",
+										children: "选择目标人设"
+									}), allPersonas.filter((p) => p.id !== personaId).map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: p.id,
+										children: p.name
+									}, p.id))]
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.rowActions,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.primary,
+									disabled: busy || transferTarget === "" || transferTarget === personaId,
+									onClick: () => void transfer(),
+									children: "确认转移"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => setTransferItem(null),
+									children: "取消"
+								})]
+							})
+						]
+					})
+				}),
+				pendingOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.overlay,
+					onClick: () => setPendingOpen(false),
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: panel_module_css_default.dialog,
+						onClick: (e) => e.stopPropagation(),
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								className: panel_module_css_default.dialogClose,
+								onClick: () => setPendingOpen(false),
+								"aria-label": "关闭",
+								children: "×"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "待归属数据" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								style: { marginBottom: 10 },
+								children: "以下内容在迁移时无法解析人设，请显式归属到目标人设。"
+							}),
+							pending.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.muted,
+								children: "没有待归属数据。"
+							}),
+							pending.map((entry) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.field,
+								style: {
+									borderTop: "1px solid var(--xhs-border)",
+									paddingTop: 10
+								},
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: entry.payload.title ?? entry.kind }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+										className: panel_module_css_default.input,
+										"aria-label": "归属目标人设",
+										value: assignTarget,
+										onChange: (e) => setAssignTarget(e.target.value),
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: "",
+											children: "选择目标人设"
+										}), allPersonas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+											value: p.id,
+											children: p.name
+										}, p.id))]
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 										className: panel_module_css_default.primary,
-										onClick: () => void collect(),
-										disabled: collecting,
-										children: collecting ? "采集中…" : "采集爆款"
+										style: { marginTop: 8 },
+										onClick: () => void assign(entry.id),
+										children: "归属到该人设"
 									})
 								]
-							})]
-						}),
-						batches.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.muted,
-							children: ["爆款池为空。点击「采集爆款」从外部数据源拉取内容并按当前人设与知识库排序；", !apifyConfigured && " 先点击「配置 Apify」填写 Actor ID 与 API Token。"]
-						}),
-						batches.map((batch) => {
-							const expanded = expandedBatchId === batch.id;
-							return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.panel,
-								style: { marginTop: 10 },
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: panel_module_css_default.panelTitle,
-									style: { cursor: "pointer" },
-									onClick: () => setExpandedBatchId(expanded ? null : batch.id),
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-										expanded ? "▾" : "▸",
-										" 批次 · ",
-										batch.collectedAt.slice(0, 16).replace("T", " "),
-										batch.id === "legacy" ? "（历史）" : ""
-									] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-										style: {
-											display: "flex",
-											gap: 8,
-											alignItems: "center"
-										},
-										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-												className: panel_module_css_default.muted,
-												children: [batch.itemCount, " 条"]
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-												className: panel_module_css_default.muted,
-												children: expanded ? "点击收起" : "点击查看"
-											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												className: panel_module_css_default.dangerBtn,
-												onClick: (e) => {
-													e.stopPropagation();
-													deleteBatch(batch.id);
-												},
-												children: "删除该批次"
-											})
-										]
-									})]
-								}), expanded && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [batch.items.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: panel_module_css_default.muted,
-									children: "该批次在当前筛选下没有条目。"
-								}), batch.items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralRow, {
-									item,
-									busy: reviewingId === item.id,
-									onReview: (id, status) => void review(id, status)
-								}, item.id))] })]
-							}, batch.id);
-						})
-					]
+							}, entry.id)),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default.rowActions,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									className: panel_module_css_default.ghostBtn,
+									onClick: () => setPendingOpen(false),
+									children: "关闭"
+								})
+							})
+						]
+					})
 				}),
 				configOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.overlay,
@@ -2945,35 +3497,19 @@ window.__ModuleLoader__.load({
 										style: { color: "var(--xhs-red)" },
 										children: "apify.com"
 									}),
-									" 注册账号（免费额度可用）。",
+									" 注册账号。",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("br", {}),
 									"2. ",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "API Token" }),
-									"：登录后进入 ",
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
-										href: "https://console.apify.com/settings/integrations",
-										target: "_blank",
-										rel: "noreferrer",
-										style: { color: "var(--xhs-red)" },
-										children: "Settings → Integrations"
-									}),
-									"，复制 API token（形如 ",
+									"：Settings → Integrations 复制（形如 ",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: "apify_api_xxx" }),
 									"）。",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("br", {}),
 									"3. ",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "Actor ID" }),
-									"：在 ",
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
-										href: "https://apify.com/store?q=xiaohongshu",
-										target: "_blank",
-										rel: "noreferrer",
-										style: { color: "var(--xhs-red)" },
-										children: "Apify Store"
-									}),
-									" 搜索小红书相关 Actor（如 ",
+									"：Apify Store 搜索小红书 Actor（如 ",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: "kuaima/xiaohongshu-search" }),
-									"），Actor ID 即「用户名/Actor名」，取自 Actor 页面地址。",
+									"）。",
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("br", {}),
 									"4. 保存配置后点「采集爆款」。采集消耗 Apify 平台额度，请按需使用。"
 								]

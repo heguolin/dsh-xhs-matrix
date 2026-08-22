@@ -173,6 +173,7 @@ export function AccountsDialog({ api, accounts, onClose, onSaved, onChanged }: {
             <ImportDialog
               api={api}
               accountId={importingId}
+              personaId={accounts.find(account => account.id === importingId)?.personaId ?? ''}
               onDone={() => { void onChanged(); setImportingId(null) }}
             />
           </div>

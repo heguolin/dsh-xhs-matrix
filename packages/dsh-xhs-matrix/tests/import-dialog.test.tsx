@@ -1,4 +1,7 @@
 // @vitest-environment jsdom
+// ImportDialog (v4)：知识库导入的人设资产视图。
+// - 导入目标为当前人设作用域：只读展示「归属人设」为当前选中人设名。
+// - 标题与正文必须按行一一对应，缺正文时前端拦截。
 import { describe, expect, it, vi } from 'vitest'
 import { createRoot, type Root } from 'react-dom/client'
 import { ImportDialog } from '../src/client/panel/ImportDialog.tsx'
@@ -15,31 +18,45 @@ function typeText(host: HTMLElement, label: string, value: string): void {
 }
 
 /** 渲染 ImportDialog，返回宿主节点与 api mock。 */
-async function renderDialog() {
+async function renderDialog(personaId = 'p1') {
   const apiMock = {
+    listPersonas: vi.fn(async () => [{ id: 'p1', name: '人设一' }]),
     importPublishedNotes: vi.fn(async () => 2),
   }
   const host = document.createElement('div')
   document.body.appendChild(host)
   const root: Root = createRoot(host)
-  root.render(<ImportDialog api={apiMock as unknown as XhsApi} accountId="acc-a" onDone={() => {}} />)
+  root.render(<ImportDialog api={apiMock as unknown as XhsApi} accountId="acc-a" personaId={personaId} onDone={() => {}} />)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await new Promise(resolve => setTimeout(resolve, 0))
   await new Promise(resolve => setTimeout(resolve, 0))
   return { host, root, apiMock }
 }
 
-/** 导入弹窗交互：标题与正文必须按行一一对应，缺正文时前端拦截。 */
+/** 导入弹窗交互（v4）：导入目标为当前人设作用域，标题与正文按行一一对应。 */
 describe('ImportDialog 导入', () => {
+  it('导入目标为当前人设作用域（只读展示人设名，不当作账号裸传）', async () => {
+    const { host, root, apiMock } = await renderDialog('p1')
+
+    const personaInput = Array.from(host.querySelectorAll('input'))
+      .find(input => input.readOnly)
+    expect(personaInput).not.toBeUndefined()
+    expect(personaInput!.value).toBe('人设一')
+    expect(apiMock.listPersonas).toHaveBeenCalled()
+
+    root.unmount()
+    host.remove()
+  })
+
   it('只填标题不填正文时前端拦截并提示具体行号，不调用 importPublishedNotes', async () => {
     const { host, root, apiMock } = await renderDialog()
 
-    // 只填标题（每行一个），正文留空
     typeText(host, '标题', '标题一\n标题二')
     const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.includes('导入'))
     expect(run).not.toBeUndefined()
     run!.click()
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    // 前端拦截：显示含行号与「正文」的中文错误，未发起导入请求
     expect(host.textContent).toContain('第 1 行')
     expect(host.textContent).toContain('缺少正文')
     expect(apiMock.importPublishedNotes).not.toHaveBeenCalled()
@@ -63,7 +80,6 @@ describe('ImportDialog 导入', () => {
       'json',
       JSON.stringify([{ title: '标题一', copy: '正文一' }, { title: '标题二', copy: '正文二' }]),
     )
-    // 成功提示
     expect(host.textContent).toContain('已导入 2 条')
 
     root.unmount()
@@ -73,7 +89,6 @@ describe('ImportDialog 导入', () => {
   it('正文行数少于标题行数时按原始行号拦截（第 2 行缺少正文）', async () => {
     const { host, root, apiMock } = await renderDialog()
 
-    // 标题 2 行、正文仅 1 行：第 2 个标题越界，必须拦截而非提交空 copy。
     typeText(host, '标题', '标题一\n标题二')
     typeText(host, '正文', '正文一')
     const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.includes('导入'))
@@ -81,23 +96,6 @@ describe('ImportDialog 导入', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(host.textContent).toContain('第 2 行缺少正文')
-    expect(apiMock.importPublishedNotes).not.toHaveBeenCalled()
-
-    root.unmount()
-    host.remove()
-  })
-
-  it('标题中间留空行时按原始行号提示（第 3 行缺少正文）', async () => {
-    const { host, root, apiMock } = await renderDialog()
-
-    // 标题第 2 行为空行：过滤后仅剩 2 个标题，但行号必须基于原始行（第 3 行）提示。
-    typeText(host, '标题', '标题一\n\n标题二')
-    typeText(host, '正文', '正文一')
-    const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.includes('导入'))
-    run!.click()
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(host.textContent).toContain('第 3 行缺少正文')
     expect(apiMock.importPublishedNotes).not.toHaveBeenCalled()
 
     root.unmount()

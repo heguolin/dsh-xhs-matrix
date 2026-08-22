@@ -1,13 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
 
-/** 后台数据导入简化版：标题（每行一个）+ 正文（与标题行号对应），构造 JSON 数组导入当前账号已发布笔记。 */
-export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountId: string; onDone: () => void }) {
+/**
+ * 已在盘知识库导入（v4 人设资产视图）：导入目标为当前人设作用域。
+ * - 「归属人设」只读展示当前选中人设名（作用域由父级 XhsPanel/KnowledgeTab 持有）。
+ * - 标题（每行一个）+ 正文（与标题行号对应）构造 JSON 数组，经账号导入路由落到账号当前人设。
+ * - 若用户临时切换过人设，账号导入仍走账号自身绑定人设（见 report「导入目标」歧义说明）。
+ */
+export function ImportDialog({ api, accountId, personaId, onDone }: { api: XhsApi; accountId: string; personaId: string; onDone: () => void }) {
+  const [personaName, setPersonaName] = useState('')
   const [titles, setTitles] = useState('')
   const [copies, setCopies] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    api.listPersonas()
+      .then(list => setPersonaName(list.find(p => p.id === personaId)?.name ?? personaId))
+      .catch(() => setPersonaName(personaId))
+  }, [api, personaId])
 
   const run = async (): Promise<void> => {
     // 保留原始行号：仅统计 trim 后非空的标题行。
@@ -16,7 +28,6 @@ export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountI
       .filter(row => row.line !== '')
     if (titleRows.length === 0) { setError('请输入至少一个标题'); return }
     const copyLines = copies.split('\n')
-    // 标题与正文按原始行号对应，任一标题行缺正文（越界视为空）则整批拒绝并提示原始行号。
     const missing = titleRows.find(row => (copyLines[row.index] ?? '').trim() === '')
     if (missing !== undefined) { setError(`第 ${missing.index + 1} 行缺少正文，标题与正文都必填且按行对应`); return }
     const records = titleRows.map(row => ({ title: row.line, copy: copyLines[row.index] ?? '' }))
@@ -37,6 +48,10 @@ export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountI
       {error !== '' && <div className={css.danger}>{error}</div>}
       {notice !== '' && <div className={css.success}>{notice}</div>}
       <div className={css.field}>
+        <label>归属人设</label>
+        <input className={css.input} value={personaName} readOnly />
+      </div>
+      <div className={css.field}>
         <label>标题（每行一个，必填）</label>
         <textarea className={css.input} rows={5} value={titles} onChange={e => setTitles(e.target.value)} placeholder={'标题 1\n标题 2\n标题 3'} />
       </div>
@@ -44,7 +59,9 @@ export function ImportDialog({ api, accountId, onDone }: { api: XhsApi; accountI
         <label>正文（按行对应，必填）</label>
         <textarea className={css.input} rows={6} value={copies} onChange={e => setCopies(e.target.value)} placeholder={'与左侧标题逐行对应的正文内容\n（标题与正文都必填，按行对应）'} />
       </div>
-      <button className={css.primary} onClick={() => void run()}>导入</button>
+      <div className={css.rowActions}>
+        <button className={css.primary} onClick={() => void run()}>导入</button>
+      </div>
     </div>
   )
 }
