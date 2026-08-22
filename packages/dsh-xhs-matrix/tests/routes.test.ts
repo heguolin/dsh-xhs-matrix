@@ -4,6 +4,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createQualityService } from '../src/content-quality.ts'
 import type { ViralProvider } from '../src/collector/provider.ts'
 import { makeRoutes } from '../src/routes/index.ts'
 import { MatrixStore } from '../src/store.ts'
@@ -73,6 +74,26 @@ async function seedAccount(): Promise<string> {
     body: JSON.stringify({ name: '账号A', personaId, enabled: true }),
   })
   return (accRes.body as { account: { id: string } }).account.id
+}
+
+/** 延迟可解析的 Promise（测试挂起进行中请求用）。 */
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve!: () => void
+  const promise = new Promise<void>(r => { resolve = r })
+  return { promise, resolve }
+}
+
+/** 两阶段模型客户端：阶段一输出计划/原始初稿，阶段二输出最终稿。 */
+function makeRouteLlm(plan: string, final: string): StudioLlmClient {
+  return {
+    async complete() { return { text: final } },
+    async stream(request, onDelta) {
+      const isPolish = request.system.includes('去 AI 味')
+      const text = isPolish ? final : plan
+      onDelta(text)
+      return text
+    },
+  }
 }
 
 describe('/api/dsh-xhs-matrix 路由', () => {
@@ -182,7 +203,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
   it('创作台保存草稿不要求 topicId', async () => {
     const accountId = await seedAccount()
     const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }), stream: async (_request, onDelta) => { onDelta('回复'); return '回复' } }
-    const studio = new StudioService(store, llm)
+    const studio = new StudioService(store, llm, createQualityService(llm))
     const { server: studioServer, base: studioBase } = await startServer(store, viralProvider, studio)
     try {
       const res = await json(studioBase + '/api/dsh-xhs-matrix/studio/draft', {
@@ -487,5 +508,74 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     const ok = await json(`/api/dsh-xhs-matrix/viral?persona=${personaId}&batch=batch-1`, { method: 'DELETE' })
     expect(ok.status).toBe(200)
     expect(store.listViralItems(personaId)).toHaveLength(0)
+  })
+
+  it('流式发送输出结构化 SSE 事件（content_delta 与 done）', async () => {
+    const accountId = await seedAccount()
+    const llm = makeRouteLlm('原始初稿', '最终审校稿')
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: streamServer, base: streamBase } = await startServer(store, viralProvider, studio)
+    try {
+      const response = await fetch(streamBase + '/api/dsh-xhs-matrix/studio/messages?account=' + accountId, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ input: '写一篇', mode: 'creative', stream: true, requestId: 'req-sse' }),
+      })
+      expect(response.status).toBe(200)
+      const text = await response.text()
+      expect(text).toContain('"content_delta"')
+      expect(text).toContain('最终审校稿')
+      expect(text).toContain('"done"')
+      expect(store.listStudioMessages(accountId)).toHaveLength(2)
+    } finally {
+      streamServer.close()
+    }
+  })
+
+  it('相同 requestId 进行中再次请求返回 409 REQUEST_IN_PROGRESS', async () => {
+    const accountId = await seedAccount()
+    const gate = deferred()
+    const llm: StudioLlmClient = {
+      async complete() { return { text: '' } },
+      async stream(request, onDelta) {
+        const isPolish = request.system.includes('去 AI 味')
+        if (isPolish) { onDelta('最终审校稿'); return '最终审校稿' }
+        onDelta('原始初稿')
+        await gate.promise
+        return '原始初稿'
+      },
+    }
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: busyServer, base: busyBase } = await startServer(store, viralProvider, studio)
+    try {
+      const inFlight = studio.sendStream(accountId, '写一篇', 'creative', () => {}, { requestId: 'req-busy' })
+      await new Promise(resolve => setTimeout(resolve, 20))
+      const dup = await json(busyBase + '/api/dsh-xhs-matrix/studio/messages?account=' + accountId,
+        post({ accountId, input: '写一篇', mode: 'creative', stream: true, requestId: 'req-busy' }))
+      expect(dup.status).toBe(409)
+      expect((dup.body as { error: string }).error).toContain('REQUEST_IN_PROGRESS')
+      gate.resolve()
+      await inFlight
+    } finally {
+      busyServer.close()
+    }
+  })
+
+  it('违禁词命中时草稿保存返回 409 QUALITY_BLOCKED 且不落库', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '违禁人设', prompt: '内容', forbiddenWords: ['必看'] }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号X', personaId, enabled: true }))
+    const accountId = (accRes.body as { account: { id: string } }).account.id
+    const llm: StudioLlmClient = { complete: async () => ({ text: '' }), stream: async (_request, onDelta) => { onDelta('x'); return 'x' } }
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: blockedServer, base: blockedBase } = await startServer(store, viralProvider, studio)
+    try {
+      const res = await json(blockedBase + '/api/dsh-xhs-matrix/studio/draft',
+        post({ accountId, copy: '这篇必看的文章', coverPrompt: 'p' }))
+      expect(res.status).toBe(409)
+      expect((res.body as { error: string }).error).toContain('QUALITY_BLOCKED')
+      expect(store.listDrafts()).toHaveLength(0)
+    } finally {
+      blockedServer.close()
+    }
   })
 })

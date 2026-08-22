@@ -1,4 +1,4 @@
-import { n as MatrixStoreError, t as MatrixStore } from "./store-Bd4a2BEw.js";
+import { n as MatrixStoreError, t as MatrixStore } from "./store-fZSYqk0Y.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -360,6 +360,80 @@ var CollectionScheduler = class {
 		for (const account of this.store.listAccounts()) if (account.collection?.enabled) await this.runAccount(account.id);
 	}
 };
+//#endregion
+//#region src/content-quality.ts
+/** 组装「去 AI 味」审校请求（系统提示词 + 原始初稿）。 */
+function buildNaturalizePrompt(rawDraft, persona) {
+	const styles = persona.writingStyles !== void 0 && persona.writingStyles.length > 0 ? persona.writingStyles.join("、") : "未设置";
+	const hook = persona.endingHookConstraints ?? "未设置";
+	const examples = persona.endingHookExamples !== void 0 && persona.endingHookExamples.length > 0 ? persona.endingHookExamples.join("；") : "未设置";
+	const forbidden = persona.forbiddenWords !== void 0 && persona.forbiddenWords.length > 0 ? persona.forbiddenWords.join("、") : "无";
+	return {
+		system: [
+			"你是小红书文案的「去 AI 味」审校助手。你会收到一段原始初稿，请重写得更加自然、更像真人，避免模板套话、空泛总结、机械排比、过度感叹与僵硬句式。",
+			"【硬性原则】不得新增事实，不得伪造经历，必须保留原始初稿中的所有事实信息；某处生硬时只调整措辞，不删改事实。",
+			"【人设约束】遵循以下写作风格与结尾互动钩子；结尾不得强制点赞或关注。",
+			`【写作风格】${styles}`,
+			`【结尾钩子约束】${hook}`,
+			`【钩子最佳案例】${examples}`,
+			`【违禁词】${forbidden}；最终稿不得出现任何上述词。`,
+			"只输出重写后的最终文案。不要输出解释、思考过程、分析标签或系统消息，也不要出现「作为 AI」「我是人工智能」之类的自述。"
+		].join("\n"),
+		messages: [{
+			role: "user",
+			content: `请审校以下原始初稿并自然化改写：\n\n${rawDraft}`
+		}],
+		maxTokens: 2e3
+	};
+}
+/**
+* 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
+* 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
+*/
+function scanForbiddenWords(text, forbiddenWords) {
+	const hits = [];
+	for (const word of forbiddenWords) {
+		if (word === "") continue;
+		let from = 0;
+		for (;;) {
+			const index = text.indexOf(word, from);
+			if (index < 0) break;
+			hits.push({
+				word,
+				position: index
+			});
+			from = index + word.length;
+		}
+	}
+	return hits.sort((a, b) => a.position - b.position || (a.word < b.word ? -1 : a.word > b.word ? 1 : 0));
+}
+/** 默认实现。 */
+var DefaultContentQualityService = class {
+	llm;
+	constructor(llm) {
+		this.llm = llm;
+	}
+	async naturalizeStream(rawDraft, persona, onDelta) {
+		const request = buildNaturalizePrompt(rawDraft, persona);
+		return this.llm.stream(request, onDelta);
+	}
+	check(text, persona) {
+		const hits = scanForbiddenWords(text, persona.forbiddenWords ?? []);
+		return {
+			report: {
+				reviewStatus: hits.length === 0 ? "passed" : "failed",
+				forbiddenWordHits: hits,
+				checkedAt: (/* @__PURE__ */ new Date()).toISOString(),
+				personaSnapshot: persona.name
+			},
+			allowed: hits.length === 0
+		};
+	}
+};
+/** 工厂：用注入的模型客户端构建内容质量服务。 */
+function createQualityService(llm) {
+	return new DefaultContentQualityService(llm);
+}
 //#endregion
 //#region src/model-config.ts
 function resolveStudioModel(getDefaultModel, listProviders) {
@@ -1150,7 +1224,329 @@ function makeSettingsRoutes(store, reload) {
 	})];
 }
 //#endregion
+//#region src/studio.ts
+/** 从模型输出中拆分正文与封面提示词；无标记时整段视为正文。 */
+function parseCoverPrompt(text) {
+	const index = text.indexOf("【封面提示词】");
+	if (index < 0) return {
+		copy: text.trim(),
+		coverPrompt: ""
+	};
+	return {
+		copy: text.slice(0, index).trim(),
+		coverPrompt: text.slice(index + 7).trim()
+	};
+}
+/** 上下文估算的每字符 token 上界（用于可见的限制提示）。 */
+const CHARS_PER_TOKEN = 3;
+/** 只读取当前账号矩阵数据并组装为上下文；绝不复用主工作区内容。 */
+function buildStudioContext(store, accountId, mode, maxInputChars) {
+	const account = store.listAccounts().find((item) => item.id === accountId);
+	if (account === void 0) throw new Error(`账号不存在：${accountId}`);
+	const persona = store.listPersonas().find((item) => item.id === account.personaId);
+	if (persona === void 0) throw new Error("该账号尚未分配人设");
+	const notes = store.listPublishedNotes(account.personaId);
+	const snapshots = store.listMetricSnapshots(accountId);
+	const viralItems = store.listViralItems(account.personaId, "accepted");
+	const personaLines = [
+		`【人设名称】${persona.name}`,
+		persona.positioning !== void 0 ? `【账号定位】${persona.positioning}` : "",
+		persona.audience !== void 0 ? `【目标受众】${persona.audience}` : "",
+		persona.expertise !== void 0 ? `【擅长领域】${persona.expertise}` : "",
+		persona.contentDirections !== void 0 ? `【内容方向】${persona.contentDirections}` : "",
+		persona.hookStyles !== void 0 && persona.hookStyles.length > 0 ? `【钩子风格】${persona.hookStyles.join("、")}` : "",
+		persona.bodyStructure !== void 0 ? `【正文结构】${persona.bodyStructure}` : "",
+		persona.endingStyle !== void 0 ? `【结尾互动】${persona.endingStyle}` : "",
+		persona.forbiddenExpressions !== void 0 ? `【禁用表达】${persona.forbiddenExpressions}` : "",
+		persona.topicCriteria !== void 0 ? `【选题标准】${persona.topicCriteria}` : "",
+		persona.defaultHashtags !== void 0 && persona.defaultHashtags.length > 0 ? `【默认话题】${persona.defaultHashtags.join(" ")}` : "",
+		`【系统提示词】${persona.prompt}`
+	].filter((line) => line !== "").join("\n");
+	const noteLines = notes.map((note) => {
+		const metric = snapshots.filter((snapshot) => snapshot.noteId === note.id).at(-1);
+		const metricText = metric === void 0 ? "暂无指标" : `阅读 ${metric.reads} / 点赞 ${metric.likes} / 收藏 ${metric.favorites} / 评论 ${metric.comments}`;
+		return `- 权重 ${note.weight} | ${note.title} | ${metricText}${note.sourceUrl !== void 0 ? ` | ${note.sourceUrl}` : ""}\n  ${note.copy.slice(0, 200)}`;
+	});
+	const viralLines = viralItems.slice(0, 20).map((item) => `- ${item.title}（${item.reasons.join("、")}）`);
+	const positiveNotes = notes.filter((note) => note.weight >= 3);
+	const negativeNotes = notes.filter((note) => note.weight === 0);
+	const context = [
+		`# 矩阵创作上下文（仅账号：${account.name}）`,
+		"",
+		"## 账号人设",
+		personaLines,
+		"",
+		mode === "full" ? "## 已发布笔记知识库（完整）" : `## 已发布笔记知识库（${notes.length} 篇，优先高权重）`,
+		noteLines.join("\n"),
+		"",
+		"## 已采纳爆款参考",
+		viralLines.join("\n") || "（暂无已采纳爆款参考）",
+		"",
+		negativeNotes.length > 0 ? `## 负向经验（权重 0，应尽量避免同类型方向）\n${negativeNotes.map((note) => `- ${note.title}`).join("\n")}` : "",
+		positiveNotes.length > 0 ? `## 高权重参考（权重 ≥3，优先借鉴其成功规律）\n${positiveNotes.map((note) => `- ${note.title}`).join("\n")}` : ""
+	].filter((line) => line !== "").join("\n");
+	if (maxInputChars !== void 0 && context.length > maxInputChars) return {
+		context: "",
+		truncated: true,
+		warning: `上下文超出当前模型上限（约 ${Math.ceil(context.length / CHARS_PER_TOKEN)} token），请切换创作模式或减少知识库内容。`
+	};
+	return {
+		context,
+		truncated: false
+	};
+}
+/** 同一请求 id 正在进行中（并发去重）。 */
+var StudioBusyError = class extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "StudioBusyError";
+	}
+};
+/** 命中人设违禁词，禁止保存草稿。 */
+var QualityBlockedError = class extends Error {
+	constructor(message) {
+		super(message);
+		this.name = "QualityBlockedError";
+	}
+};
+/** 创作会话服务：两阶段生成、结构化流式事件与消息/草稿保存。 */
+var StudioService = class {
+	store;
+	llm;
+	quality;
+	modelLabel;
+	/** 进程内仅供进行中请求的去重 key；完成后从集合删除，禁止无界保存历史 requestId。 */
+	inFlight = /* @__PURE__ */ new Set();
+	constructor(store, llm, quality, modelLabel = "当前 Harness 模型") {
+		this.store = store;
+		this.llm = llm;
+		this.quality = quality;
+		this.modelLabel = modelLabel;
+	}
+	/** 指定请求 id 是否正在生成中（供路由在 SSE 建流前返回 409）。 */
+	isInFlight(requestId) {
+		return this.inFlight.has(requestId);
+	}
+	requireAccount(accountId) {
+		const account = this.store.listAccounts().find((item) => item.id === accountId);
+		if (account === void 0) throw new Error(`账号不存在：${accountId}`);
+		return account;
+	}
+	/** 取账号当前（唯一）人设；未分配或已删除时阻止创作。 */
+	requirePersona(personaId) {
+		const persona = this.store.listPersonas().find((item) => item.id === personaId);
+		if (persona === void 0) throw new Error("该账号尚未分配人设");
+		return persona;
+	}
+	buildSystemPrompt(context) {
+		return [
+			context,
+			"",
+			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
+			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
+			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
+			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
+			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
+			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
+		].join("\n");
+	}
+	buildMessages(history, input) {
+		return [...history.map((message) => ({
+			role: message.role,
+			content: message.content
+		})), {
+			role: "user",
+			content: input
+		}];
+	}
+	buildEvidence(accountId, persona) {
+		const notes = this.store.listPublishedNotes(persona.id);
+		const viralItems = this.store.listViralItems(persona.id, "accepted");
+		return {
+			persona: persona.name,
+			noteIds: notes.filter((note) => note.weight >= 3).map((note) => note.id),
+			trendIds: viralItems.slice(0, 20).map((item) => item.id),
+			reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
+		};
+	}
+	/** 追加用户消息，组装上下文（只读当前人设快照），两阶段生成，质量通过后保存助手消息。 */
+	async send(accountId, input, mode, maxInputChars) {
+		const account = this.requireAccount(accountId);
+		const persona = this.requirePersona(account.personaId);
+		const built = buildStudioContext(this.store, accountId, mode, maxInputChars);
+		if (built.truncated) throw new Error(built.warning ?? "上下文超出限制");
+		const history = this.store.listStudioMessages(accountId, persona.id);
+		const messages = this.buildMessages(history, input);
+		const system = this.buildSystemPrompt(built.context);
+		const rawDraft = (await this.llm.complete({
+			system,
+			messages,
+			maxTokens: 4e3
+		})).text;
+		const finalCopy = await this.quality.naturalizeStream(rawDraft, persona, () => {});
+		const { report, allowed } = this.quality.check(finalCopy, persona);
+		if (!allowed) throw new QualityBlockedError(`命中人设违禁词，禁止保存：${report.forbiddenWordHits.map((hit) => hit.word).join("、")}`);
+		const { copy } = parseCoverPrompt(finalCopy);
+		this.store.saveStudioMessage({
+			accountId,
+			role: "user",
+			content: input,
+			personaIdSnapshot: persona.id
+		});
+		return {
+			message: this.store.saveStudioMessage({
+				accountId,
+				role: "assistant",
+				content: copy,
+				personaIdSnapshot: persona.id
+			}),
+			evidence: this.buildEvidence(accountId, persona)
+		};
+	}
+	/**
+	* 流式发送（两阶段）：捕获账号与人设快照 → 构建证据 → 流式计划并缓冲原始初稿 →
+	* naturalizeStream 输出最终稿增量 → 确定性违禁词扫描 → 质量通过后一次性落库 user/assistant 与 requestId → done。
+	* 历史只读取相同 accountId 且 personaIdSnapshot 等于当前人设的消息。
+	*/
+	async sendStream(accountId, input, mode, onEvent, options) {
+		const requestId = options?.requestId;
+		const maxInputChars = options?.maxInputChars;
+		if (requestId !== void 0 && this.inFlight.has(requestId)) throw new StudioBusyError(`REQUEST_IN_PROGRESS: 同请求 id 正在生成中：${requestId}`);
+		if (requestId !== void 0) {
+			const persisted = this.store.listStudioMessagesByRequestId(accountId, requestId);
+			if (persisted.length >= 2) {
+				const done = this.buildDeduplicatedDone(accountId, persisted);
+				onEvent(done);
+				return { done };
+			}
+		}
+		if (requestId !== void 0) this.inFlight.add(requestId);
+		try {
+			const account = this.requireAccount(accountId);
+			const persona = this.requirePersona(account.personaId);
+			const built = buildStudioContext(this.store, accountId, mode, maxInputChars);
+			if (built.truncated) throw new Error(built.warning ?? "上下文超出限制");
+			onEvent({
+				type: "phase",
+				phase: "planning"
+			});
+			const evidence = this.buildEvidence(accountId, persona);
+			onEvent({
+				type: "evidence",
+				evidence
+			});
+			const history = this.store.listStudioMessages(accountId, persona.id);
+			const messages = this.buildMessages(history, input);
+			const system = this.buildSystemPrompt(built.context);
+			onEvent({
+				type: "phase",
+				phase: "drafting"
+			});
+			const rawDraft = await this.llm.stream({
+				system,
+				messages,
+				maxTokens: 4e3
+			}, (delta) => {
+				onEvent({
+					type: "plan_delta",
+					delta
+				});
+			});
+			onEvent({
+				type: "phase",
+				phase: "polishing"
+			});
+			const finalCopy = await this.quality.naturalizeStream(rawDraft, persona, (delta) => {
+				onEvent({
+					type: "content_delta",
+					delta
+				});
+			});
+			onEvent({
+				type: "phase",
+				phase: "checking"
+			});
+			const { report, allowed } = this.quality.check(finalCopy, persona);
+			onEvent({
+				type: "quality",
+				report,
+				allowed
+			});
+			if (!allowed) return { done: void 0 };
+			const { copy, coverPrompt } = parseCoverPrompt(finalCopy);
+			this.store.saveStudioMessage({
+				accountId,
+				role: "user",
+				content: input,
+				requestId,
+				personaIdSnapshot: persona.id
+			});
+			const done = {
+				type: "done",
+				messageId: this.store.saveStudioMessage({
+					accountId,
+					role: "assistant",
+					content: copy,
+					requestId,
+					personaIdSnapshot: persona.id
+				}).id,
+				coverPrompt,
+				quality: report,
+				evidence,
+				personaId: persona.id
+			};
+			onEvent(done);
+			return { done };
+		} finally {
+			if (requestId !== void 0) this.inFlight.delete(requestId);
+		}
+	}
+	/** 完成态重放：不重新生成，返回 deduplicated 的 done（封面/质检信息不落库，从现有消息重建）。 */
+	buildDeduplicatedDone(accountId, persisted) {
+		const account = this.requireAccount(accountId);
+		const persona = this.requirePersona(account.personaId);
+		const assistant = persisted.find((message) => message.role === "assistant");
+		const evidence = this.buildEvidence(accountId, persona);
+		return {
+			type: "done",
+			messageId: assistant?.id ?? "",
+			coverPrompt: "",
+			quality: {
+				reviewStatus: "unchecked",
+				forbiddenWordHits: [],
+				checkedAt: (/* @__PURE__ */ new Date()).toISOString(),
+				personaSnapshot: persona.name
+			},
+			evidence,
+			personaId: persona.id,
+			deduplicated: true
+		};
+	}
+	/** 保存一条草稿（含人设快照与轻量质检报告）；命中违禁词抛 QualityBlockedError，不落库。 */
+	saveDraft(accountId, payload) {
+		const account = this.requireAccount(accountId);
+		const persona = this.requirePersona(account.personaId);
+		const { report, allowed } = this.quality.check(payload.copy, persona);
+		if (!allowed) throw new QualityBlockedError(`命中人设违禁词，禁止保存草稿：${report.forbiddenWordHits.map((hit) => hit.word).join("、")}`);
+		const date = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+		const draft = this.store.saveDraft({
+			accountId,
+			date,
+			copy: payload.copy,
+			coverPrompt: payload.coverPrompt,
+			personaIdSnapshot: persona.id,
+			qualityReport: report
+		});
+		draft.evidence = payload.evidence;
+		return draft;
+	}
+};
+//#endregion
 //#region src/routes/studio.ts
+/** 写一条结构化 SSE 事件。 */
+function writeSse(res, event) {
+	res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
 /**
 * 构建 /studio 创作台路由。
 * @param store - 矩阵存储。
@@ -1175,7 +1571,8 @@ function makeStudioRoutes(store, studio) {
 			return;
 		}
 		if (method === "GET") {
-			writeJson(res, 200, { messages: store.listStudioMessages(accountId) });
+			const personaId = store.listAccounts().find((item) => item.id === accountId)?.personaId ?? "";
+			writeJson(res, 200, { messages: store.listStudioMessages(accountId, personaId) });
 			return;
 		}
 		if (method !== "POST") {
@@ -1194,11 +1591,16 @@ function makeStudioRoutes(store, studio) {
 		const input = typeof body.input === "string" && body.input.trim() !== "" ? body.input.trim() : "";
 		const mode = body.mode === "full" ? "full" : "creative";
 		const stream = body.stream === true;
+		const requestId = typeof body.requestId === "string" && body.requestId !== "" ? body.requestId : void 0;
 		if (input === "") {
 			writeJson(res, 400, { error: "input 必填" });
 			return;
 		}
 		if (stream) {
+			if (requestId !== void 0 && studio.isInFlight(requestId)) {
+				writeJson(res, 409, { error: "REQUEST_IN_PROGRESS: 相同请求正在进行中" });
+				return;
+			}
 			res.writeHead(200, {
 				"content-type": "text/event-stream; charset=utf-8",
 				"cache-control": "no-cache",
@@ -1206,19 +1608,14 @@ function makeStudioRoutes(store, studio) {
 				"x-accel-buffering": "no"
 			});
 			try {
-				const result = await studio.sendStream(accountId, input, mode, (delta) => {
-					res.write(`data: ${JSON.stringify({ delta })}\n\n`);
-				});
-				res.write(`data: ${JSON.stringify({
-					done: true,
-					messageId: result.message.id,
-					coverPrompt: result.coverPrompt,
-					evidence: result.evidence,
-					warning: result.warning
-				})}\n\n`);
+				await studio.sendStream(accountId, input, mode, (event) => writeSse(res, event), { requestId });
 			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
+				writeSse(res, {
+					type: "error",
+					stage: "stream",
+					retryable: true,
+					message: error instanceof Error ? error.message : String(error)
+				});
 			} finally {
 				res.end();
 			}
@@ -1232,6 +1629,10 @@ function makeStudioRoutes(store, studio) {
 				warning: result.warning
 			});
 		} catch (error) {
+			if (error instanceof QualityBlockedError) {
+				writeJson(res, 409, { error: "QUALITY_BLOCKED: " + error.message });
+				return;
+			}
 			fail(res, error);
 		}
 	}), route(XHS_API.studio + "/draft", async (req, res) => {
@@ -1259,6 +1660,10 @@ function makeStudioRoutes(store, studio) {
 				evidence: body.evidence
 			}) });
 		} catch (error) {
+			if (error instanceof QualityBlockedError) {
+				writeJson(res, 409, { error: "QUALITY_BLOCKED: " + error.message });
+				return;
+			}
 			fail(res, error);
 		}
 	})];
@@ -1598,205 +2003,6 @@ function makeRoutes(deps) {
 	];
 }
 //#endregion
-//#region src/studio.ts
-/** 从模型输出中拆分正文与封面提示词；无标记时整段视为正文。 */
-function parseCoverPrompt(text) {
-	const index = text.indexOf("【封面提示词】");
-	if (index < 0) return {
-		copy: text.trim(),
-		coverPrompt: ""
-	};
-	return {
-		copy: text.slice(0, index).trim(),
-		coverPrompt: text.slice(index + 7).trim()
-	};
-}
-/** 上下文估算的每字符 token 上界（用于可见的限制提示）。 */
-const CHARS_PER_TOKEN = 3;
-/** 只读取当前账号矩阵数据并组装为上下文；绝不复用主工作区内容。 */
-function buildStudioContext(store, accountId, mode, maxInputChars) {
-	const account = store.listAccounts().find((item) => item.id === accountId);
-	if (account === void 0) throw new Error(`账号不存在：${accountId}`);
-	const persona = store.listPersonas().find((item) => item.id === account.personaId);
-	if (persona === void 0) throw new Error("该账号尚未分配人设");
-	const notes = store.listPublishedNotes(account.personaId);
-	const snapshots = store.listMetricSnapshots(accountId);
-	const viralItems = store.listViralItems(account.personaId, "accepted");
-	const personaLines = [
-		`【人设名称】${persona.name}`,
-		persona.positioning !== void 0 ? `【账号定位】${persona.positioning}` : "",
-		persona.audience !== void 0 ? `【目标受众】${persona.audience}` : "",
-		persona.expertise !== void 0 ? `【擅长领域】${persona.expertise}` : "",
-		persona.contentDirections !== void 0 ? `【内容方向】${persona.contentDirections}` : "",
-		persona.hookStyles !== void 0 && persona.hookStyles.length > 0 ? `【钩子风格】${persona.hookStyles.join("、")}` : "",
-		persona.bodyStructure !== void 0 ? `【正文结构】${persona.bodyStructure}` : "",
-		persona.endingStyle !== void 0 ? `【结尾互动】${persona.endingStyle}` : "",
-		persona.forbiddenExpressions !== void 0 ? `【禁用表达】${persona.forbiddenExpressions}` : "",
-		persona.topicCriteria !== void 0 ? `【选题标准】${persona.topicCriteria}` : "",
-		persona.defaultHashtags !== void 0 && persona.defaultHashtags.length > 0 ? `【默认话题】${persona.defaultHashtags.join(" ")}` : "",
-		`【系统提示词】${persona.prompt}`
-	].filter((line) => line !== "").join("\n");
-	const noteLines = notes.map((note) => {
-		const metric = snapshots.filter((snapshot) => snapshot.noteId === note.id).at(-1);
-		const metricText = metric === void 0 ? "暂无指标" : `阅读 ${metric.reads} / 点赞 ${metric.likes} / 收藏 ${metric.favorites} / 评论 ${metric.comments}`;
-		return `- 权重 ${note.weight} | ${note.title} | ${metricText}${note.sourceUrl !== void 0 ? ` | ${note.sourceUrl}` : ""}\n  ${note.copy.slice(0, 200)}`;
-	});
-	const viralLines = viralItems.slice(0, 20).map((item) => `- ${item.title}（${item.reasons.join("、")}）`);
-	const positiveNotes = notes.filter((note) => note.weight >= 3);
-	const negativeNotes = notes.filter((note) => note.weight === 0);
-	const context = [
-		`# 矩阵创作上下文（仅账号：${account.name}）`,
-		"",
-		"## 账号人设",
-		personaLines,
-		"",
-		mode === "full" ? "## 已发布笔记知识库（完整）" : `## 已发布笔记知识库（${notes.length} 篇，优先高权重）`,
-		noteLines.join("\n"),
-		"",
-		"## 已采纳爆款参考",
-		viralLines.join("\n") || "（暂无已采纳爆款参考）",
-		"",
-		negativeNotes.length > 0 ? `## 负向经验（权重 0，应尽量避免同类型方向）\n${negativeNotes.map((note) => `- ${note.title}`).join("\n")}` : "",
-		positiveNotes.length > 0 ? `## 高权重参考（权重 ≥3，优先借鉴其成功规律）\n${positiveNotes.map((note) => `- ${note.title}`).join("\n")}` : ""
-	].filter((line) => line !== "").join("\n");
-	if (maxInputChars !== void 0 && context.length > maxInputChars) return {
-		context: "",
-		truncated: true,
-		warning: `上下文超出当前模型上限（约 ${Math.ceil(context.length / CHARS_PER_TOKEN)} token），请切换创作模式或减少知识库内容。`
-	};
-	return {
-		context,
-		truncated: false
-	};
-}
-/** 创作会话服务。 */
-var StudioService = class {
-	store;
-	llm;
-	modelLabel;
-	constructor(store, llm, modelLabel = "当前 Harness 模型") {
-		this.store = store;
-		this.llm = llm;
-		this.modelLabel = modelLabel;
-	}
-	/** 追加用户消息，组装上下文，调用模型，保存助手消息。 */
-	async send(accountId, input, mode, maxInputChars) {
-		this.store.listAccounts().find((item) => item.id === accountId) ?? (() => {
-			throw new Error(`账号不存在：${accountId}`);
-		})();
-		const built = buildStudioContext(this.store, accountId, mode, maxInputChars);
-		if (built.truncated) throw new Error(built.warning ?? "上下文超出限制");
-		const messages = [...this.store.listStudioMessages(accountId).map((message) => ({
-			role: message.role,
-			content: message.content
-		})), {
-			role: "user",
-			content: input
-		}];
-		const system = [
-			built.context,
-			"",
-			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
-			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
-			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
-			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
-			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
-			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
-		].join("\n");
-		const response = await this.llm.complete({
-			system,
-			messages,
-			maxTokens: 4e3
-		});
-		this.store.saveStudioMessage({
-			accountId,
-			role: "user",
-			content: input
-		});
-		return {
-			message: this.store.saveStudioMessage({
-				accountId,
-				role: "assistant",
-				content: response.text
-			}),
-			evidence: {
-				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
-				noteIds: this.store.listPublishedNotes(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "").filter((note) => note.weight >= 3).map((note) => note.id),
-				trendIds: this.store.listViralItems(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "", "accepted").slice(0, 20).map((item) => item.id),
-				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
-			}
-		};
-	}
-	/**
-	* 流式发送：追加用户消息、组装上下文、流式调用模型并把增量回传给 onDelta，
-	* 完成后解析封面提示词、保存助手消息。
-	* @param onDelta - 文本增量回调（供 SSE 转发）。
-	*/
-	async sendStream(accountId, input, mode, onDelta, maxInputChars) {
-		this.store.listAccounts().find((item) => item.id === accountId) ?? (() => {
-			throw new Error(`账号不存在：${accountId}`);
-		})();
-		const built = buildStudioContext(this.store, accountId, mode, maxInputChars);
-		if (built.truncated) throw new Error(built.warning ?? "上下文超出限制");
-		const messages = [...this.store.listStudioMessages(accountId).map((message) => ({
-			role: message.role,
-			content: message.content
-		})), {
-			role: "user",
-			content: input
-		}];
-		const system = [
-			built.context,
-			"",
-			"你是矩阵专属创作助手。只处理当前账号的小红书人设、已发布内容、爆款池参考、内容创作、文案创作与草稿编辑。",
-			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
-			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
-			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
-			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
-			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
-		].join("\n");
-		const { copy, coverPrompt } = parseCoverPrompt(await this.llm.stream({
-			system,
-			messages,
-			maxTokens: 4e3
-		}, onDelta));
-		this.store.saveStudioMessage({
-			accountId,
-			role: "user",
-			content: input
-		});
-		return {
-			message: this.store.saveStudioMessage({
-				accountId,
-				role: "assistant",
-				content: copy
-			}),
-			evidence: {
-				persona: `${this.store.listPersonas().find((p) => p.id === this.store.listAccounts().find((a) => a.id === accountId)?.personaId)?.name ?? ""}`,
-				noteIds: this.store.listPublishedNotes(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "").filter((note) => note.weight >= 3).map((note) => note.id),
-				trendIds: this.store.listViralItems(this.store.listAccounts().find((a) => a.id === accountId)?.personaId ?? "", "accepted").slice(0, 20).map((item) => item.id),
-				reasons: [`基于账号人设、高权重历史内容与已采纳爆款参考生成；使用模型：${this.modelLabel}`]
-			},
-			coverPrompt
-		};
-	}
-	/** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
-	saveDraft(accountId, payload) {
-		this.store.listAccounts().find((item) => item.id === accountId) ?? (() => {
-			throw new Error(`账号不存在：${accountId}`);
-		})();
-		const date = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-		const draft = this.store.saveDraft({
-			accountId,
-			date,
-			copy: payload.copy,
-			coverPrompt: payload.coverPrompt
-		});
-		draft.evidence = payload.evidence;
-		return draft;
-	}
-};
-//#endregion
 //#region src/composer.ts
 /**
 * 拼接创作简报 markdown。
@@ -1823,29 +2029,6 @@ function composeBrief(persona, viralItems, accountName) {
 		...viralLines,
 		`【任务】按以上人设撰写小红书文案（标题 + 正文 + 话题标签），并给出封面提示词（coverPrompt）。`
 	].join("\n");
-}
-//#endregion
-//#region src/content-quality.ts
-/**
-* 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
-* 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
-*/
-function scanForbiddenWords(text, forbiddenWords) {
-	const hits = [];
-	for (const word of forbiddenWords) {
-		if (word === "") continue;
-		let from = 0;
-		for (;;) {
-			const index = text.indexOf(word, from);
-			if (index < 0) break;
-			hits.push({
-				word,
-				position: index
-			});
-			from = index + word.length;
-		}
-	}
-	return hits.sort((a, b) => a.position - b.position || (a.word < b.word ? -1 : a.word > b.word ? 1 : 0));
 }
 //#endregion
 //#region src/events.ts
@@ -2766,7 +2949,8 @@ function apply(ctx, config) {
 				return;
 			}
 		}, () => ctx.llm.listProviders().map((p) => ({ id: p.id })), (options) => ctx.llm.stream(options));
-		const studio = new StudioService(store, llmClient, modelLabel);
+		const quality = createQualityService(llmClient);
+		const studio = new StudioService(store, llmClient, quality, modelLabel);
 		const apifyStore = store.getSettings().apify;
 		const viralProvider = apifyStore.actorId !== "" && apifyStore.apiToken !== "" ? new ApifyViralProvider({
 			actorId: apifyStore.actorId,

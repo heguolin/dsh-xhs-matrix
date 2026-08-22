@@ -1,6 +1,7 @@
-/** 矩阵专属创作会话：账号级上下文组装、模型调用、消息与草稿保存。 */
+/** 矩阵专属创作会话：账号级上下文组装、两阶段模型调用、结构化 SSE 与消息/草稿保存。 */
+import type { ContentQualityService } from './content-quality.ts';
 import { MatrixStore } from './store.ts';
-import type { Draft, DraftEvidence, StudioMessage } from './types.ts';
+import type { Draft, DraftEvidence, DraftQualityReport, StudioMessage } from './types.ts';
 /** 一次模型补全请求（矩阵会话内，只含文本消息）。 */
 export interface StudioCompleteRequest {
     system: string;
@@ -31,30 +32,89 @@ export interface StudioContext {
 }
 /** 只读取当前账号矩阵数据并组装为上下文；绝不复用主工作区内容。 */
 export declare function buildStudioContext(store: MatrixStore, accountId: string, mode: 'full' | 'creative', maxInputChars?: number): StudioContext;
-/** 创作会话服务。 */
+/** 结构化 SSE 事件类型（权威定义，见 task-6-brief）。 */
+export type StudioSseEvent = {
+    type: 'phase';
+    phase: 'planning' | 'drafting' | 'polishing' | 'checking';
+} | {
+    type: 'evidence';
+    evidence: DraftEvidence;
+} | {
+    type: 'plan_delta';
+    delta: string;
+} | {
+    type: 'content_delta';
+    delta: string;
+} | {
+    type: 'quality';
+    report: DraftQualityReport;
+    allowed: boolean;
+} | {
+    type: 'done';
+    messageId: string;
+    coverPrompt: string;
+    quality: DraftQualityReport;
+    evidence: DraftEvidence;
+    personaId: string;
+    deduplicated?: boolean;
+} | {
+    type: 'error';
+    stage: string;
+    retryable: boolean;
+    message: string;
+};
+/** 流式发送可选参数。 */
+export interface StudioStreamOptions {
+    /** 请求幂等 id：完成后重试返回 deduplicated，进行中重复抛「请求进行中」。 */
+    requestId?: string;
+    maxInputChars?: number;
+}
+/** 流式发送结果：质量通过/重放时含 done；违禁词命中时 done 为 undefined。 */
+export interface StudioStreamResult {
+    done?: Extract<StudioSseEvent, {
+        type: 'done';
+    }>;
+}
+/** 同一请求 id 正在进行中（并发去重）。 */
+export declare class StudioBusyError extends Error {
+    constructor(message: string);
+}
+/** 命中人设违禁词，禁止保存草稿。 */
+export declare class QualityBlockedError extends Error {
+    constructor(message: string);
+}
+/** 创作会话服务：两阶段生成、结构化流式事件与消息/草稿保存。 */
 export declare class StudioService {
     private readonly store;
     private readonly llm;
+    private readonly quality;
     private readonly modelLabel;
-    constructor(store: MatrixStore, llm: StudioLlmClient, modelLabel?: string);
-    /** 追加用户消息，组装上下文，调用模型，保存助手消息。 */
+    /** 进程内仅供进行中请求的去重 key；完成后从集合删除，禁止无界保存历史 requestId。 */
+    private readonly inFlight;
+    constructor(store: MatrixStore, llm: StudioLlmClient, quality: ContentQualityService, modelLabel?: string);
+    /** 指定请求 id 是否正在生成中（供路由在 SSE 建流前返回 409）。 */
+    isInFlight(requestId: string): boolean;
+    private requireAccount;
+    /** 取账号当前（唯一）人设；未分配或已删除时阻止创作。 */
+    private requirePersona;
+    private buildSystemPrompt;
+    private buildMessages;
+    private buildEvidence;
+    /** 追加用户消息，组装上下文（只读当前人设快照），两阶段生成，质量通过后保存助手消息。 */
     send(accountId: string, input: string, mode: 'full' | 'creative', maxInputChars?: number): Promise<{
         message: StudioMessage;
         evidence: DraftEvidence;
         warning?: string;
     }>;
     /**
-     * 流式发送：追加用户消息、组装上下文、流式调用模型并把增量回传给 onDelta，
-     * 完成后解析封面提示词、保存助手消息。
-     * @param onDelta - 文本增量回调（供 SSE 转发）。
+     * 流式发送（两阶段）：捕获账号与人设快照 → 构建证据 → 流式计划并缓冲原始初稿 →
+     * naturalizeStream 输出最终稿增量 → 确定性违禁词扫描 → 质量通过后一次性落库 user/assistant 与 requestId → done。
+     * 历史只读取相同 accountId 且 personaIdSnapshot 等于当前人设的消息。
      */
-    sendStream(accountId: string, input: string, mode: 'full' | 'creative', onDelta: (delta: string) => void, maxInputChars?: number): Promise<{
-        message: StudioMessage;
-        evidence: DraftEvidence;
-        coverPrompt: string;
-        warning?: string;
-    }>;
-    /** 保存一条草稿（可带生成依据），不发布；日期取当日，草稿独立于选题。 */
+    sendStream(accountId: string, input: string, mode: 'full' | 'creative', onEvent: (event: StudioSseEvent) => void, options?: StudioStreamOptions): Promise<StudioStreamResult>;
+    /** 完成态重放：不重新生成，返回 deduplicated 的 done（封面/质检信息不落库，从现有消息重建）。 */
+    private buildDeduplicatedDone;
+    /** 保存一条草稿（含人设快照与轻量质检报告）；命中违禁词抛 QualityBlockedError，不落库。 */
     saveDraft(accountId: string, payload: {
         copy: string;
         coverPrompt: string;

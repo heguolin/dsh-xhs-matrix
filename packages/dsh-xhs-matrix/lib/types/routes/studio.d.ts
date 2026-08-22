@@ -1,7 +1,7 @@
-/** /studio 创作台路由：会话消息收发与草稿保存。 */
+/** /studio 创作台路由：会话消息收发、两阶段结构化 SSE 流式与草稿保存。 */
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';
 import type { MatrixStore } from '../store.ts';
-import type { StudioService } from '../studio.ts';
+import { type StudioService } from '../studio.ts';
 /**
  * 构建 /studio 创作台路由。
  * @param store - 矩阵存储。

@@ -10,6 +10,7 @@ import type {} from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import { ApifyViralProvider } from './collector/apify.ts'
 import { CollectionScheduler } from './metrics.ts'
+import { createQualityService } from './content-quality.ts'
 import { resolveStudioModel, type ModelRoute } from './model-config.ts'
 import { makeRoutes } from './routes/index.ts'
 import { MatrixStore } from './store.ts'
@@ -188,7 +189,8 @@ export function apply(ctx: Context, config?: Config): void {
       () => ctx.llm.listProviders().map(p => ({ id: p.id })),
       (options) => ctx.llm.stream(options),
     )
-    const studio = new StudioService(store, llmClient, modelLabel)
+    const quality = createQualityService(llmClient)
+    const studio = new StudioService(store, llmClient, quality, modelLabel)
 
     // Apify 数据源配置：唯一来源 store 运行时设置（面板写入，无插件 Config 回退）。
     const apifyStore = store.getSettings().apify

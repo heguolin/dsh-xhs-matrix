@@ -195,7 +195,9 @@ export declare class MatrixStore {
     listMetricSnapshots(accountId?: string, noteId?: string): MetricSnapshot[];
     listMetricSnapshotsByNote(noteId: string): MetricSnapshot[];
     saveMetricSnapshot(payload: MetricSnapshotPayload): MetricSnapshot;
-    listStudioMessages(accountId?: string): StudioMessage[];
+    listStudioMessages(accountId?: string, personaIdSnapshot?: string): StudioMessage[];
+    /** 按请求 id 查询已落库的会话消息（同一 account 下的完成态幂等判定）。 */
+    listStudioMessagesByRequestId(accountId: string, requestId: string): StudioMessage[];
     saveStudioMessage(payload: StudioMessagePayload): StudioMessage;
     markStudioMessageRead(id: string): void;
 }

@@ -616,8 +616,15 @@ export class MatrixStore {
   }
 
   // ---------------------------------------------------------------- 创作室消息
-  listStudioMessages(accountId?: string): StudioMessage[] {
-    return accountId === undefined ? this.data.studioMessages : this.data.studioMessages.filter(message => message.accountId === accountId)
+  listStudioMessages(accountId?: string, personaIdSnapshot?: string): StudioMessage[] {
+    let messages = this.data.studioMessages
+    if (accountId !== undefined) messages = messages.filter(message => message.accountId === accountId)
+    if (personaIdSnapshot !== undefined) messages = messages.filter(message => message.personaIdSnapshot === personaIdSnapshot)
+    return messages
+  }
+  /** 按请求 id 查询已落库的会话消息（同一 account 下的完成态幂等判定）。 */
+  listStudioMessagesByRequestId(accountId: string, requestId: string): StudioMessage[] {
+    return this.data.studioMessages.filter(message => message.accountId === accountId && message.requestId === requestId)
   }
   saveStudioMessage(payload: StudioMessagePayload): StudioMessage {
     this.requireAccount(payload.accountId)
