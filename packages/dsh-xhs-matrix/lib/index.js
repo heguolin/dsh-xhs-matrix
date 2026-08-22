@@ -1253,16 +1253,21 @@ function buildStudioContext(store, accountId, mode, maxInputChars) {
 	const notes = store.listPublishedNotes(account.personaId);
 	const snapshots = store.listMetricSnapshots(accountId);
 	const viralItems = store.listViralItems(account.personaId, "accepted");
+	const writingStyles = persona.writingStyles ?? persona.hookStyles;
+	const endingHookConstraints = persona.endingHookConstraints ?? persona.endingStyle;
+	const endingHookExamples = persona.endingHookExamples ?? [];
+	const forbiddenWords = persona.forbiddenWords ?? (persona.forbiddenExpressions !== void 0 ? persona.forbiddenExpressions.split(/[、,，\s]+/).filter((word) => word !== "") : void 0);
 	const personaLines = [
 		`【人设名称】${persona.name}`,
 		persona.positioning !== void 0 ? `【账号定位】${persona.positioning}` : "",
 		persona.audience !== void 0 ? `【目标受众】${persona.audience}` : "",
 		persona.expertise !== void 0 ? `【擅长领域】${persona.expertise}` : "",
 		persona.contentDirections !== void 0 ? `【内容方向】${persona.contentDirections}` : "",
-		persona.hookStyles !== void 0 && persona.hookStyles.length > 0 ? `【钩子风格】${persona.hookStyles.join("、")}` : "",
+		writingStyles !== void 0 && writingStyles.length > 0 ? `【写作风格】${writingStyles.join("、")}` : "",
 		persona.bodyStructure !== void 0 ? `【正文结构】${persona.bodyStructure}` : "",
-		persona.endingStyle !== void 0 ? `【结尾互动】${persona.endingStyle}` : "",
-		persona.forbiddenExpressions !== void 0 ? `【禁用表达】${persona.forbiddenExpressions}` : "",
+		endingHookConstraints !== void 0 ? `【结尾互动钩子约束】${endingHookConstraints}` : "",
+		endingHookExamples.length > 0 ? `【结尾钩子最佳案例】${endingHookExamples.join("；")}` : "",
+		forbiddenWords !== void 0 && forbiddenWords.length > 0 ? `【违禁词】${forbiddenWords.join("、")}` : "",
 		persona.topicCriteria !== void 0 ? `【选题标准】${persona.topicCriteria}` : "",
 		persona.defaultHashtags !== void 0 && persona.defaultHashtags.length > 0 ? `【默认话题】${persona.defaultHashtags.join(" ")}` : "",
 		`【系统提示词】${persona.prompt}`
@@ -1676,13 +1681,14 @@ function makeStudioRoutes(store, studio) {
 //#endregion
 //#region src/collector/rank.ts
 function rankViralItems(persona, notes, items) {
+	const writingStyles = persona.writingStyles ?? persona.hookStyles;
 	const terms = [
 		persona.name,
 		persona.positioning,
 		persona.expertise,
 		persona.contentDirections,
 		persona.topicCriteria,
-		persona.hookStyles?.join(" ")
+		writingStyles?.join(" ") ?? ""
 	].filter((item) => Boolean(item)).join(" ").toLowerCase();
 	return items.map((item) => {
 		const haystack = `${item.title} ${item.body ?? ""}`.toLowerCase();

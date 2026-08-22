@@ -1,8 +1,9 @@
 import type { XhsApi } from '../api.ts';
 /**
- * 专属创作台（设计稿 content/creative-studio.html）：
- * 对话区最大化 + 右侧本次创作上下文（人设/知识库/已采纳爆款参考/指标快照），
- * 上下文始终可见，生成结果通过人工操作保存为草稿。
+ * 专属创作台（设计稿 content/creative-studio.html + 人设资产 UI 参考稿 studio 视图）：
+ * 四阶段进度、可折叠创作说明（可审计摘要）、流式最终稿、依据侧栏与质量门。
+ * 最终稿只来自 content_delta；plan_delta 只进入创作说明；quality.allowed === false 禁用保存。
+ * 智能跟随底部：首次进入/历史加载/跟随状态下滚到底；上滚超阈值暂停并显示「回到最新」。
  */
 export declare function StudioTab({ api, accountId, personaId, onOpenDraft }: {
     api: XhsApi;

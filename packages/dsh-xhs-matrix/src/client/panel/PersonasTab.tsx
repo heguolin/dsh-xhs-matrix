@@ -124,14 +124,13 @@ export function PersonasTab({ api }: { api: XhsApi }) {
       audience: audience.trim() === '' ? undefined : audience.trim(),
       expertise: expertise.trim() === '' ? undefined : expertise.trim(),
       contentDirections: contentDirections.trim() === '' ? undefined : contentDirections.trim(),
+      // v4 单一事实源：只写 writingStyles/endingHookConstraints/endingHookExamples/forbiddenWords，
+      // 不再向 hookStyles/endingStyle/forbiddenExpressions 写镜像（消除双源真相）。
       writingStyles: writingStyles.length > 0 ? writingStyles : undefined,
-      hookStyles: writingStyles.length > 0 ? writingStyles : undefined,
       bodyStructure: bodyStructure.trim() === '' ? undefined : bodyStructure.trim(),
       endingHookConstraints: endingHookConstraints.trim() === '' ? undefined : endingHookConstraints.trim(),
-      endingStyle: endingHookConstraints.trim() === '' ? undefined : endingHookConstraints.trim(),
       endingHookExamples: endingHookExamples.length > 0 ? endingHookExamples : undefined,
       forbiddenWords: forbiddenWords.length > 0 ? forbiddenWords : undefined,
-      forbiddenExpressions: forbiddenWords.length > 0 ? forbiddenWords.join('、') : undefined,
       topicCriteria: topicCriteria.trim() === '' ? undefined : topicCriteria.trim(),
       defaultHashtags: splitList(defaultHashtags),
     }

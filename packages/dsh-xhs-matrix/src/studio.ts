@@ -54,16 +54,23 @@ export function buildStudioContext(
   // v4 创作参考：该人设已采纳的爆款池条目（pending/ignored 不进入上下文）。
   const viralItems = store.listViralItems(account.personaId, 'accepted')
 
+  // v4 人设字段（写作风格/结尾钩子约束与案例/违禁词）；旧 hookStyles/endingStyle/forbiddenExpressions 仅作读取回退。
+  const writingStyles = persona.writingStyles ?? persona.hookStyles
+  const endingHookConstraints = persona.endingHookConstraints ?? persona.endingStyle
+  const endingHookExamples = persona.endingHookExamples ?? []
+  const forbiddenWords = persona.forbiddenWords ?? (persona.forbiddenExpressions !== undefined ? persona.forbiddenExpressions.split(/[、,，\s]+/).filter(word => word !== '') : undefined)
+
   const personaLines = [
     `【人设名称】${persona.name}`,
     persona.positioning !== undefined ? `【账号定位】${persona.positioning}` : '',
     persona.audience !== undefined ? `【目标受众】${persona.audience}` : '',
     persona.expertise !== undefined ? `【擅长领域】${persona.expertise}` : '',
     persona.contentDirections !== undefined ? `【内容方向】${persona.contentDirections}` : '',
-    persona.hookStyles !== undefined && persona.hookStyles.length > 0 ? `【钩子风格】${persona.hookStyles.join('、')}` : '',
+    writingStyles !== undefined && writingStyles.length > 0 ? `【写作风格】${writingStyles.join('、')}` : '',
     persona.bodyStructure !== undefined ? `【正文结构】${persona.bodyStructure}` : '',
-    persona.endingStyle !== undefined ? `【结尾互动】${persona.endingStyle}` : '',
-    persona.forbiddenExpressions !== undefined ? `【禁用表达】${persona.forbiddenExpressions}` : '',
+    endingHookConstraints !== undefined ? `【结尾互动钩子约束】${endingHookConstraints}` : '',
+    endingHookExamples.length > 0 ? `【结尾钩子最佳案例】${endingHookExamples.join('；')}` : '',
+    forbiddenWords !== undefined && forbiddenWords.length > 0 ? `【违禁词】${forbiddenWords.join('、')}` : '',
     persona.topicCriteria !== undefined ? `【选题标准】${persona.topicCriteria}` : '',
     persona.defaultHashtags !== undefined && persona.defaultHashtags.length > 0 ? `【默认话题】${persona.defaultHashtags.join(' ')}` : '',
     `【系统提示词】${persona.prompt}`,

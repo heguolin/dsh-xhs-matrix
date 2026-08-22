@@ -3,7 +3,9 @@ import type { Persona, PublishedNote } from '../types.ts'
 import type { NormalizedViral, RankedViral } from './provider.ts'
 
 export function rankViralItems(persona: Persona, notes: PublishedNote[], items: NormalizedViral[]): RankedViral[] {
-  const terms = [persona.name, persona.positioning, persona.expertise, persona.contentDirections, persona.topicCriteria, persona.hookStyles?.join(' ')]
+  // v4 人设字段；旧 hookStyles 仅作读取回退。
+  const writingStyles = persona.writingStyles ?? persona.hookStyles
+  const terms = [persona.name, persona.positioning, persona.expertise, persona.contentDirections, persona.topicCriteria, writingStyles?.join(' ') ?? '']
     .filter((item): item is string => Boolean(item)).join(' ').toLowerCase()
   return items.map(item => {
     const haystack = `${item.title} ${item.body ?? ''}`.toLowerCase()
