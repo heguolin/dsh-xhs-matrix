@@ -109,4 +109,13 @@ describe('质量门', () => {
     expect(allowed).toBe(true)
     expect(report.reviewStatus).toBe('passed')
   })
+
+  it('仅含 legacy forbiddenExpressions 的人设仍被质量门拦截', () => {
+    const quality = createQualityService(fakeStream([]))
+    const p = persona({ forbiddenWords: undefined, forbiddenExpressions: '绝对,百分百' })
+    const { allowed, report } = quality.check('这个绝对有效', p)
+    expect(allowed).toBe(false)
+    expect(report.reviewStatus).toBe('failed')
+    expect(report.forbiddenWordHits).toEqual([{ word: '绝对', position: 2 }])
+  })
 })

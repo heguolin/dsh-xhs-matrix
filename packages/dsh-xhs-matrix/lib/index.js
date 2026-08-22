@@ -1,4 +1,4 @@
-import { n as MatrixStoreError, t as MatrixStore } from "./store-fZSYqk0Y.js";
+import { i as scanForbiddenWords, n as MatrixStoreError, r as createQualityService, t as MatrixStore } from "./store-CDyFCzM2.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -360,80 +360,6 @@ var CollectionScheduler = class {
 		for (const account of this.store.listAccounts()) if (account.collection?.enabled) await this.runAccount(account.id);
 	}
 };
-//#endregion
-//#region src/content-quality.ts
-/** 组装「去 AI 味」审校请求（系统提示词 + 原始初稿）。 */
-function buildNaturalizePrompt(rawDraft, persona) {
-	const styles = persona.writingStyles !== void 0 && persona.writingStyles.length > 0 ? persona.writingStyles.join("、") : "未设置";
-	const hook = persona.endingHookConstraints ?? "未设置";
-	const examples = persona.endingHookExamples !== void 0 && persona.endingHookExamples.length > 0 ? persona.endingHookExamples.join("；") : "未设置";
-	const forbidden = persona.forbiddenWords !== void 0 && persona.forbiddenWords.length > 0 ? persona.forbiddenWords.join("、") : "无";
-	return {
-		system: [
-			"你是小红书文案的「去 AI 味」审校助手。你会收到一段原始初稿，请重写得更加自然、更像真人，避免模板套话、空泛总结、机械排比、过度感叹与僵硬句式。",
-			"【硬性原则】不得新增事实，不得伪造经历，必须保留原始初稿中的所有事实信息；某处生硬时只调整措辞，不删改事实。",
-			"【人设约束】遵循以下写作风格与结尾互动钩子；结尾不得强制点赞或关注。",
-			`【写作风格】${styles}`,
-			`【结尾钩子约束】${hook}`,
-			`【钩子最佳案例】${examples}`,
-			`【违禁词】${forbidden}；最终稿不得出现任何上述词。`,
-			"只输出重写后的最终文案。不要输出解释、思考过程、分析标签或系统消息，也不要出现「作为 AI」「我是人工智能」之类的自述。"
-		].join("\n"),
-		messages: [{
-			role: "user",
-			content: `请审校以下原始初稿并自然化改写：\n\n${rawDraft}`
-		}],
-		maxTokens: 2e3
-	};
-}
-/**
-* 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
-* 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
-*/
-function scanForbiddenWords(text, forbiddenWords) {
-	const hits = [];
-	for (const word of forbiddenWords) {
-		if (word === "") continue;
-		let from = 0;
-		for (;;) {
-			const index = text.indexOf(word, from);
-			if (index < 0) break;
-			hits.push({
-				word,
-				position: index
-			});
-			from = index + word.length;
-		}
-	}
-	return hits.sort((a, b) => a.position - b.position || (a.word < b.word ? -1 : a.word > b.word ? 1 : 0));
-}
-/** 默认实现。 */
-var DefaultContentQualityService = class {
-	llm;
-	constructor(llm) {
-		this.llm = llm;
-	}
-	async naturalizeStream(rawDraft, persona, onDelta) {
-		const request = buildNaturalizePrompt(rawDraft, persona);
-		return this.llm.stream(request, onDelta);
-	}
-	check(text, persona) {
-		const hits = scanForbiddenWords(text, persona.forbiddenWords ?? []);
-		return {
-			report: {
-				reviewStatus: hits.length === 0 ? "passed" : "failed",
-				forbiddenWordHits: hits,
-				checkedAt: (/* @__PURE__ */ new Date()).toISOString(),
-				personaSnapshot: persona.name
-			},
-			allowed: hits.length === 0
-		};
-	}
-};
-/** 工厂：用注入的模型客户端构建内容质量服务。 */
-function createQualityService(llm) {
-	return new DefaultContentQualityService(llm);
-}
 //#endregion
 //#region src/model-config.ts
 function resolveStudioModel(getDefaultModel, listProviders) {

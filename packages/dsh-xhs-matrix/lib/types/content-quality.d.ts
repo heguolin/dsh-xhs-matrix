@@ -22,6 +22,11 @@ export interface ContentQualityService {
 /** 组装「去 AI 味」审校请求（系统提示词 + 原始初稿）。 */
 export declare function buildNaturalizePrompt(rawDraft: string, persona: Persona): StudioCompleteRequest;
 /**
+ * 拆分 v3 旧字段 forbiddenExpressions（逗号/中文逗号/顿号/空白分隔）为违禁词数组；
+ * 空串或仅分隔符时返回 undefined。
+ */
+export declare function splitLegacyForbidden(value: string | undefined): string[] | undefined;
+/**
  * 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
  * 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
  */

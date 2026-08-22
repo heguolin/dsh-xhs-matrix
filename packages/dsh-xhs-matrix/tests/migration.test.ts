@@ -84,6 +84,11 @@ describe('v3 → v4 迁移', () => {
     expect(persona.endingHookConstraints).toBe('自然邀请')
   })
 
+  it('v3 forbiddenExpressions 逗号串迁移为 forbiddenWords 数组', () => {
+    const migrated = migrateStoreFileV3ToV4(v3File({ personas: [{ ...v3Persona('p1'), forbiddenExpressions: '绝对,百分百', forbiddenWords: undefined }] }))
+    expect(migrated.personas[0].forbiddenWords).toEqual(['绝对', '百分百'])
+  })
+
   it('v3 旧爆款默认权重 1 且保留已有审核状态', () => {
     const migrated = migrateStoreFileV3ToV4(v3File({ accounts: [v3Account('a1', 'p1')], personas: [v3Persona('p1')], viralItems: [v3Viral('v1', 'a1', 'accepted'), v3Viral('v2', 'a1', 'ignored')] }))
     expect(migrated.viralItems[0]).toMatchObject({ status: 'accepted', weight: 1 })

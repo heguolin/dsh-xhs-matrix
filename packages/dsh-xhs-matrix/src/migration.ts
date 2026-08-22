@@ -2,6 +2,7 @@
 
 import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { splitLegacyForbidden } from './content-quality.ts'
 import type {
   Account, CollectionStatus, DataSource, Draft, MatrixSettings, MetricSnapshot, NoteWeight, PendingOwnership, Persona, PublishedNote, StudioMessage, StoreFile, ViralItem, ViralStatus,
 } from './types.ts'
@@ -326,6 +327,8 @@ export function migrateStoreFileV3ToV4(file: StoreFileV3): StoreFile {
     ...persona,
     writingStyles: persona.writingStyles ?? persona.hookStyles,
     endingHookConstraints: persona.endingHookConstraints ?? persona.endingStyle,
+    // v3 旧 forbiddenExpressions（逗号串）迁移为 v4 forbiddenWords（数组）。
+    forbiddenWords: persona.forbiddenWords ?? splitLegacyForbidden(persona.forbiddenExpressions),
   }))
 
   const drafts = (file.drafts ?? []).map(draft => {

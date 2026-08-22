@@ -41,6 +41,16 @@ export function buildNaturalizePrompt(rawDraft: string, persona: Persona): Studi
 }
 
 /**
+ * 拆分 v3 旧字段 forbiddenExpressions（逗号/中文逗号/顿号/空白分隔）为违禁词数组；
+ * 空串或仅分隔符时返回 undefined。
+ */
+export function splitLegacyForbidden(value: string | undefined): string[] | undefined {
+  if (value === undefined) return undefined
+  const words = value.split(/[,，、\s]+/).map(word => word.trim()).filter(word => word !== '')
+  return words.length > 0 ? words : undefined
+}
+
+/**
  * 确定性逐词扫描：对人设违禁词逐词查找所有出现，返回命中词与字符位置（按位置升序）。
  * 违禁词是唯一来源（不建立全局违禁词库）；空词忽略。
  */
@@ -74,7 +84,9 @@ class DefaultContentQualityService implements ContentQualityService {
   }
 
   check(text: string, persona: Persona): { report: QualityReport; allowed: boolean } {
-    const hits = scanForbiddenWords(text, persona.forbiddenWords ?? [])
+    // v4 违禁词为准；兼容未迁移/缺 forbiddenWords 的人设时回退到 legacy forbiddenExpressions。
+    const words = persona.forbiddenWords ?? splitLegacyForbidden(persona.forbiddenExpressions) ?? []
+    const hits = scanForbiddenWords(text, words)
     return {
       report: {
         reviewStatus: hits.length === 0 ? 'passed' : 'failed',
