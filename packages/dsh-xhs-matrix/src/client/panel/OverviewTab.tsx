@@ -20,6 +20,8 @@ interface AccountSummary {
   reads: number
   draftCount: number
   viralCount: number
+  /** 该账号人设作用域下返回的 note id；用于矩阵级去重（同一人设共享资产只计一次）。 */
+  noteIds: string[]
 }
 
 /**
@@ -59,15 +61,19 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           const prev = latestByNote.get(m.noteId)
           if (prev === undefined || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m)
         }
-        const reads = [...latestByNote.values()].reduce((sum, m) => sum + m.reads, 0)
+        // 来源账号作用域统计：同人设共享资产只计入 sourceAccountId === 本账号 的笔记，
+        // 避免同一人设多账号把同一条人设资产在矩阵与账号卡片中重复计数。
+        const sourceNotes = noteList.filter(n => n.sourceAccountId === account.id)
+        const reads = sourceNotes.reduce((sum, n) => sum + (latestByNote.get(n.id)?.reads ?? 0), 0)
         return {
           account,
           personaName: personaList.find(p => p.id === account.personaId)?.name ?? '未分配',
-          noteCount: noteList.length,
-          highWeightCount: noteList.filter(n => n.weight >= 3).length,
+          noteCount: sourceNotes.length,
+          highWeightCount: sourceNotes.filter(n => n.weight >= 3).length,
           reads,
           draftCount: draftList.filter(d => d.accountId === account.id && d.status === 'generated').length,
-          viralCount: viralList.length,
+          viralCount: viralList.filter(v => v.sourceAccountId === account.id).length,
+          noteIds: noteList.map(n => n.id),
         }
       }))
       setSummaries(rows)
@@ -94,7 +100,8 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
     }
   }
 
-  const totalNotes = summaries.reduce((sum, row) => sum + row.noteCount, 0)
+  // 矩阵级去重：同一人设共享笔记在多个账号卡片中出现时只计一次。
+  const totalNotes = new Set(summaries.flatMap(row => row.noteIds)).size
   const totalDrafts = summaries.reduce((sum, row) => sum + row.draftCount, 0)
   const totalReads = summaries.reduce((sum, row) => sum + row.reads, 0)
 
