@@ -1,12 +1,14 @@
-/** Agent 工具族：xhs_today 爆款池创作简报 + 草稿/爆款/账号操作。所有工具返回 { ok, message, ...data }。 */
+/** Agent 工具族：xhs_today 爆款池创作简报 + 草稿/爆款/账号/待归属操作。所有工具返回 { ok, message, ...data }。 */
 
 import type { Context } from '@deepseek-ai/cordis'
 import type { ContentBlock } from '@deepseek-ai/dsh-llm'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { composeBrief } from './composer.ts'
+import { scanForbiddenWords, splitLegacyForbidden } from './content-quality.ts'
 import { emitFeedback } from './events.ts'
+import { PersonaAssetService } from './persona-assets.ts'
 import { MatrixStore } from './store.ts'
-import type { Account, DraftMetrics, DraftStatus, ViralStatus } from './types.ts'
+import type { Account, DraftMetrics, DraftQualityReport, DraftStatus, ViralStatus } from './types.ts'
 
 function text(value: string): ContentBlock[] {
   return [{ type: 'text', text: value }]
@@ -35,18 +37,37 @@ function today(): string {
 const VIRAL_STATUSES: readonly ViralStatus[] = ['pending', 'accepted', 'ignored']
 
 /**
- * 构建 7 个模型工具。
+ * 构建 模型工具。
  * @param deps - 存储与上下文。
  * @returns 工具定义数组。
  */
 export function makeTools(deps: ToolsDeps) {
   const { store, ctx } = deps
+  const service = new PersonaAssetService(store)
 
   const accountsOf = (): Account[] => {
     return store.listAccounts().filter(a => a.enabled)
   }
 
   const personaOf = (personaId: string) => store.listPersonas().find(p => p.id === personaId)
+
+  /** 人设作用域解析（账号兼容 + 直接人设查询）：冲突时返回 error，由调用方渲染。 */
+  const resolveToolScope = (args: { accountId?: string; personaId?: string }): { personaId: string } | { error: string } => {
+    const hasAccount = args.accountId !== undefined && args.accountId !== ''
+    const hasPersona = args.personaId !== undefined && args.personaId !== ''
+    if (!hasAccount && !hasPersona) return { error: 'accountId 或 personaId 必填' }
+    if (hasPersona && !store.listPersonas().some(p => p.id === args.personaId)) return { error: '人设不存在：' + args.personaId }
+    let accountPersona = ''
+    if (hasAccount) {
+      const account = store.listAccounts().find(a => a.id === args.accountId)
+      if (account === undefined) return { error: '账号不存在：' + args.accountId }
+      accountPersona = account.personaId
+    }
+    if (hasAccount && hasPersona && accountPersona !== args.personaId) {
+      return { error: 'account 与 persona 不一致：账号属于 ' + (accountPersona === '' ? '（未分配）' : accountPersona) + '，而非 ' + args.personaId }
+    }
+    return { personaId: hasPersona ? (args.personaId as string) : accountPersona }
+  }
 
   const toolToday = defineTool({
     name: 'xhs_today',
@@ -89,13 +110,12 @@ export function makeTools(deps: ToolsDeps) {
           skipped.push(`${account.name}（今日已生成）`)
           continue
         }
-        // v3 素材来源：该账号 pending/accepted 爆款池（pending 待审核、accepted 已采纳，均作为创作参考）。
-        const viralItems = store.listViralItems(account.id).filter(item => item.status === 'pending' || item.status === 'accepted')
+        const viralItems = store.listViralItems(account.personaId, 'accepted')
         if (viralItems.length === 0) {
           skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`)
           continue
         }
-        briefs.push(composeBrief(account, persona, viralItems))
+        briefs.push(composeBrief(persona, viralItems, account.name))
       }
       if (briefs.length === 0) {
         const detail = skipped.length > 0 ? `：${skipped.join('，')}` : ''
@@ -111,7 +131,7 @@ export function makeTools(deps: ToolsDeps) {
   const toolDraftSave = defineTool({
     name: 'xhs_draft_save',
     description: '保存草稿：按 xhs_today 简报撰写的文案与封面提示词落库。' +
-      '同账号 + 当日已存在草稿时拒绝（除非 force: true 覆盖）。',
+      '同账号 + 当日已存在草稿时拒绝（除非 force: true 覆盖）；落库前执行与创作台一致的人设违禁词质量门。',
     parameters: {
       accountId: { type: 'string', required: true, description: '账号 id' },
       copy: { type: 'string', required: true, description: '完整文案（标题 + 正文 + 话题标签）' },
@@ -131,7 +151,6 @@ export function makeTools(deps: ToolsDeps) {
       render: (_args, value) => render(value),
     },
     async execute(args: { accountId: string; copy: string; coverPrompt: string; force?: boolean }, _exec: unknown) {
-      // 落库前校验：缺失字段或引用不存在的账号都拒绝，避免垃圾草稿持久化（与 routes 侧一致）。
       const requiredFields = ['accountId', 'copy', 'coverPrompt'] as const
       for (const field of requiredFields) {
         const value = args[field]
@@ -139,26 +158,50 @@ export function makeTools(deps: ToolsDeps) {
           return { ok: false, message: `参数 ${field} 必填`, draftId: '' }
         }
       }
-      if (!store.listAccounts().some(a => a.id === args.accountId)) {
+      const account = store.listAccounts().find(a => a.id === args.accountId)
+      if (account === undefined) {
         return { ok: false, message: `账号不存在：${args.accountId}`, draftId: '' }
+      }
+      // 质量门：扫当前账号人设违禁词；命中则禁止保存（与创作台路由保存门一致）。
+      const persona = personaOf(account.personaId)
+      if (persona !== undefined) {
+        // 与创作台保存门一致：v4 forbiddenWords 为准，缺失时回退 legacy forbiddenExpressions。
+        const forbiddenWords = persona.forbiddenWords ?? splitLegacyForbidden(persona.forbiddenExpressions) ?? []
+        const hits = scanForbiddenWords(args.copy, forbiddenWords)
+        if (hits.length > 0) {
+          const words = hits.map(h => h.word).join('、')
+          const positions = hits.map(h => h.position).join(',')
+          return { ok: false, message: `命中人设违禁词，禁止保存草稿：${words}（位置 ${positions}）`, draftId: '' }
+        }
       }
       const date = today()
       const existing = store.findDraft(args.accountId, date)
       if (existing !== undefined && args.force !== true) {
         return { ok: false, message: `该账号当日已存在草稿（${existing.id}），如确需覆盖请传 force: true。`, draftId: existing.id }
       }
-      // force 为真覆盖：先删旧草稿，再落新草稿，保证同账号当日仅存一份。
       if (existing !== undefined) store.deleteDraft(existing.id)
-      const draft = store.saveDraft({ accountId: args.accountId, date, copy: args.copy, coverPrompt: args.coverPrompt })
+      const qualityReport: DraftQualityReport | undefined = persona !== undefined
+        ? { reviewStatus: 'passed', forbiddenWordHits: [], checkedAt: new Date().toISOString(), personaSnapshot: persona.name }
+        : undefined
+      const draft = store.saveDraft({
+        accountId: args.accountId,
+        date,
+        copy: args.copy,
+        coverPrompt: args.coverPrompt,
+        personaIdSnapshot: persona?.id,
+        qualityReport,
+      })
       return { ok: true, message: `草稿已保存：${draft.id}（${date}）`, draftId: draft.id }
     },
   })
 
   const toolVirals = defineTool({
     name: 'xhs_virals',
-    description: '查询指定账号的爆款池条目（标题/正文/来源链接/审核状态/推荐分/理由），可按审核状态过滤。爆款池是创作简报的素材来源。',
+    description: '查询爆款池条目（标题/正文/来源链接/审核状态/推荐分/理由），可按审核状态过滤。' +
+      '支持直接按 personaId 查询，或按 accountId 兼容解析账号当前人设。爆款池是创作简报的素材来源。',
     parameters: {
-      accountId: { type: 'string', required: true, description: '账号 id' },
+      accountId: { type: 'string', description: '账号 id（兼容：解析账号当前人设）' },
+      personaId: { type: 'string', description: '人设 id（直接按人设查询）' },
       status: { type: 'string', description: '审核状态过滤：pending/accepted/ignored' },
     },
     output: {
@@ -174,15 +217,14 @@ export function makeTools(deps: ToolsDeps) {
       render: (_args, value) => render(value),
     },
     isConcurrencySafe: () => true,
-    async execute(args: { accountId: string; status?: string }, _exec: unknown) {
-      if (!store.listAccounts().some(account => account.id === args.accountId)) {
-        return { ok: false, message: `账号不存在：${args.accountId}`, items: [] }
-      }
+    async execute(args: { accountId?: string; personaId?: string; status?: string }, _exec: unknown) {
       if (args.status !== undefined && !VIRAL_STATUSES.includes(args.status as ViralStatus)) {
         return { ok: false, message: `status 必须是 pending/accepted/ignored：${args.status}`, items: [] }
       }
+      const resolved = resolveToolScope({ accountId: args.accountId, personaId: args.personaId })
+      if ('error' in resolved) return { ok: false, message: resolved.error, items: [] }
       const status = args.status as ViralStatus | undefined
-      const items = store.listViralItems(args.accountId, status).map(item => ({
+      const items = service.listVirals(resolved.personaId, status).map(item => ({
         id: item.id,
         title: item.title,
         body: item.body,
@@ -192,9 +234,100 @@ export function makeTools(deps: ToolsDeps) {
         reasons: item.reasons,
       }))
       const lines = items.length === 0
-        ? ['该账号爆款池为空']
+        ? ['该人设爆款池为空']
         : items.map(item => `${item.id}\t${item.status}\t分数 ${item.score}\t${item.title}${item.sourceUrl !== undefined ? `\t${item.sourceUrl}` : ''}`)
       return { ok: true, message: lines.join('\n'), items }
+    },
+  })
+
+  const toolViralAdd = defineTool({
+    name: 'xhs_viral_add',
+    description: '手动向指定人设新增爆款笔记（至少标题 + 正文；来源链接与发布时间可选）。' +
+      '手动爆款默认已采纳且权重为 5，立即作为创作参考。',
+    parameters: {
+      personaId: { type: 'string', required: true, description: '人设 id' },
+      title: { type: 'string', required: true, description: '标题' },
+      body: { type: 'string', required: true, description: '正文' },
+      sourceUrl: { type: 'string', description: '来源链接' },
+      publishedAt: { type: 'string', description: '发布时间（YYYY-MM-DD）' },
+      reasons: { type: 'array', items: { type: 'string' }, description: '推荐理由' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          ok: { type: 'boolean', required: true },
+          message: { type: 'string', required: true },
+          item: { type: 'object', additionalProperties: false, properties: { id: { type: 'string' }, personaId: { type: 'string' }, title: { type: 'string' }, sourceUrl: { type: 'string' }, status: { type: 'string' }, weight: { type: 'number' }, source: { type: 'string' } } },
+        },
+      },
+      render: (_args, value) => render(value),
+    },
+    isConcurrencySafe: () => true,
+    async execute(args: { personaId: string; title: string; body: string; sourceUrl?: string; publishedAt?: string; reasons?: string[] }, _exec: unknown) {
+      const personaId = typeof args.personaId === 'string' ? args.personaId.trim() : ''
+      const title = typeof args.title === 'string' ? args.title.trim() : ''
+      const body = typeof args.body === 'string' ? args.body.trim() : ''
+      if (personaId === '' || title === '' || body === '') {
+        return { ok: false, message: 'personaId、title 与 body 必填', item: undefined }
+      }
+      if (!store.listPersonas().some(p => p.id === personaId)) {
+        return { ok: false, message: '人设不存在：' + personaId, item: undefined }
+      }
+      const item = service.addManualViral(personaId, {
+        title,
+        body,
+        sourceUrl: typeof args.sourceUrl === 'string' && args.sourceUrl !== '' ? args.sourceUrl : undefined,
+        publishedAt: typeof args.publishedAt === 'string' && args.publishedAt !== '' ? args.publishedAt : undefined,
+        reasons: Array.isArray(args.reasons) ? args.reasons.filter((v: unknown) => typeof v === 'string') : undefined,
+      })
+      return { ok: true, message: `手动爆款已保存：${item.id}（已采纳，权重 5）`, item: { id: item.id, personaId: item.personaId, title: item.title, sourceUrl: item.sourceUrl, status: item.status, weight: item.weight, source: item.source } }
+    },
+  })
+
+  const toolPendingOwnership = defineTool({
+    name: 'xhs_pending_ownership',
+    description: '查询待归属数据（迁移时无法解析人位的知识库/爆款条目），并按 targetPersonaId 显式归属。' +
+      '传 id + targetPersonaId 时把该记录移入目标人设，否则列出全部待归属记录。',
+    parameters: {
+      id: { type: 'string', description: '待归属记录 id（归属时必填）' },
+      targetPersonaId: { type: 'string', description: '目标人设 id（归属时必填）' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          ok: { type: 'boolean', required: true },
+          message: { type: 'string', required: true },
+          pending: { type: 'array', required: true, items: { type: 'object', additionalProperties: false, properties: { id: { type: 'string' }, kind: { type: 'string' }, reason: { type: 'string' } } } },
+          asset: { type: 'object', additionalProperties: false, properties: { id: { type: 'string' }, personaId: { type: 'string' } } },
+        },
+      },
+      render: (_args, value) => render(value),
+    },
+    isConcurrencySafe: () => true,
+    async execute(args: { id?: string; targetPersonaId?: string }, _exec: unknown) {
+      if (args.id !== undefined && args.id !== '' && args.targetPersonaId !== undefined && args.targetPersonaId !== '') {
+        if (!store.listPersonas().some(p => p.id === args.targetPersonaId)) {
+          return { ok: false, message: '人设不存在：' + args.targetPersonaId, pending: [], asset: undefined }
+        }
+        try {
+          const asset = service.assignPending(args.id, args.targetPersonaId)
+          return {
+            ok: true,
+            message: `已归属 ${asset.id} 到人设 ${args.targetPersonaId}`,
+            pending: [],
+            asset: { id: asset.id, personaId: asset.personaId },
+          }
+        } catch (error) {
+          return { ok: false, message: error instanceof Error ? error.message : String(error), pending: [], asset: undefined }
+        }
+      }
+      const pending = service.listPending().map(entry => ({ id: entry.id, kind: entry.kind, reason: entry.reason }))
+      const lines = pending.length === 0 ? ['暂无待归属记录'] : pending.map(p => `${p.id}\t${p.kind}\t${p.reason}`)
+      return { ok: true, message: lines.join('\n'), pending, asset: undefined }
     },
   })
 
@@ -266,9 +399,10 @@ export function makeTools(deps: ToolsDeps) {
 
   const toolNotes = defineTool({
     name: 'xhs_notes',
-    description: '查询指定账号的已发布笔记知识库（含标题、权重、最近指标摘要）。',
+    description: '查询已发布笔记知识库（含标题、权重、最近指标摘要）。支持直接按 personaId 查询，或按 accountId 兼容解析账号当前人设。',
     parameters: {
-      accountId: { type: 'string', required: true, description: '账号 id' },
+      accountId: { type: 'string', description: '账号 id（兼容：解析账号当前人设）' },
+      personaId: { type: 'string', description: '人设 id（直接按人设查询）' },
     },
     output: {
       schema: {
@@ -283,15 +417,15 @@ export function makeTools(deps: ToolsDeps) {
       render: (_args, value) => render(value),
     },
     isConcurrencySafe: () => true,
-    async execute(args: { accountId: string }, _exec: unknown) {
-      if (!store.listAccounts().some(account => account.id === args.accountId)) {
-        return { ok: false, message: `账号不存在：${args.accountId}`, notes: [] }
-      }
-      const notes = store.listPublishedNotes(args.accountId)
+    async execute(args: { accountId?: string; personaId?: string }, _exec: unknown) {
+      const resolved = resolveToolScope({ accountId: args.accountId, personaId: args.personaId })
+      if ('error' in resolved) return { ok: false, message: resolved.error, notes: [] }
+      const notes = service.listNotes(resolved.personaId)
+      const accountId = args.accountId
       const lines = notes.length === 0
-        ? ['该账号还没有已发布笔记']
+        ? ['该人设还没有已发布笔记']
         : notes.map(note => {
-            const metric = store.listMetricSnapshots(args.accountId, note.id).at(-1)
+            const metric = accountId !== undefined ? store.listMetricSnapshots(accountId, note.id).at(-1) : undefined
             return `${note.id}\t权重 ${note.weight}\t${note.title}${metric !== undefined ? `\t阅读 ${metric.reads}` : ''}`
           })
       return { ok: true, message: lines.join('\n'), notes: lines }
@@ -330,5 +464,5 @@ export function makeTools(deps: ToolsDeps) {
     },
   })
 
-  return [toolToday, toolDraftSave, toolVirals, toolAccounts, toolDraftStatus, toolNotes, toolCollectionStatus]
+  return [toolToday, toolDraftSave, toolVirals, toolViralAdd, toolPendingOwnership, toolAccounts, toolDraftStatus, toolNotes, toolCollectionStatus]
 }

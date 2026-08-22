@@ -68,6 +68,7 @@
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:quality": "node scripts/eval-content-quality.ts"
   }
 }

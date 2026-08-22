@@ -1,4 +1,4 @@
-/** /viral 爆款池路由：列表、采集入库、审核。 */
+/** /viral 爆款池路由：列表、采集入库、审核、手动新增、转移与批次删除。 */
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';
 import type { ViralProvider } from '../collector/provider.ts';
 import type { MatrixStore } from '../store.ts';

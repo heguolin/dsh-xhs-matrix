@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { isLoopbackRequest } from '../loopback.ts'
 import { XHS_API } from '../protocol.ts'
-import { type DraftPayload, type MatrixStore } from '../store.ts'
+import { MatrixStoreError, type DraftPayload, type MatrixStore } from '../store.ts'
 import type { DraftMetrics, DraftStatus } from '../types.ts'
 import { fail, guard, queryParam, readJsonBody, writeJson } from './shared.ts'
 
@@ -99,11 +99,15 @@ export function makeDraftsRoutes(store: MatrixStore): WebRoute[] {
         // 权重默认 0（后续在知识库手动打分）；重复发布不重复入库。
         let note: unknown
         if (status === 'published' && !wasPublished) {
+          const account = store.listAccounts().find(item => item.id === draft.accountId)
+          if (account === undefined || account.personaId === '') throw new MatrixStoreError('该账号尚未分配人设，无法写入知识库')
           const lines = draft.copy.split('\n')
           const title = (lines[0] ?? '').trim().slice(0, 60) || '未命名笔记'
           const body = lines.slice(1).join('\n').trim() || draft.copy
           note = store.savePublishedNote({
-            accountId: draft.accountId,
+            personaId: account.personaId,
+            sourceAccountId: draft.accountId,
+            sourceAccountName: account.name,
             title,
             copy: body,
             topic: draft.tags !== undefined && draft.tags !== '' ? draft.tags.replace(/#/g, ' ').trim().slice(0, 100) : undefined,

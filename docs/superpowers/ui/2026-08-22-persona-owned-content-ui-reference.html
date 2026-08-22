@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>矩阵工作台 · 人设资产 UI 参考稿</title>
+  <style>
+    :root {
+      --ink: #241b1d;
+      --muted: #817477;
+      --line: #eadfe1;
+      --paper: #fffdfb;
+      --wash: #f8f4f2;
+      --soft: #fff1f3;
+      --red: #ec3655;
+      --red-dark: #bd1837;
+      --amber: #c87a18;
+      --green: #21865b;
+      --shadow: 0 18px 50px rgba(74, 35, 45, .10);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: #2a3144; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font: 14px/1.55 "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 28px 28px,
+        #2a3144;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+
+    .stage {
+      width: min(1180px, calc(100vw - 32px));
+      min-height: calc(100vh - 32px);
+      margin: 16px auto;
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 24px 90px rgba(0,0,0,.22);
+    }
+
+    .rail {
+      position: relative;
+      padding: 24px 14px 18px;
+      border-right: 1px solid var(--line);
+      background: #fcfaf8;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 8px 28px; font-weight: 800; }
+    .brand-mark {
+      display: grid; place-items: center; width: 28px; height: 28px;
+      color: white; background: var(--red); border-radius: 9px 9px 9px 3px;
+      font-family: Georgia, serif; font-size: 16px;
+    }
+    .eyebrow { margin: 18px 10px 7px; color: #a29497; font-size: 11px; letter-spacing: .12em; }
+    .account {
+      display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px;
+      width: 100%; padding: 9px; border: 1px solid transparent; border-radius: 9px; background: transparent;
+      text-align: left; cursor: pointer;
+    }
+    .account.active { border-color: #f4a4b3; background: white; box-shadow: 0 4px 16px rgba(126,45,63,.07); }
+    .avatar { display: grid; place-items: center; width: 28px; height: 28px; background: #ffe0e6; border-radius: 50%; color: var(--red-dark); font-weight: 800; }
+    .account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 650; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #f1a42b; }
+    .add-account { width: 100%; padding: 8px; color: #887b7e; border: 1px dashed var(--line); background: transparent; border-radius: 9px; cursor: pointer; }
+    .nav { display: grid; gap: 3px; }
+    .nav button {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 11px;
+      border: 0; border-radius: 8px; background: transparent; text-align: left; cursor: pointer;
+    }
+    .nav button:hover { background: #f5efed; }
+    .nav button.active { color: var(--red-dark); background: #ffe9ed; font-weight: 750; }
+    .nav .ico { width: 18px; color: #a18e93; text-align: center; }
+    .nav button.active .ico { color: var(--red); }
+    .rail-note { position: absolute; left: 18px; right: 18px; bottom: 18px; color: #a29497; font-size: 11px; }
+
+    .workspace { min-width: 0; background: var(--paper); }
+    .topbar {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      min-height: 76px; padding: 14px 26px; border-bottom: 1px solid var(--line); background: rgba(255,253,251,.95); backdrop-filter: blur(12px);
+    }
+    .title h1 { margin: 0; font: 800 21px/1.2 "Noto Serif SC", "Songti SC", serif; letter-spacing: -.02em; }
+    .title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .persona-switcher {
+      display: flex; align-items: center; gap: 10px; min-width: 242px; padding: 8px 10px;
+      border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: 0 3px 14px rgba(56,29,35,.05);
+    }
+    .persona-switcher .avatar { width: 30px; height: 30px; }
+    .persona-switcher span { display: block; }
+    .persona-switcher .label { color: #9e8e92; font-size: 10px; }
+    .persona-switcher .value { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
+    .persona-switcher select { margin-left: auto; width: 18px; border: 0; color: transparent; background: transparent; cursor: pointer; }
+    .content { padding: 22px 26px 100px; }
+    .view { display: none; animation: rise .22s ease; }
+    .view.active { display: block; }
+    @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+
+    .scope-band {
+      display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; align-items: center;
+      margin-bottom: 18px; padding: 16px 18px; border-left: 4px solid var(--red); background: var(--wash);
+    }
+    .scope-band h2 { margin: 0 0 3px; font-size: 15px; }
+    .scope-band p { margin: 0; color: var(--muted); font-size: 12px; }
+    .scope-stats { display: flex; gap: 18px; }
+    .scope-stats b { display: block; font-size: 17px; }
+    .scope-stats span { color: var(--muted); font-size: 10px; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; }
+    .toolbar .spacer { flex: 1; }
+    .btn { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; }
+    .btn:hover { border-color: #d9bfc4; box-shadow: 0 3px 12px rgba(91,49,57,.07); }
+    .btn.primary { color: white; border-color: var(--red); background: var(--red); font-weight: 700; }
+    .btn.ghost-red { color: var(--red-dark); border-color: #f0b1bd; background: #fff7f8; }
+    .filter { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #5e5053; }
+    .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; background: #f0ecea; color: #67595c; font-size: 11px; }
+    .chip.red { color: var(--red-dark); background: #ffe7ec; }
+    .chip.green { color: var(--green); background: #e7f6ef; }
+    .chip.amber { color: #9a5b08; background: #fff0d9; }
+
+    .split { display: grid; grid-template-columns: 210px minmax(0,1fr); gap: 14px; align-items: start; }
+    .batch-list, .panel { border: 1px solid var(--line); background: white; }
+    .batch-list { position: sticky; top: 96px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+    .panel-head h3 { margin: 0; font-size: 13px; }
+    .batch { width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #f2e9e7; background: white; text-align: left; cursor: pointer; }
+    .batch:last-child { border-bottom: 0; }
+    .batch.active { box-shadow: inset 3px 0 var(--red); background: #fff8f8; }
+    .batch strong { display: block; margin-bottom: 4px; font-size: 12px; }
+    .batch small { color: var(--muted); }
+    .batch-count { float: right; color: var(--red-dark); font-weight: 800; }
+    .item { padding: 15px 16px; border-bottom: 1px solid #f0e7e5; }
+    .item:last-child { border-bottom: 0; }
+    .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .item h4 { margin: 0 0 5px; font-size: 14px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: var(--muted); font-size: 11px; }
+    .excerpt { margin: 10px 0; color: #5c4d50; font-size: 12px; }
+    .item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .weight { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; background: #faf7f5; }
+    .weight button { width: 26px; height: 25px; border: 0; border-radius: 5px; background: transparent; color: #8e7e81; font-size: 11px; cursor: pointer; }
+    .weight button.on { color: white; background: var(--red); font-weight: 800; }
+    .text-action { padding: 4px; border: 0; background: transparent; color: #78696c; font-size: 11px; cursor: pointer; }
+    .text-action:hover { color: var(--red-dark); }
+    .warning { margin-top: 10px; padding: 7px 9px; color: #8b570f; background: #fff6e8; border-left: 3px solid #e7a746; font-size: 11px; }
+
+    .note-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .note-card { padding: 16px; border: 1px solid var(--line); background: white; }
+    .note-card h3 { margin: 10px 0 6px; font-size: 14px; }
+    .note-card p { color: #6c5d60; font-size: 12px; }
+
+    .settings-layout { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(280px,.9fr); gap: 14px; }
+    .settings-card { padding: 18px; border: 1px solid var(--line); background: white; }
+    .section-no { color: var(--red); font: 700 11px/1 Georgia, serif; letter-spacing: .12em; }
+    .settings-card h3 { margin: 7px 0 14px; font: 750 16px/1.3 "Noto Serif SC", serif; }
+    .field { margin-bottom: 15px; }
+    .field label { display: block; margin-bottom: 6px; color: #6b5c5f; font-size: 11px; font-weight: 700; }
+    .field input, .field textarea { width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 7px; background: #fffefa; outline: none; }
+    .field textarea { min-height: 82px; resize: vertical; }
+    .field input:focus, .field textarea:focus { border-color: #ef879b; box-shadow: 0 0 0 3px #fff0f3; }
+    .tag-editor { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--line); background: #fffefa; }
+    .tag-editor input { flex: 1; min-width: 120px; border: 0; outline: 0; background: transparent; }
+    .example { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; padding: 9px; background: var(--wash); }
+    .example b { color: var(--red); font: 700 12px Georgia, serif; }
+    .helper { color: var(--muted); font-size: 11px; }
+
+    .studio-shell { display: grid; grid-template-columns: minmax(0,1fr) 240px; gap: 14px; align-items: start; }
+    .conversation { min-width: 0; }
+    .progress-strip { display: grid; grid-template-columns: repeat(4,1fr); margin-bottom: 14px; border: 1px solid var(--line); }
+    .phase { position: relative; padding: 10px 9px 9px 28px; border-right: 1px solid var(--line); color: #9a8b8e; font-size: 10px; }
+    .phase:last-child { border-right: 0; }
+    .phase::before { content: ''; position: absolute; left: 10px; top: 13px; width: 8px; height: 8px; border: 1px solid #b9aaad; border-radius: 50%; }
+    .phase.done { color: #5b4b4e; background: #fff9f9; }
+    .phase.done::before { border-color: var(--red); background: var(--red); }
+    .phase.current { color: var(--red-dark); font-weight: 800; }
+    .phase.current::before { box-shadow: 0 0 0 4px #ffe6eb; }
+    .message { max-width: 88%; margin: 0 0 12px; padding: 13px 15px; border: 1px solid var(--line); background: white; }
+    .message.user { margin-left: auto; color: white; border-color: var(--red); background: var(--red); }
+    .plan-box { margin-bottom: 12px; border: 1px solid #efc4cc; background: #fff9fa; }
+    .plan-box summary { padding: 11px 13px; color: var(--red-dark); cursor: pointer; font-weight: 750; }
+    .plan-body { padding: 0 13px 13px; color: #69595c; font-size: 12px; }
+    .final-copy { padding: 18px; border: 1px solid var(--line); background: white; box-shadow: 0 8px 30px rgba(83,43,52,.06); }
+    .final-copy h3 { margin: 0 0 14px; font: 800 17px/1.35 "Noto Serif SC", serif; }
+    .final-copy p { margin: 0 0 10px; color: #4d3f42; }
+    .context-card { position: sticky; top: 96px; padding: 15px; border: 1px solid var(--line); background: var(--wash); }
+    .context-card h3 { margin: 0 0 12px; font-size: 13px; }
+    .context-row { padding: 9px 0; border-top: 1px solid var(--line); }
+    .context-row b { display: block; font-size: 11px; }
+    .context-row span { color: var(--muted); font-size: 11px; }
+    .quality-pass { margin-top: 12px; padding: 10px; color: var(--green); border: 1px solid #bce0d1; background: #edf9f4; font-size: 11px; }
+    .composer {
+      position: sticky; bottom: 0; z-index: 4; display: grid; grid-template-columns: 1fr auto; gap: 8px;
+      margin: 24px -6px -84px; padding: 12px; border: 1px solid #edcfd5; background: rgba(255,253,251,.96); box-shadow: 0 -12px 30px rgba(83,43,52,.08); backdrop-filter: blur(12px);
+    }
+    .composer textarea { min-height: 48px; max-height: 120px; padding: 11px; border: 0; background: transparent; resize: none; outline: none; }
+
+    dialog { width: min(560px, calc(100vw - 32px)); padding: 0; border: 0; background: white; box-shadow: var(--shadow); }
+    dialog::backdrop { background: rgba(32,24,26,.46); backdrop-filter: blur(2px); }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font: 800 17px "Noto Serif SC", serif; }
+    .dialog-body { padding: 18px; }
+    .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; background: var(--wash); }
+
+    .handoff-note {
+      position: fixed; right: 18px; bottom: 16px; z-index: 9; max-width: 260px; padding: 10px 12px;
+      color: #efe9e9; background: rgba(34,27,29,.93); border: 1px solid rgba(255,255,255,.12); font-size: 11px;
+    }
+
+    @media (max-width: 860px) {
+      .stage { grid-template-columns: 70px minmax(0,1fr); width: calc(100vw - 16px); margin: 8px; }
+      .brand { margin-inline: 7px; }
+      .brand strong, .eyebrow, .account-name, .account .dot, .add-account, .nav button span:not(.ico), .rail-note { display: none; }
+      .account { display: grid; place-items: center; padding: 7px; }
+      .nav button { justify-content: center; padding: 10px; }
+      .topbar { padding-inline: 18px; }
+      .persona-switcher { min-width: 190px; }
+      .split, .studio-shell, .settings-layout { grid-template-columns: 1fr; }
+      .batch-list, .context-card { position: static; }
+      .batch-list { display: grid; grid-template-columns: repeat(3,1fr); }
+      .note-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      .stage { display: block; }
+      .rail { display: none; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .persona-switcher { width: 100%; }
+      .content { padding: 16px 14px 90px; }
+      .scope-band { grid-template-columns: 1fr; }
+      .batch-list { grid-template-columns: 1fr; }
+      .progress-strip { grid-template-columns: 1fr 1fr; }
+      .phase:nth-child(2) { border-right: 0; }
+      .phase:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .handoff-note { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <aside class="rail">
+      <div class="brand"><span class="brand-mark">薯</span><strong>矩阵工作台</strong></div>
+      <div class="eyebrow">我的账号</div>
+      <button class="account active"><span class="avatar">傅</span><span class="account-name">AI 大模型开发工程师傅</span><span class="dot"></span></button>
+      <button class="account"><span class="avatar">学</span><span class="account-name">学生成长实验室</span><span class="dot"></span></button>
+      <button class="add-account">＋ 添加账号</button>
+      <div class="eyebrow">运营</div>
+      <nav class="nav">
+        <button><span class="ico">◇</span><span>总览</span></button>
+        <button data-view="knowledge"><span class="ico">▤</span><span>已发布知识库</span></button>
+        <button class="active" data-view="viral"><span class="ico">✦</span><span>爆款池</span></button>
+      </nav>
+      <div class="eyebrow">创作</div>
+      <nav class="nav">
+        <button data-view="studio"><span class="ico">✎</span><span>创作台</span></button>
+        <button><span class="ico">▣</span><span>草稿箱</span></button>
+      </nav>
+      <div class="eyebrow">设置</div>
+      <nav class="nav"><button data-view="persona"><span class="ico">◉</span><span>人设配置</span></button></nav>
+      <div class="rail-note">账号是发布入口<br/>人设是内容资产主体</div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="title"><h1 id="page-title">爆款池</h1><p id="page-subtitle">按人设沉淀灵感，人工权重优先进入创作上下文</p></div>
+        <label class="persona-switcher">
+          <span class="avatar">AI</span>
+          <span><span class="label">当前资产人设</span><span class="value">AI 大模型应用开发工程师</span></span>
+          <select aria-label="切换人设"><option>AI 大模型应用开发工程师</option><option>学生成长实验室</option></select>
+        </label>
+      </header>
+
+      <div class="content">
+        <section class="view active" id="viral">
+          <div class="scope-band"><div><h2>AI 大模型应用开发工程师 · 共享爆款池</h2><p>由 2 个账号共同使用；切换账号不会搬移或复制内容。</p></div><div class="scope-stats"><div><b>28</b><span>已采纳</span></div><div><b>11</b><span>待审核</span></div><div><b>4.2</b><span>平均权重</span></div></div></div>
+          <div class="toolbar"><select class="filter"><option>全部状态</option><option>已采纳</option><option>待审核</option></select><select class="filter"><option>全部来源</option><option>手动新增</option><option>自动采集</option></select><div class="spacer"></div><button class="btn" id="pending-btn">待归属 3</button><button class="btn">采集爆款</button><button class="btn primary" id="open-manual">＋ 手动新增</button></div>
+          <div class="split">
+            <aside class="batch-list"><div class="panel-head"><h3>采集批次</h3><span class="chip">39 条</span></div><button class="batch active"><span class="batch-count">12</span><strong>今天 · AI 编程</strong><small>自动采集 · 10:24</small></button><button class="batch"><span class="batch-count">10</span><strong>8 月 21 日 · RAG</strong><small>自动采集 · 昨天</small></button><button class="batch"><span class="batch-count">17</span><strong>手动精选</strong><small>持续积累</small></button></aside>
+            <section class="panel">
+              <div class="panel-head"><h3>今天 · AI 编程</h3><div><span class="chip amber">5 待审核</span> <span class="chip green">7 已采纳</span></div></div>
+              <article class="item"><div class="item-top"><div><h4>用 AI 写代码一年后，我留下的 4 条真心得</h4><div class="meta"><span class="chip red">手动精选</span><span>来源：工程师傅</span><span>今天 09:32</span></div></div><span class="chip green">已采纳</span></div><p class="excerpt">别把 AI 当成许愿池。拆任务、给上下文、写测试，比一句“帮我写个系统”靠谱得多……</p><div class="item-actions"><span class="helper">人工权重</span><div class="weight" aria-label="权重 5"><button>0</button><button>1</button><button>2</button><button>3</button><button>4</button><button class="on">5</button></div><button class="text-action">转移人设</button><button class="text-action">编辑</button></div></article>
+              <article class="item"><div class="item-top"><div><h4>Cursor 真正省时间的不是补全，而是读旧代码</h4><div class="meta"><span class="chip">自动采集</span><span>来源：工程师傅</span><span>机器评分 87</span></div></div><span class="chip amber">待审核</span></div><p class="excerpt">一个真实的重构案例，包含上下文组织、测试补齐和最终耗时对比。</p><div class="warning">参考素材命中人设违禁词「最强」：只警告，不阻止收录；生成内容会强制拦截。</div><div class="item-actions"><span class="helper">人工权重</span><div class="weight" aria-label="权重 1"><button>0</button><button class="on">1</button><button>2</button><button>3</button><button>4</button><button>5</button></div><button class="text-action">采纳</button><button class="text-action">忽略</button></div></article>
+              <article class="item"><div class="item-top"><div><h4>RAG 项目最容易被忽略的不是召回率</h4><div class="meta"><span class="chip">自动采集</span><span>来源：学生成长实验室</span><span>机器评分 81</span></div></div><span class="chip green">已采纳</span></div><p class="excerpt">从可观测性切入，把工程问题讲成人能理解的复盘。</p><div class="item-actions"><span class="helper">人工权重</span><div class="weight" aria-label="权重 4"><button>0</button><button>1</button><button>2</button><button>3</button><button class="on">4</button><button>5</button></div><button class="text-action">转移人设</button></div></article>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="knowledge">
+          <div class="scope-band"><div><h2>AI 大模型应用开发工程师 · 已发布知识库</h2><p>同一人设下的账号共同复用；发布账号作为来源快照保留。</p></div><div class="scope-stats"><div><b>18</b><span>已发布</span></div><div><b>9</b><span>高权重</span></div><div><b>2</b><span>共享账号</span></div></div></div>
+          <div class="toolbar"><input class="filter" value="" placeholder="搜索标题或正文"/><select class="filter"><option>全部来源账号</option></select><div class="spacer"></div><button class="btn">待归属 1</button><button class="btn primary">导入已发布笔记</button></div>
+          <div class="note-grid">
+            <article class="note-card"><div><span class="chip green">已发布</span> <span class="chip">来源：工程师傅</span></div><h3>大模型项目落地，我为什么先做评估集</h3><p>真实项目复盘：先定义失败，再选择模型和框架。来源链接、发布时间和历史指标均保留。</p><div class="item-actions"><span class="helper">参考权重</span><div class="weight"><button>0</button><button>1</button><button>2</button><button>3</button><button>4</button><button class="on">5</button></div><button class="text-action">转移人设</button></div></article>
+            <article class="note-card"><div><span class="chip green">已发布</span> <span class="chip">来源：学生成长实验室</span></div><h3>第一次搭 RAG，别先纠结向量库</h3><p>用最小可复现流程讲清分块、召回和评估，减少堆术语。</p><div class="warning">素材命中「百分百」，生成时不会直接复制。</div><div class="item-actions"><span class="helper">参考权重</span><div class="weight"><button>0</button><button>1</button><button>2</button><button class="on">3</button><button>4</button><button>5</button></div><button class="text-action">转移人设</button></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="persona">
+          <div class="scope-band"><div><h2>写作规则属于人设，不属于账号</h2><p>下面的风格、结尾互动与违禁词，会同步作用于绑定此人设的 2 个账号。</p></div><button class="btn ghost-red">查看绑定账号</button></div>
+          <div class="settings-layout">
+            <section class="settings-card"><span class="section-no">01 / VOICE</span><h3>写作风格</h3><div class="field"><label>风格标签 · 可自由新增、编辑、删除</label><div class="tag-editor"><span class="chip red">痛点切入 ×</span><span class="chip red">真实对比 ×</span><span class="chip red">经验清单 ×</span><input placeholder="输入自定义风格后回车"/></div><p class="helper">这些是正文表达风格，不再称为“钩子”。预设只做建议，不限制输入。</p></div><div class="field"><label>正文结构</label><textarea>场景 → 问题 → 实测过程 → 结论</textarea></div><div class="field"><label>内容方向</label><textarea>针对上班族、学生与初级开发者，写可复现的 AI 工程实践。</textarea></div></section>
+            <section class="settings-card"><span class="section-no">02 / ENDING</span><h3>结尾互动钩子</h3><div class="field"><label>约束词 · 自由文本</label><textarea>自然邀请读者分享经验或一起学习；不要强迫点赞关注，不制造焦虑。</textarea></div><div class="field"><label>最佳案例 · 可增删</label><div class="example"><b>01</b><span>你也在学这块的话，可以一起来学习学习。</span><button class="text-action">删除</button></div><div class="example"><b>02</b><span>你踩过哪些坑？欢迎把真实经历留在评论区。</span><button class="text-action">删除</button></div><button class="btn">＋ 添加案例</button></div></section>
+            <section class="settings-card"><span class="section-no">03 / SAFETY</span><h3>人设违禁词</h3><div class="field"><label>每个人设独立配置</label><div class="tag-editor"><span class="chip amber">绝对 ×</span><span class="chip amber">百分百 ×</span><span class="chip amber">包过 ×</span><input placeholder="输入违禁词后回车"/></div></div><p class="helper">参考素材命中：提示但允许保存。生成稿命中：阻止保存，并标出具体位置。</p></section>
+            <section class="settings-card"><span class="section-no">04 / SAVE</span><h3>生效范围</h3><p>绑定账号：AI 大模型开发工程师傅、学生成长实验室</p><p class="helper">账号换绑不会迁移历史资产；如需迁移，必须在知识库或爆款池显式操作。</p><div class="toolbar"><button class="btn primary">保存人设设置</button><button class="btn">放弃更改</button></div></section>
+          </div>
+        </section>
+
+        <section class="view" id="studio">
+          <div class="scope-band"><div><h2>专属创作 · AI 大模型应用开发工程师</h2><p>已加载 18 篇知识库、28 条爆款参考与人设安全规则。</p></div><span class="chip green">仅生成草稿 · 不自动发布</span></div>
+          <div class="studio-shell">
+            <div class="conversation">
+              <div class="progress-strip"><div class="phase done">规划</div><div class="phase done">起草</div><div class="phase done">去 AI 味</div><div class="phase current">违禁词检查</div></div>
+              <div class="message user">帮我写一篇用 AI 写代码的真实心得，口语一点。</div>
+              <details class="plan-box" open><summary>创作说明 · 可审计摘要</summary><div class="plan-body">角度：不用“效率翻倍”这类空泛承诺，从一次真实重构切入。<br/>参考：高权重知识库 2 篇、手动爆款 1 条。<br/>结构：具体场景 → 3 个判断 → 风险提醒 → 自然互动。</div></details>
+              <article class="final-copy"><span class="chip red">最终稿 · 流式输出</span><h3>用 AI 写代码一年后，我留下的不是提示词</h3><p>刚开始用 AI 写代码时，我也干过一件挺离谱的事：把整个需求扔进去，然后等它给我一个能上线的系统。</p><p>结果当然不太行。代码能跑，但边界条件、权限和数据迁移，全靠它“猜”。后来我才慢慢把用法改过来……</p><p>现在我更愿意把它当成一个手很快、但不了解业务的新同事。任务拆小，背景讲清，测试先写，它确实能帮上忙。</p><p>你也在摸索 AI 编程的话，可以一起来学习学习。</p></article>
+              <div class="quality-pass">✓ 去 AI 味审校完成 · 未命中违禁词 · 可以保存草稿</div>
+            </div>
+            <aside class="context-card"><h3>本次创作依据</h3><div class="context-row"><b>人设规则</b><span>真实对比 / 经验清单 / 自然互动</span></div><div class="context-row"><b>知识库</b><span>引用 2 / 18 篇 · 权重 5 优先</span></div><div class="context-row"><b>爆款参考</b><span>引用 1 / 28 条 · 不复制原文</span></div><div class="context-row"><b>安全规则</b><span>3 个违禁词已检查</span></div><button class="btn" style="width:100%;margin-top:10px">保存为草稿</button></aside>
+          </div>
+          <div class="composer"><textarea aria-label="创作指令" placeholder="输入创作指令……"></textarea><button class="btn primary">发送 ↑</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="manual-dialog">
+    <div class="dialog-head"><h2>手动新增爆款笔记</h2><button class="text-action" id="close-manual">关闭</button></div>
+    <div class="dialog-body"><div class="field"><label>归属人设</label><input value="AI 大模型应用开发工程师" readonly/></div><div class="field"><label>标题</label><input value="用 AI 写代码一年后，我留下的 4 条真心得"/></div><div class="field"><label>正文</label><textarea>粘贴或输入爆款笔记正文。手动新增默认已采纳，权重为 5。</textarea></div><div class="field"><label>来源链接 · 可选</label><input placeholder="https://"/></div><p class="helper">默认状态：已采纳　·　默认人工权重：5　·　可在保存后继续调整</p></div>
+    <div class="dialog-foot"><button class="btn" id="cancel-manual">取消</button><button class="btn primary" id="save-manual">保存到该人设</button></div>
+  </dialog>
+  <div class="handoff-note">视觉方向：克制的“编辑部工作台”<br/>强调人设归属、密度与窄宽可读性。</div>
+
+  <script>
+    const copy = {
+      viral: ['爆款池','按人设沉淀灵感，人工权重优先进入创作上下文'],
+      knowledge: ['已发布知识库','账号保留来源，人设拥有内容与权重'],
+      persona: ['人设配置','写作风格、结尾互动与安全规则独立管理'],
+      studio: ['创作台','可审计创作摘要、两阶段质检与流式最终稿']
+    };
+    document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('[data-view]').forEach(v => v.classList.remove('active'));
+      document.getElementById(btn.dataset.view).classList.add('active');
+      btn.classList.add('active');
+      document.getElementById('page-title').textContent = copy[btn.dataset.view][0];
+      document.getElementById('page-subtitle').textContent = copy[btn.dataset.view][1];
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }));
+    document.querySelectorAll('.weight').forEach(group => group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+      group.querySelectorAll('button').forEach(x => x.classList.remove('on')); button.classList.add('on');
+    })));
+    const dialog = document.getElementById('manual-dialog');
+    document.getElementById('open-manual').addEventListener('click', () => dialog.showModal());
+    ['close-manual','cancel-manual','save-manual'].forEach(id => document.getElementById(id).addEventListener('click', () => dialog.close()));
+  </script>
+</body>
+</html>

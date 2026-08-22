@@ -1,13 +1,18 @@
-/** /studio 创作台路由：会话消息收发与草稿保存。 */
+/** /studio 创作台路由：会话消息收发、两阶段结构化 SSE 流式与草稿保存。 */
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { isLoopbackRequest } from '../loopback.ts'
 import { XHS_API } from '../protocol.ts'
 import type { MatrixStore } from '../store.ts'
-import type { StudioService } from '../studio.ts'
+import { QualityBlockedError, type StudioService, type StudioSseEvent } from '../studio.ts'
 import type { DraftEvidence } from '../types.ts'
 import { fail, guard, queryParam, readJsonBody, writeJson } from './shared.ts'
+
+/** 写一条结构化 SSE 事件。 */
+function writeSse(res: ServerResponse, event: StudioSseEvent): void {
+  res.write(`data: ${JSON.stringify(event)}\n\n`)
+}
 
 /**
  * 构建 /studio 创作台路由。
@@ -30,7 +35,9 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
       const accountId = queryParam(new URL(req.url ?? '/', 'http://localhost'), 'account')
       if (accountId === undefined) { writeJson(res, 400, { error: 'account 查询参数必填' }); return }
       if (method === 'GET') {
-        writeJson(res, 200, { messages: store.listStudioMessages(accountId) })
+        // 创作台只读取当前账号且当前人设快照匹配的消息，避免账号换绑后混入旧人设会话。
+        const personaId = store.listAccounts().find(item => item.id === accountId)?.personaId ?? ''
+        writeJson(res, 200, { messages: store.listStudioMessages(accountId, personaId) })
         return
       }
       if (method !== 'POST') { writeJson(res, 405, { error: `method not allowed: ${method}` }); return }
@@ -40,9 +47,14 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
       const input = typeof body.input === 'string' && body.input.trim() !== '' ? body.input.trim() : ''
       const mode = body.mode === 'full' ? 'full' : 'creative'
       const stream = body.stream === true
+      const requestId = typeof body.requestId === 'string' && body.requestId !== '' ? body.requestId : undefined
       if (input === '') { writeJson(res, 400, { error: 'input 必填' }); return }
       if (stream) {
-        // SSE 流式：text-delta 增量 → data: {"delta":...}；完成后 data: {"done":true,...}。
+        // 进行中去重（REQUEST_IN_PROGRESS）：必须在写 SSE 200 头之前判定，才能返回 409。
+        if (requestId !== undefined && studio.isInFlight(requestId)) {
+          writeJson(res, 409, { error: 'REQUEST_IN_PROGRESS: 相同请求正在进行中' })
+          return
+        }
         res.writeHead(200, {
           'content-type': 'text/event-stream; charset=utf-8',
           'cache-control': 'no-cache',
@@ -50,13 +62,11 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
           'x-accel-buffering': 'no',
         })
         try {
-          const result = await studio.sendStream(accountId, input, mode, delta => {
-            res.write(`data: ${JSON.stringify({ delta })}\n\n`)
-          })
-          res.write(`data: ${JSON.stringify({ done: true, messageId: result.message.id, coverPrompt: result.coverPrompt, evidence: result.evidence, warning: result.warning })}\n\n`)
+          // 事件由 studio.sendStream 经 onEvent 逐条转发（phase/evidence/plan_delta/content_delta/quality/done）。
+          await studio.sendStream(accountId, input, mode, event => writeSse(res, event), { requestId })
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          res.write(`data: ${JSON.stringify({ error: message })}\n\n`)
+          writeSse(res, { type: 'error', stage: 'stream', retryable: true, message })
         } finally {
           res.end()
         }
@@ -65,7 +75,10 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
       try {
         const result = await studio.send(accountId, input, mode)
         writeJson(res, 201, { message: result.message, evidence: result.evidence, warning: result.warning })
-      } catch (error) { fail(res, error) }
+      } catch (error) {
+        if (error instanceof QualityBlockedError) { writeJson(res, 409, { error: 'QUALITY_BLOCKED: ' + error.message }); return }
+        fail(res, error)
+      }
     }),
     // ------------------------------------------------------------ 草稿保存（创作台）
     route(XHS_API.studio + '/draft', async (req, res) => {
@@ -85,7 +98,11 @@ export function makeStudioRoutes(store: MatrixStore, studio?: StudioService): We
           evidence: body.evidence as DraftEvidence | undefined,
         })
         writeJson(res, 201, { draft })
-      } catch (error) { fail(res, error) }
+      } catch (error) {
+        // 违禁词命中：禁止保存，返回 409 QUALITY_BLOCKED。
+        if (error instanceof QualityBlockedError) { writeJson(res, 409, { error: 'QUALITY_BLOCKED: ' + error.message }); return }
+        fail(res, error)
+      }
     }),
   ]
 }

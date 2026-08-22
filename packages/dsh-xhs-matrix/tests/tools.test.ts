@@ -28,7 +28,8 @@ describe('xhs 工具族', () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业、数据支撑' })
     const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id)[0].id, 'accepted')
     const [today] = makeTools({ store, ctx: {} as any })
     const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
     expect(result.ok).toBe(true)
@@ -41,7 +42,7 @@ describe('xhs 工具族', () => {
     const store = newStore()
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
     const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
     const now = new Date()
     const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     store.saveDraft({ accountId: account.id, date: local, copy: 'c', coverPrompt: 'p' })
@@ -111,10 +112,11 @@ describe('xhs 工具族', () => {
 
   it('xhs_virals：查询账号爆款池并按状态过滤', async () => {
     const store = newStore()
-    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
-    store.saveViralItem({ accountId: account.id, title: '爆款A', body: '正文A', sourceUrl: 'https://x.com/a', source: 'apify', score: 70, reasons: ['命中人设方向'] })
-    store.reviewViralItem(account.id, store.listViralItems(account.id)[0].id, 'accepted')
-    store.saveViralItem({ accountId: account.id, title: '爆款B', body: '正文B', source: 'apify', score: 60, reasons: ['高互动'] })
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.saveViralItem({ personaId: persona.id, title: '爆款A', body: '正文A', sourceUrl: 'https://x.com/a', source: 'apify', score: 70, reasons: ['命中人设方向'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id)[0].id, 'accepted')
+    store.saveViralItem({ personaId: persona.id, title: '爆款B', body: '正文B', source: 'apify', score: 60, reasons: ['高互动'] })
     const tools = makeTools({ store, ctx: {} as any })
     const viralsTool = tools.find(t => t.name === 'xhs_virals')!
     const all = await viralsTool.execute({ accountId: account.id }, execStub) as { ok: boolean; items: Array<{ id: string; title: string; status: string; score: number; reasons: string[] }> }
@@ -141,8 +143,9 @@ describe('xhs 工具族', () => {
 
   it('xhs_notes：查询账号已发布笔记知识库', async () => {
     const store = newStore()
-    const account = store.upsertAccount({ name: '账号A', personaId: '', enabled: true })
-    store.savePublishedNote({ accountId: account.id, title: '实测笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.savePublishedNote({ personaId: persona.id, title: '实测笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
     const tools = makeTools({ store, ctx: {} as any })
     const notesTool = tools.find(t => t.name === 'xhs_notes')!
     const result = await notesTool.execute({ accountId: account.id }, execStub) as { ok: boolean; notes: string[] }
@@ -199,5 +202,97 @@ describe('xhs 工具族', () => {
     expect(names).not.toContain('xhs_topics')
     expect(names).not.toContain('xhs_topic_add')
     expect(names).not.toContain('xhs_trends')
+  })
+
+  it('xhs_viral_add：按人设手动新增爆款（accepted+5）', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const tools = makeTools({ store, ctx: {} as any })
+    const addTool = tools.find(t => t.name === 'xhs_viral_add')!
+    const result = await addTool.execute({ personaId: persona.id, title: '手动爆款', body: '正文' }, execStub) as { ok: boolean; item: { personaId: string; source: string; status: string; weight: number } }
+    expect(result.ok).toBe(true)
+    expect(result.item).toMatchObject({ personaId: persona.id, source: 'manual', status: 'accepted', weight: 5 })
+    expect(store.listViralItems(persona.id)).toHaveLength(1)
+  })
+
+  it('xhs_viral_add：persona 不存在时拒绝且不落库', async () => {
+    const store = newStore()
+    const tools = makeTools({ store, ctx: {} as any })
+    const addTool = tools.find(t => t.name === 'xhs_viral_add')!
+    const result = await addTool.execute({ personaId: 'ghost', title: '爆款', body: '正文' }, execStub) as { ok: boolean; message: string }
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('人设不存在')
+    expect(store.listViralItems()).toHaveLength(0)
+  })
+
+  it('xhs_pending_ownership：列出待归属并按 targetPersonaId 显式归属', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    store.stashPendingOwnership({
+      kind: 'published-note',
+      payload: { id: 'n1', title: '待归属', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 0, createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-20T00:00:00.000Z' },
+      reason: '迁移无法确定人设',
+    })
+    const tools = makeTools({ store, ctx: {} as any })
+    const pendingTool = tools.find(t => t.name === 'xhs_pending_ownership')!
+    const list = await pendingTool.execute({}, execStub) as { ok: boolean; pending: Array<{ id: string; reason: string }> }
+    expect(list.ok).toBe(true)
+    expect(list.pending).toHaveLength(1)
+    expect(list.pending[0].reason).toContain('迁移')
+    const assigned = await pendingTool.execute({ id: list.pending[0].id, targetPersonaId: persona.id }, execStub) as { ok: boolean }
+    expect(assigned.ok).toBe(true)
+    expect(store.listPendingOwnership()).toHaveLength(0)
+    expect(store.listPublishedNotes(persona.id)).toHaveLength(1)
+  })
+
+  it('xhs_draft_save：命中人设违禁词时禁止保存', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业', forbiddenWords: ['必看'] })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const tools = makeTools({ store, ctx: {} as any })
+    const saveTool = tools.find(t => t.name === 'xhs_draft_save')!
+    const blocked = await saveTool.execute({ accountId: account.id, copy: '这篇必看', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(blocked.ok).toBe(false)
+    expect(blocked.message).toContain('违禁词')
+    expect(store.listDrafts()).toHaveLength(0)
+  })
+
+  it('xhs_draft_save：无违禁词时保存并记录通过质量报告与人设快照', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业', forbiddenWords: ['必看'] })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const tools = makeTools({ store, ctx: {} as any })
+    const saveTool = tools.find(t => t.name === 'xhs_draft_save')!
+    const ok = await saveTool.execute({ accountId: account.id, copy: '自然内容', coverPrompt: 'p' }, execStub) as { ok: boolean }
+    expect(ok.ok).toBe(true)
+    const draft = store.listDrafts()[0]
+    expect(draft.qualityReport?.reviewStatus).toBe('passed')
+    expect(draft.personaIdSnapshot).toBe(persona.id)
+  })
+
+  it('xhs_today：只使用已采纳爆款，pending/ignored 不进入创作简报', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.saveViralItem({ personaId: persona.id, title: '待审核爆款', body: '正文', source: 'apify', score: 70, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '已采纳爆款', body: '正文', source: 'apify', score: 80, reasons: ['高互动'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id).find(item => item.title === '已采纳爆款')!.id, 'accepted')
+    const [today] = makeTools({ store, ctx: {} as any })
+    const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
+    expect(result.ok).toBe(true)
+    expect(result.briefs[0]).toContain('已采纳爆款')
+    expect(result.briefs[0]).not.toContain('待审核爆款')
+  })
+
+  it('xhs_draft_save：仅 legacy forbiddenExpressions 时同样阻止保存', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业', forbiddenExpressions: '必看,震惊' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const tools = makeTools({ store, ctx: {} as any })
+    const saveTool = tools.find(t => t.name === 'xhs_draft_save')!
+    const blocked = await saveTool.execute({ accountId: account.id, copy: '这篇必看', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(blocked.ok).toBe(false)
+    expect(blocked.message).toContain('违禁词')
+    expect(store.listDrafts()).toHaveLength(0)
   })
 })

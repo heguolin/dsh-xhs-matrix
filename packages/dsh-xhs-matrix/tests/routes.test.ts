@@ -4,6 +4,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createQualityService } from '../src/content-quality.ts'
 import type { ViralProvider } from '../src/collector/provider.ts'
 import { makeRoutes } from '../src/routes/index.ts'
 import { MatrixStore } from '../src/store.ts'
@@ -13,6 +14,9 @@ let server: Server
 let base: string
 let store: MatrixStore
 let viralProvider: ViralProvider
+
+/** 解析账号当前人设（v4 内容按人设归属）。 */
+const personaIdOf = (accountId: string): string => store.listAccounts().find(a => a.id === accountId)?.personaId ?? ''
 
 /** 记录 mock 数据源的 search 调用参数（路由透传验证）。 */
 const searchCalls: Array<{ accountId: string; query: string; maxItems: number }> = []
@@ -53,6 +57,11 @@ async function json(path: string, init?: RequestInit): Promise<{ status: number;
   return { status: response.status, body }
 }
 
+/** POST JSON 请求体辅助（新契约测试用）。 */
+function post(body: unknown): RequestInit {
+  return { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }
+}
+
 /** 建一个已分配人设的账号；返回账号 id。 */
 async function seedAccount(): Promise<string> {
   const personaRes = await json('/api/dsh-xhs-matrix/personas', {
@@ -65,6 +74,26 @@ async function seedAccount(): Promise<string> {
     body: JSON.stringify({ name: '账号A', personaId, enabled: true }),
   })
   return (accRes.body as { account: { id: string } }).account.id
+}
+
+/** 延迟可解析的 Promise（测试挂起进行中请求用）。 */
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve!: () => void
+  const promise = new Promise<void>(r => { resolve = r })
+  return { promise, resolve }
+}
+
+/** 两阶段模型客户端：阶段一输出计划/原始初稿，阶段二输出最终稿。 */
+function makeRouteLlm(plan: string, final: string): StudioLlmClient {
+  return {
+    async complete() { return { text: final } },
+    async stream(request, onDelta) {
+      const isPolish = request.system.includes('去 AI 味')
+      const text = isPolish ? final : plan
+      onDelta(text)
+      return text
+    },
+  }
 }
 
 describe('/api/dsh-xhs-matrix 路由', () => {
@@ -122,7 +151,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       body: JSON.stringify({ draftId, status: 'published' }),
     })
     expect(published.status).toBe(200)
-    const notes = store.listPublishedNotes(accountId)
+    const notes = store.listPublishedNotes(personaIdOf(accountId))
     expect(notes).toHaveLength(1)
     expect(notes[0].title).toBe('这是标题')
     expect(notes[0].copy).toBe('正文第一行 #AI工具')
@@ -134,7 +163,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       body: JSON.stringify({ draftId, status: 'published', metrics: { reads: 10, likes: 1, comments: 0, collected: '2026-08-22T00:00:00.000Z' } }),
     })
     expect(again.status).toBe(200)
-    expect(store.listPublishedNotes(accountId)).toHaveLength(1)
+    expect(store.listPublishedNotes(personaIdOf(accountId))).toHaveLength(1)
   })
 
   it('草稿缺失必填字段返回 400 且不落库', async () => {
@@ -164,17 +193,66 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     })
     expect(res.status).toBe(201)
     expect((res.body as { imported: number }).imported).toBe(2)
-    const notes = store.listPublishedNotes(accountId)
+    const notes = store.listPublishedNotes(personaIdOf(accountId))
     expect(notes).toHaveLength(2)
     expect(notes[0].title).toBe('标题一')
     // 发布日期缺省为当天日期（YYYY-MM-DD），保证人工导入无需填写精确日期。
     expect(notes[0].publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 
+  it('导入可显式指定目标人设；缺省回退账号人设；未知人设 404；账号保持来源快照', async () => {
+    // 两个账号分别绑定人设 A、B。
+    const personaA = await json('/api/dsh-xhs-matrix/personas', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '人设A', prompt: '内容' }),
+    })
+    const personaAId = (personaA.body as { persona: { id: string } }).persona.id
+    const personaB = await json('/api/dsh-xhs-matrix/personas', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '人设B', prompt: '内容' }),
+    })
+    const personaBId = (personaB.body as { persona: { id: string } }).persona.id
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '账号A', personaId: personaAId, enabled: true }),
+    })
+    const accountId = (accRes.body as { account: { id: string } }).account.id
+
+    // 显式目标人设 B：来自账号A的笔记落到人设B；sourceAccountId/Name 为账号A快照，账号A 仍绑在人设A。
+    const targeted = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: '目标B', copy: '正文' }]), personaId: personaBId }),
+    })
+    expect(targeted.status).toBe(201)
+    expect((targeted.body as { imported: number }).imported).toBe(1)
+    const notesB = store.listPublishedNotes(personaBId)
+    expect(notesB).toHaveLength(1)
+    expect(notesB[0].title).toBe('目标B')
+    expect(notesB[0].sourceAccountId).toBe(accountId)
+    expect(notesB[0].sourceAccountName).toBe('账号A')
+    // 账号自身人设 A 不受影响（不落到账号自身人设）。
+    expect(store.listPublishedNotes(personaAId)).toHaveLength(0)
+
+    // 缺省（不传 personaId）：回退到账号自身人设 A（legacy compat）。
+    const legacy = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: '回退A', copy: '正文' }]) }),
+    })
+    expect(legacy.status).toBe(201)
+    expect(store.listPublishedNotes(personaAId)).toHaveLength(1)
+
+    // 未知目标人设 → 404。
+    const bad = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: 'x', copy: 'y' }]), personaId: 'nope' }),
+    })
+    expect(bad.status).toBe(404)
+  })
+
   it('创作台保存草稿不要求 topicId', async () => {
     const accountId = await seedAccount()
     const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }), stream: async (_request, onDelta) => { onDelta('回复'); return '回复' } }
-    const studio = new StudioService(store, llm)
+    const studio = new StudioService(store, llm, createQualityService(llm))
     const { server: studioServer, base: studioBase } = await startServer(store, viralProvider, studio)
     try {
       const res = await json(studioBase + '/api/dsh-xhs-matrix/studio/draft', {
@@ -251,7 +329,44 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     const batches = (list.body as { batches: Array<{ items: Array<{ status: string }> }> }).batches
     expect(batches[0].items[0].status).toBe('accepted')
     // 入库条目可被 store 直接读到
-    expect(store.listViralItems(accountId, 'accepted')).toHaveLength(1)
+    expect(store.listViralItems(personaIdOf(accountId), 'accepted')).toHaveLength(1)
+  })
+
+  it('PATCH /viral 调权：weight 0-5 持久化并随 GET 返回，越界 400、缺失 404', async () => {
+    const accountId = await seedAccount()
+    const created = await json('/api/dsh-xhs-matrix/viral', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, query: 'AI 工具', maxItems: 5 }),
+    })
+    const item = (created.body as { items: Array<{ id: string; weight: number }> }).items[0]
+    expect(item.weight).toBe(1) // 采集默认权重 1
+
+    const patched = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=${item.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 4 }),
+    })
+    expect(patched.status).toBe(200)
+    expect((patched.body as { item: { weight: number } }).item.weight).toBe(4)
+
+    const list = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}`)
+    const batches = (list.body as { batches: Array<{ items: Array<{ weight: number }> }> }).batches
+    expect(batches[0].items[0].weight).toBe(4)
+    // store 里也确实更新了
+    expect(store.listViralItems(personaIdOf(accountId))[0].weight).toBe(4)
+
+    // 越界权重拒绝
+    const bad = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=${item.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 6 }),
+    })
+    expect(bad.status).toBe(400)
+
+    // 不存在的 item / 不属于该人设 → 404
+    const missing = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=nope`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 3 }),
+    })
+    expect(missing.status).toBe(404)
   })
 
   it('删除采集批次只删除该批，不影响其他批次', async () => {
@@ -265,11 +380,11 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ accountId, query: '效率', maxItems: 5 }),
     })
-    expect(store.listViralItems(accountId)).toHaveLength(2)
+    expect(store.listViralItems(personaIdOf(accountId))).toHaveLength(2)
     const deleted = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&batch=${firstBatch}`, { method: 'DELETE' })
     expect(deleted.status).toBe(200)
     expect((deleted.body as { deleted: number }).deleted).toBe(1)
-    expect(store.listViralItems(accountId)).toHaveLength(1)
+    expect(store.listViralItems(personaIdOf(accountId))).toHaveLength(1)
   })
 
   it('采集时自动抓详情补全完整正文，采纳后保留', async () => {
@@ -289,7 +404,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
       })
       expect(created.status).toBe(201)
       // 采集入库即带完整正文：原已有正文的保留，空正文的被详情补全
-      const saved = store.listViralItems(accountId)
+      const saved = store.listViralItems(personaIdOf(accountId))
       expect(saved).toHaveLength(2)
       const withBody = saved.find(s => s.title === '有正文标题')
       const fetched = saved.find(s => s.title === '无正文标题')
@@ -301,7 +416,7 @@ describe('/api/dsh-xhs-matrix 路由', () => {
         body: JSON.stringify({ status: 'accepted' }),
       })
       expect(reviewed.status).toBe(200)
-      expect(store.listViralItems(accountId, 'accepted')[0].body).toBe('抓回的完整正文内容')
+      expect(store.listViralItems(personaIdOf(accountId), 'accepted')[0].body).toBe('抓回的完整正文内容')
     } finally {
       detailServer.close()
     }
@@ -380,5 +495,173 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(res.status).toBe(201)
     expect(searchCalls[0].query).toBe('大模型应用')
     expect(searchCalls[0].maxItems).toBe(10)
+  })
+
+  it('按账号兼容查询知识库返回 resolvedPersonaId', async () => {
+    const accountId = await seedAccount()
+    store.savePublishedNote({ personaId: personaIdOf(accountId), title: '笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const res = await json(`/api/dsh-xhs-matrix/notes?account=${accountId}`)
+    expect(res.status).toBe(200)
+    const body = res.body as { notes: unknown[]; resolvedPersonaId: string }
+    expect(body.notes).toHaveLength(1)
+    expect(body.resolvedPersonaId).toBe(personaIdOf(accountId))
+  })
+
+  it('account 与 persona 不一致返回 409', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号A', personaId: personaA.persona.id, enabled: true }))
+    const accountA = (accRes.body as { account: { id: string } }).account.id
+    const res = await json(`/api/dsh-xhs-matrix/notes?account=${accountA}&persona=${personaB.persona.id}`)
+    expect(res.status).toBe(409)
+  })
+
+  it('手动爆款按 persona 保存为 accepted+5', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    const res = await json('/api/dsh-xhs-matrix/viral/manual', post({ personaId, title: '手动', body: '正文' }))
+    expect(res.status).toBe(201)
+    expect((res.body as { item: Record<string, unknown> }).item).toMatchObject({ personaId, source: 'manual', status: 'accepted', weight: 5 })
+  })
+
+  it('人设删除：有绑定账号或内容资产返回 409 和计数', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号A', personaId, enabled: true }))
+    const del = await json(`/api/dsh-xhs-matrix/personas?persona=${personaId}`, { method: 'DELETE' })
+    expect(del.status).toBe(409)
+    const usage = (del.body as { usage: { accountCount: number; noteCount: number; viralCount: number } }).usage
+    expect(usage.accountCount).toBe(1)
+    // 人设仍存在，未被删除
+    const personasLeft = (await json('/api/dsh-xhs-matrix/personas')).body as { personas: unknown[] }
+    expect(personasLeft.personas).toHaveLength(1)
+  })
+
+  it('人设删除：无账号与内容资产时删除成功', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '空闲人设', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const del = await json(`/api/dsh-xhs-matrix/personas?persona=${personaRes.persona.id}`, { method: 'DELETE' })
+    expect(del.status).toBe(200)
+    expect(((await json('/api/dsh-xhs-matrix/personas')).body as { personas: unknown[] }).personas).toHaveLength(0)
+  })
+
+  it('待归属：列表与显式归属到人设', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    store.stashPendingOwnership({
+      kind: 'published-note',
+      payload: { id: 'n1', title: '待归属笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 0, createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-20T00:00:00.000Z' },
+      reason: '迁移无法确定人设',
+    })
+    const list = await json('/api/dsh-xhs-matrix/pending-ownership')
+    expect(list.status).toBe(200)
+    const pending = (list.body as { pending: Array<{ id: string }> }).pending
+    expect(pending).toHaveLength(1)
+    const assigned = await json('/api/dsh-xhs-matrix/pending-ownership', post({ id: pending[0].id, targetPersonaId: personaId }))
+    expect(assigned.status).toBe(200)
+    expect(((await json('/api/dsh-xhs-matrix/pending-ownership')).body as { pending: unknown[] }).pending).toHaveLength(0)
+    expect(store.listPublishedNotes(personaId)).toHaveLength(1)
+  })
+
+  it('笔记转移：移动到目标人设', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    store.savePublishedNote({ personaId: personaA.persona.id, title: '笔记', copy: '正文', publishedAt: '2026-08-20', source: 'manual', weight: 5 })
+    const noteId = store.listPublishedNotes(personaA.persona.id)[0].id
+    const res = await json('/api/dsh-xhs-matrix/notes/transfer', post({ personaId: personaA.persona.id, targetPersonaId: personaB.persona.id, noteIds: [noteId] }))
+    expect(res.status).toBe(200)
+    expect(store.listPublishedNotes(personaA.persona.id)).toHaveLength(0)
+    expect(store.listPublishedNotes(personaB.persona.id)).toHaveLength(1)
+  })
+
+  it('爆款转移：移动到目标人设', async () => {
+    const personaA = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaB = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    store.saveViralItem({ personaId: personaA.persona.id, title: '爆款', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    const itemId = store.listViralItems(personaA.persona.id)[0].id
+    const res = await json('/api/dsh-xhs-matrix/viral/transfer', post({ personaId: personaA.persona.id, targetPersonaId: personaB.persona.id, itemIds: [itemId] }))
+    expect(res.status).toBe(200)
+    expect(store.listViralItems(personaA.persona.id)).toHaveLength(0)
+    expect(store.listViralItems(personaB.persona.id)).toHaveLength(1)
+  })
+
+  it('删除批次：跨人设 batch id 返回 404', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设甲', prompt: '科技内容' }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    store.saveViralItem({ personaId, title: '爆款', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'], batchId: 'batch-1' })
+    const otherPersona = (await json('/api/dsh-xhs-matrix/personas', post({ name: '人设乙', prompt: '美食内容' }))).body as { persona: { id: string } }
+    const res = await json(`/api/dsh-xhs-matrix/viral?persona=${otherPersona.persona.id}&batch=batch-1`, { method: 'DELETE' })
+    expect(res.status).toBe(404)
+    const ok = await json(`/api/dsh-xhs-matrix/viral?persona=${personaId}&batch=batch-1`, { method: 'DELETE' })
+    expect(ok.status).toBe(200)
+    expect(store.listViralItems(personaId)).toHaveLength(0)
+  })
+
+  it('流式发送输出结构化 SSE 事件（content_delta 与 done）', async () => {
+    const accountId = await seedAccount()
+    const llm = makeRouteLlm('原始初稿', '最终审校稿')
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: streamServer, base: streamBase } = await startServer(store, viralProvider, studio)
+    try {
+      const response = await fetch(streamBase + '/api/dsh-xhs-matrix/studio/messages?account=' + accountId, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ input: '写一篇', mode: 'creative', stream: true, requestId: 'req-sse' }),
+      })
+      expect(response.status).toBe(200)
+      const text = await response.text()
+      expect(text).toContain('"content_delta"')
+      expect(text).toContain('最终审校稿')
+      expect(text).toContain('"done"')
+      expect(store.listStudioMessages(accountId)).toHaveLength(2)
+    } finally {
+      streamServer.close()
+    }
+  })
+
+  it('相同 requestId 进行中再次请求返回 409 REQUEST_IN_PROGRESS', async () => {
+    const accountId = await seedAccount()
+    const gate = deferred()
+    const llm: StudioLlmClient = {
+      async complete() { return { text: '' } },
+      async stream(request, onDelta) {
+        const isPolish = request.system.includes('去 AI 味')
+        if (isPolish) { onDelta('最终审校稿'); return '最终审校稿' }
+        onDelta('原始初稿')
+        await gate.promise
+        return '原始初稿'
+      },
+    }
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: busyServer, base: busyBase } = await startServer(store, viralProvider, studio)
+    try {
+      const inFlight = studio.sendStream(accountId, '写一篇', 'creative', () => {}, { requestId: 'req-busy' })
+      await new Promise(resolve => setTimeout(resolve, 20))
+      const dup = await json(busyBase + '/api/dsh-xhs-matrix/studio/messages?account=' + accountId,
+        post({ accountId, input: '写一篇', mode: 'creative', stream: true, requestId: 'req-busy' }))
+      expect(dup.status).toBe(409)
+      expect((dup.body as { error: string }).error).toContain('REQUEST_IN_PROGRESS')
+      gate.resolve()
+      await inFlight
+    } finally {
+      busyServer.close()
+    }
+  })
+
+  it('违禁词命中时草稿保存返回 409 QUALITY_BLOCKED 且不落库', async () => {
+    const personaRes = (await json('/api/dsh-xhs-matrix/personas', post({ name: '违禁人设', prompt: '内容', forbiddenWords: ['必看'] }))).body as { persona: { id: string } }
+    const personaId = personaRes.persona.id
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', post({ name: '账号X', personaId, enabled: true }))
+    const accountId = (accRes.body as { account: { id: string } }).account.id
+    const llm: StudioLlmClient = { complete: async () => ({ text: '' }), stream: async (_request, onDelta) => { onDelta('x'); return 'x' } }
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    const { server: blockedServer, base: blockedBase } = await startServer(store, viralProvider, studio)
+    try {
+      const res = await json(blockedBase + '/api/dsh-xhs-matrix/studio/draft',
+        post({ accountId, copy: '这篇必看的文章', coverPrompt: 'p' }))
+      expect(res.status).toBe(409)
+      expect((res.body as { error: string }).error).toContain('QUALITY_BLOCKED')
+      expect(store.listDrafts()).toHaveLength(0)
+    } finally {
+      blockedServer.close()
+    }
   })
 })

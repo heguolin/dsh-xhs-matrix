@@ -10,6 +10,7 @@ import type {} from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import { ApifyViralProvider } from './collector/apify.ts'
 import { CollectionScheduler } from './metrics.ts'
+import { createQualityService } from './content-quality.ts'
 import { resolveStudioModel, type ModelRoute } from './model-config.ts'
 import { makeRoutes } from './routes/index.ts'
 import { MatrixStore } from './store.ts'
@@ -129,8 +130,14 @@ function runModelStream(
       if (chunk.type === 'text-delta' && onDelta !== undefined) onDelta(chunk.text)
       assembler.push(chunk)
     }
-    if (assembler.finish.kind !== 'stop') {
-      throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
+    const finish = assembler.finish
+    if (finish.kind !== 'stop') {
+      // 非 stop 终态仍是错误（不把失败伪装成成功），但必须带上 provider 失败细节以供诊断。
+      const failure = 'failure' in finish ? finish.failure : undefined
+      const detail = failure
+        ? `${failure.message}${failure.code ? `（${failure.code}）` : ''}`
+        : undefined
+      throw new Error(`创作台模型调用未正常结束：finish ${finish.kind}${detail ? '：' + detail : ''}`)
     }
     return assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
   })()
@@ -188,7 +195,8 @@ export function apply(ctx: Context, config?: Config): void {
       () => ctx.llm.listProviders().map(p => ({ id: p.id })),
       (options) => ctx.llm.stream(options),
     )
-    const studio = new StudioService(store, llmClient, modelLabel)
+    const quality = createQualityService(llmClient)
+    const studio = new StudioService(store, llmClient, quality, modelLabel)
 
     // Apify 数据源配置：唯一来源 store 运行时设置（面板写入，无插件 Config 回退）。
     const apifyStore = store.getSettings().apify

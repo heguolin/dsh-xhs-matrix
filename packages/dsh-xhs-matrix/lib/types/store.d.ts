@@ -1,7 +1,7 @@
 /** 私有 JSON 文件存储（~/.dsh/dsh-xhs-matrix.json），原子写 + 格式版本。 */
-import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, Persona, PublishedNote, StoreFile, StudioMessage, ViralBatch, ViralItem, ViralStatus } from './types.ts';
+import type { Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftQualityReport, DraftStatus, MatrixSettings, MetricSnapshot, NoteWeight, PendingOwnership, Persona, PublishedNote, StoreFile, StudioMessage, ViralBatch, ViralItem, ViralStatus } from './types.ts';
 /** 存储文件格式版本。 */
-export declare const MATRIX_STORE_VERSION = 3;
+export declare const MATRIX_STORE_VERSION = 4;
 /** 存储文件默认位置。 */
 export declare function matrixStorePath(): string;
 /** 存储错误：介质损坏 / version 不匹配 / 校验失败。 */
@@ -28,6 +28,10 @@ export interface PersonaPayload {
     forbiddenExpressions?: string;
     topicCriteria?: string;
     defaultHashtags?: string[];
+    writingStyles?: string[];
+    endingHookConstraints?: string;
+    endingHookExamples?: string[];
+    forbiddenWords?: string[];
 }
 /** 从文案中提取话题标签（#开头，去重，空格分隔）；无标签返回 undefined。 */
 export declare function extractHashtags(text: string): string | undefined;
@@ -37,9 +41,13 @@ export interface DraftPayload {
     copy: string;
     coverPrompt: string;
     tags?: string;
+    personaIdSnapshot?: string;
+    qualityReport?: DraftQualityReport;
 }
 export interface PublishedNotePayload {
-    accountId: string;
+    personaId: string;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
     title: string;
     copy: string;
     topic?: string;
@@ -53,6 +61,7 @@ export interface PublishedNotePayload {
 export interface MetricSnapshotPayload {
     noteId: string;
     accountId: string;
+    accountNameSnapshot?: string;
     reads: number;
     likes: number;
     favorites: number;
@@ -63,7 +72,9 @@ export interface MetricSnapshotPayload {
     error?: string;
 }
 export interface ViralItemPayload {
-    accountId: string;
+    personaId: string;
+    sourceAccountId?: string;
+    sourceAccountName?: string;
     title: string;
     body: string;
     sourceUrl?: string;
@@ -74,51 +85,82 @@ export interface ViralItemPayload {
     status?: ViralStatus;
     batchId?: string;
 }
+/** 手动新增爆款载荷：标题 + 正文必填；来源链接与发布时间可选。 */
+export interface ManualViralPayload {
+    title: string;
+    body: string;
+    sourceUrl?: string;
+    publishedAt?: string;
+    reasons?: string[];
+}
 export interface StudioMessagePayload {
     accountId: string;
     role: 'user' | 'assistant';
     content: string;
     evidenceIds?: string[];
+    personaIdSnapshot?: string;
+    requestId?: string;
+}
+/** MatrixStore 构造选项：时钟与原子写 rename 注入（用于 v3→v4 故障恢复测试）。 */
+export interface MatrixStoreOptions {
+    /** 备份时间戳时钟（测试注入固定时间）。 */
+    now?: () => Date;
+    /** 覆盖原子写 rename（故障注入：写入 v4 失败）。 */
+    rename?: (from: string, to: string) => void;
 }
 /**
  * 持久化存储：整个 StoreFile 一个文件，写操作后整体原子落盘。
  * @param filePath - 存储文件路径（测试注入临时路径）。
+ * @param options - 可选注入项（时钟 / rename）。
  */
 export declare class MatrixStore {
+    private readonly options;
     static validateAccountPayload(payload: unknown): string | undefined;
     static validatePersonaPayload(payload: unknown): string | undefined;
     private readonly filePath;
     private data;
     private requireAccount;
-    private requirePublishedNote;
-    constructor(filePath?: string);
+    private requirePersona;
+    private requirePersonaNote;
+    private requireNoteById;
+    private requirePersonaViral;
+    /** 校验 note weight 是否合法 0-5 整数。 */
+    private static checkWeight;
+    constructor(filePath?: string, options?: MatrixStoreOptions);
     /** 读取并校验存储文件；缺失则返回空结构。 */
     load(): StoreFile;
-    /** 原子落盘（tmp + rename）。 */
+    /** 原子落盘（tmp-<pid>-<random> + rename；失败时清理临时文件并抛出）。 */
     save(): void;
-    /** 按账号与审核状态列出爆款池条目；batchId 指定时只返回该批次。 */
-    listViralItems(accountId?: string, status?: ViralStatus, batchId?: string): ViralItem[];
-    /**
-     * 按采集批次分组列出爆款池（每次采集一个批次；历史无 batchId 的归入 legacy）。
-     * 批次按最早采集时间倒序（新批次在前）。
-     */
-    listViralBatches(accountId: string): ViralBatch[];
-    /** 删除整个采集批次（该批次全部条目），返回删除条数。 */
-    deleteViralBatch(accountId: string, batchId: string): number;
-    /** 新增爆款池条目（默认 pending）；账号必须存在。 */
+    listViralItems(personaId?: string, status?: ViralStatus, batchId?: string): ViralItem[];
+    listViralBatches(personaId: string, sourceAccountId?: string): ViralBatch[];
+    deleteViralBatch(personaId: string, batchId: string): number;
     saveViralItem(payload: ViralItemPayload): ViralItem;
-    /** 审核爆款条目为 accepted / ignored；条目必须属于该账号。 */
-    reviewViralItem(accountId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem;
-    /** 更新爆款条目的详情字段（采纳后抓回完整正文/标题，或重算评分）。 */
-    updateViralItem(accountId: string, itemId: string, patch: {
+    addManualViral(personaId: string, payload: ManualViralPayload): ViralItem;
+    reviewViralItem(personaId: string, itemId: string, status: 'accepted' | 'ignored'): ViralItem;
+    updateViralItem(personaId: string, itemId: string, patch: {
         title?: string;
         body?: string;
         score?: number;
         reasons?: string[];
     }): ViralItem;
-    /** 读取运行时设置（apify 等）。 */
+    setViralWeight(personaId: string, itemId: string, weight: number): ViralItem;
+    transferViralItems(personaId: string, itemIds: string[], targetPersonaId: string): ViralItem[];
+    stashPendingOwnership(input: {
+        kind: 'published-note';
+        payload: Omit<PublishedNote, 'personaId'>;
+        sourceAccountId?: string;
+        sourceAccountName?: string;
+        reason: string;
+    } | {
+        kind: 'viral-item';
+        payload: Omit<ViralItem, 'personaId'>;
+        sourceAccountId?: string;
+        sourceAccountName?: string;
+        reason: string;
+    }): PendingOwnership;
+    listPendingOwnership(): PendingOwnership[];
+    assignPendingOwnership(id: string, targetPersonaId: string): PublishedNote | ViralItem;
     getSettings(): MatrixSettings;
-    /** 更新 Apify 数据源配置并落盘；返回更新后的设置。 */
     updateApifySettings(payload: Partial<MatrixSettings['apify']>): MatrixSettings;
     listAccounts(): Account[];
     upsertAccount(payload: AccountPayload, id?: string): Account;
@@ -129,8 +171,12 @@ export declare class MatrixStore {
     listPersonas(): Persona[];
     upsertPersona(payload: PersonaPayload, id?: string): Persona;
     deletePersona(id: string): void;
-    listDrafts(): Draft[];
-    /** v3 草稿独立于选题，去重键为账号 + 日期（无 topicId 残留）。 */
+    personaInUse(personaId: string): {
+        accountCount: number;
+        noteCount: number;
+        viralCount: number;
+    };
+    listDrafts(accountId?: string): Draft[];
     findDraft(accountId: string, date: string): Draft | undefined;
     saveDraft(payload: DraftPayload): Draft;
     deleteDraft(id: string): void;
@@ -140,14 +186,18 @@ export declare class MatrixStore {
         coverPrompt?: string;
         tags?: string;
     }): Draft;
-    listPublishedNotes(accountId?: string): PublishedNote[];
+    listPublishedNotes(personaId?: string): PublishedNote[];
     savePublishedNote(payload: PublishedNotePayload): PublishedNote;
-    importPublishedNotes(accountId: string, payloads: PublishedNotePayload[]): PublishedNote[];
+    importPublishedNotes(personaId: string, payloads: PublishedNotePayload[]): PublishedNote[];
     deletePublishedNote(id: string): void;
-    setNoteWeight(accountId: string, noteId: string, weight: number): PublishedNote;
+    setNoteWeight(personaId: string, noteId: string, weight: number): PublishedNote;
+    transferNotes(personaId: string, noteIds: string[], targetPersonaId: string): PublishedNote[];
     listMetricSnapshots(accountId?: string, noteId?: string): MetricSnapshot[];
+    listMetricSnapshotsByNote(noteId: string): MetricSnapshot[];
     saveMetricSnapshot(payload: MetricSnapshotPayload): MetricSnapshot;
-    listStudioMessages(accountId?: string): StudioMessage[];
+    listStudioMessages(accountId?: string, personaIdSnapshot?: string): StudioMessage[];
+    /** 按请求 id 查询已落库的会话消息（同一 account 下的完成态幂等判定）。 */
+    listStudioMessagesByRequestId(accountId: string, requestId: string): StudioMessage[];
     saveStudioMessage(payload: StudioMessagePayload): StudioMessage;
     markStudioMessageRead(id: string): void;
 }

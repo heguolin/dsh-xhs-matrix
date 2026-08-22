@@ -5,6 +5,18 @@ import css from './panel.module.css'
 interface DraftRow {
   id: string; accountId: string; copy: string; coverPrompt: string; tags?: string; status: string
   evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }
+  personaIdSnapshot?: string
+  qualityReport?: { reviewStatus: string; forbiddenWordHits: Array<{ word: string; position: number }>; checkedAt: string; personaSnapshot?: string }
+}
+
+/** 渲染质检报告摘要：审校状态、违禁词命中与检查时间。 */
+function qualitySummary(report: DraftRow['qualityReport']): string {
+  if (report === undefined) return '未检查'
+  const statusText = report.reviewStatus === 'passed' ? '通过' : report.reviewStatus === 'failed' ? '未通过' : '未检查'
+  const hits = report.forbiddenWordHits.length
+  const words = report.forbiddenWordHits.map(h => h.word).filter(w => w !== '').join('、')
+  const date = (report.checkedAt ?? '').slice(0, 10) || report.checkedAt || ''
+  return `${statusText} · 违禁词命中 ${hits} 处${words !== '' ? `（${words}）` : ''} · 检查于 ${date || '未知'}`
 }
 
 /**
@@ -29,11 +41,11 @@ export function DraftEditor({ api, accountId, draft, onSaved }: { api: XhsApi; a
     void (async () => {
       try {
         if (evidence.noteIds.length > 0) {
-          const notes = await api.listNotes(accountId)
+          const notes = await api.listNotes({ accountId })
           setNoteTitles(Object.fromEntries(notes.filter(n => evidence.noteIds.includes(n.id)).map(n => [n.id, n.title])))
         }
         if (evidence.trendIds.length > 0) {
-          const virals = await api.listViralItems(accountId)
+          const virals = await api.listViralItems({ accountId })
           setViralTitles(Object.fromEntries(virals.filter(v => evidence.trendIds.includes(v.id)).map(v => [v.id, v.title])))
         }
       } catch {
@@ -116,6 +128,14 @@ export function DraftEditor({ api, accountId, draft, onSaved }: { api: XhsApi; a
       {/* 右：本次生成依据 */}
       <aside className={`${css.panel} ${css.sourcePanel}`}>
         <div className={css.panelTitle}><span>本次生成依据</span></div>
+        <div className={css.source}>
+          <b>人设快照 <span className={css.weightBadge}>生成时人设</span></b>
+          {draft.personaIdSnapshot !== undefined && draft.personaIdSnapshot !== '' ? draft.personaIdSnapshot : '（历史未归属）'}
+        </div>
+        <div className={css.source}>
+          <b>质检报告 <span className={css.weightBadge}>去 AI 味/违禁词</span></b>
+          {qualitySummary(draft.qualityReport)}
+        </div>
         {draft.evidence === undefined || draft.evidence.reasons.length === 0 ? (
           <div className={css.muted}>该草稿无生成依据记录（可能为手动创建）。</div>
         ) : (

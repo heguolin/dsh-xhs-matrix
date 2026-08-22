@@ -3,23 +3,25 @@
 import { MatrixStore, type PublishedNotePayload } from './store.ts'
 import type { DataSource, NoteWeight } from './types.ts'
 
+/** 导入记录：解析出的笔记内容字段（不含人设归属与来源账号信息）。 */
+export type ImportRecord = Omit<PublishedNotePayload, 'personaId' | 'sourceAccountId' | 'sourceAccountName'>
+
 // 导入简化：标题 + 正文必填，发布日期缺省用当天（人工导入不要求精确日期）。
 const REQUIRED = ['title', 'copy'] as const
 
-function validateRecord(value: unknown, index: number): PublishedNotePayload {
-  if (typeof value !== 'object' || value === null) throw new Error(`第 ${index + 1} 条记录必须是对象`)
+function validateRecord(value: unknown, index: number): ImportRecord {
+  if (typeof value !== 'object' || value === null) throw new Error('第 ' + (index + 1) + ' 条记录必须是对象')
   const record = value as Record<string, unknown>
   for (const field of REQUIRED) {
-    if (typeof record[field] !== 'string' || record[field].trim() === '') throw new Error(`第 ${index + 1} 条记录 ${field} 必填`)
+    if (typeof record[field] !== 'string' || record[field].trim() === '') throw new Error('第 ' + (index + 1) + ' 条记录 ' + field + ' 必填')
   }
   const publishedAt = record.publishedAt === undefined
     ? new Date().toISOString().slice(0, 10)
     : record.publishedAt as string
-  if (Number.isNaN(Date.parse(publishedAt))) throw new Error(`第 ${index + 1} 条记录 publishedAt 无效`)
+  if (Number.isNaN(Date.parse(publishedAt))) throw new Error('第 ' + (index + 1) + ' 条记录 publishedAt 无效')
   const weight = record.weight === undefined ? 0 : Number(record.weight)
-  if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new Error(`第 ${index + 1} 条记录 weight 必须是 0-5 的整数`)
+  if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new Error('第 ' + (index + 1) + ' 条记录 weight 必须是 0-5 的整数')
   return {
-    accountId: '',
     title: record.title as string,
     copy: record.copy as string,
     topic: typeof record.topic === 'string' ? record.topic : undefined,
@@ -59,7 +61,7 @@ function parseCsv(input: string): Record<string, string>[] {
 }
 
 /** 解析一批已发布笔记；不写入存储。 */
-export function parsePublishedNoteImport(input: string, format: 'csv' | 'json'): Omit<PublishedNotePayload, 'accountId'>[] {
+export function parsePublishedNoteImport(input: string, format: 'csv' | 'json'): ImportRecord[] {
   let records: unknown[]
   if (format === 'json') {
     const parsed: unknown = JSON.parse(input)
@@ -68,20 +70,16 @@ export function parsePublishedNoteImport(input: string, format: 'csv' | 'json'):
   } else {
     records = parseCsv(input)
   }
-  return records.map((record, index) => {
-    const payload = validateRecord(record, index)
-    const { accountId: _accountId, ...withoutAccount } = payload
-    return withoutAccount
-  })
+  return records.map((record, index) => validateRecord(record, index))
 }
 
-/** 校验并原子应用一批当前账号笔记。 */
-export function applyPublishedNoteImport(store: MatrixStore, accountId: string, records: Omit<PublishedNotePayload, 'accountId'>[]): void {
-  store.listAccounts().find(account => account.id === accountId) ?? (() => { throw new Error(`账号不存在：${accountId}`) })()
-  const existingUrls = new Set(store.listPublishedNotes(accountId).map(note => note.sourceUrl).filter((url): url is string => url !== undefined))
-  const prepared = records.map(record => ({ ...record, accountId }))
-  for (const record of prepared) {
-    if (record.sourceUrl !== undefined && existingUrls.has(record.sourceUrl)) continue
-    store.savePublishedNote(record)
-  }
+/** 校验并原子应用一批笔记：显式接收目标 personaId（不依赖账号当前人设），并可保留来源账号。 */
+export function applyPublishedNoteImport(store: MatrixStore, personaId: string, records: ImportRecord[], sourceAccountId?: string, sourceAccountName?: string): void {
+  const prepared = records.map(record => ({
+    ...record,
+    personaId,
+    sourceAccountId,
+    sourceAccountName: sourceAccountName ?? (sourceAccountId !== undefined ? store.listAccounts().find(a => a.id === sourceAccountId)?.name : undefined),
+  }))
+  store.importPublishedNotes(personaId, prepared)
 }

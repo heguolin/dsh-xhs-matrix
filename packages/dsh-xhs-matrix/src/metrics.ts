@@ -84,8 +84,11 @@ export class CollectionScheduler {
     const account = this.store.listAccounts().find(item => item.id === accountId)
     if (account === undefined) return
     if (account.collection === undefined || !account.collection.enabled) return
+    // 采集开始时捕获人设与账号名快照：账号换绑后旧笔记仍留在原人设，
+    // 账号名快照用于在来源账号删除后解释历史指标。
     const persona = this.store.listPersonas().find(item => item.id === account.personaId)
     if (persona === undefined) return
+    const accountNameSnapshot = account.name
     this.store.updateCollectionStatus(accountId, { running: true, lastStatus: 'idle' })
     const query = persona.topicCriteria ?? persona.expertise ?? persona.contentDirections ?? persona.name
     let result: ViralCollectionResult
@@ -96,10 +99,12 @@ export class CollectionScheduler {
       this.store.updateCollectionStatus(accountId, { running: false, lastStatus: 'failed', lastError: message })
       return
     }
-    const notes = this.store.listPublishedNotes(accountId)
+    // 按 PublishedNote.sourceAccountId 找历史笔记，而不是按账号当前绑定人设反查：
+    // 账号换绑后旧笔记仍保留在原人设，其历史指标不会被错误改归属。
+    const notes = this.store.listPublishedNotes().filter(note => note.sourceAccountId === accountId)
     if (result.status === 'failed') {
       for (const note of notes) {
-        this.store.saveMetricSnapshot({ accountId, noteId: note.id, reads: 0, likes: 0, favorites: 0, comments: 0, source: 'apify', status: 'failed' as const, error: result.error })
+        this.store.saveMetricSnapshot({ accountId, noteId: note.id, accountNameSnapshot, reads: 0, likes: 0, favorites: 0, comments: 0, source: 'apify', status: 'failed' as const, error: result.error })
       }
       this.store.updateCollectionStatus(accountId, { running: false, lastStatus: 'failed', lastError: result.error })
       return
@@ -107,7 +112,7 @@ export class CollectionScheduler {
     for (const note of notes) {
       const match = result.items.find(item => item.sourceUrl !== undefined && note.sourceUrl !== undefined && item.sourceUrl === note.sourceUrl)
       this.store.saveMetricSnapshot({
-        accountId, noteId: note.id,
+        accountId, noteId: note.id, accountNameSnapshot,
         // v3 标准化不再提供收藏数，指标快照按 0 落库（Task 8-11 会重构采集链路）。
         reads: match?.reads ?? 0, likes: match?.likes ?? 0, favorites: 0, comments: match?.comments ?? 0,
         source: 'apify', status: 'success' as const,

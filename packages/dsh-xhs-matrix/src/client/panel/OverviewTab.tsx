@@ -20,6 +20,8 @@ interface AccountSummary {
   reads: number
   draftCount: number
   viralCount: number
+  /** 该账号人设作用域下返回的 note id；用于矩阵级去重（同一人设共享资产只计一次）。 */
+  noteIds: string[]
 }
 
 /**
@@ -49,9 +51,9 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
       setPersonas(personaList)
       const rows = await Promise.all(accounts.map(async account => {
         const [noteList, metricList, viralList] = await Promise.all([
-          api.listNotes(account.id),
+          api.listNotes({ accountId: account.id }),
           api.listMetrics(account.id),
-          api.listViralItems(account.id),
+          api.listViralItems({ accountId: account.id }),
         ])
         // 每篇笔记最新指标快照（按 collectedAt 取最近一次）
         const latestByNote = new Map<string, { reads: number; collectedAt: string }>()
@@ -59,15 +61,19 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           const prev = latestByNote.get(m.noteId)
           if (prev === undefined || m.collectedAt > prev.collectedAt) latestByNote.set(m.noteId, m)
         }
-        const reads = [...latestByNote.values()].reduce((sum, m) => sum + m.reads, 0)
+        // 来源账号作用域统计：同人设共享资产只计入 sourceAccountId === 本账号 的笔记，
+        // 避免同一人设多账号把同一条人设资产在矩阵与账号卡片中重复计数。
+        const sourceNotes = noteList.filter(n => n.sourceAccountId === account.id)
+        const reads = sourceNotes.reduce((sum, n) => sum + (latestByNote.get(n.id)?.reads ?? 0), 0)
         return {
           account,
           personaName: personaList.find(p => p.id === account.personaId)?.name ?? '未分配',
-          noteCount: noteList.length,
-          highWeightCount: noteList.filter(n => n.weight >= 3).length,
+          noteCount: sourceNotes.length,
+          highWeightCount: sourceNotes.filter(n => n.weight >= 3).length,
           reads,
           draftCount: draftList.filter(d => d.accountId === account.id && d.status === 'generated').length,
-          viralCount: viralList.length,
+          viralCount: viralList.filter(v => v.sourceAccountId === account.id).length,
+          noteIds: noteList.map(n => n.id),
         }
       }))
       setSummaries(rows)
@@ -94,12 +100,13 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
     }
   }
 
-  const totalNotes = summaries.reduce((sum, row) => sum + row.noteCount, 0)
+  // 矩阵级去重：同一人设共享笔记在多个账号卡片中出现时只计一次。
+  const totalNotes = new Set(summaries.flatMap(row => row.noteIds)).size
   const totalDrafts = summaries.reduce((sum, row) => sum + row.draftCount, 0)
   const totalReads = summaries.reduce((sum, row) => sum + row.reads, 0)
 
   return (
-    <div>
+    <div data-testid="overview-root">
       {error !== '' && <div className={css.danger}>{error}</div>}
       {accounts.length === 0 && (
         <div className={css.empty}>还没有账号。点击右上角「＋ 添加账号」创建第一个矩阵账号，开始建立独立工作区。</div>
@@ -108,7 +115,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
       {accounts.length > 0 && (
         <>
           {/* 矩阵汇总指标 */}
-          <div className={css.metrics} style={{ marginBottom: 14 }}>
+          <div className={css.metrics} data-testid="overview-metrics" style={{ marginBottom: 14 }}>
             <div className={css.metric}>矩阵账号<b>{accounts.length}</b></div>
             <div className={css.metric}>累计已发布<b>{totalNotes}</b></div>
             <div className={css.metric}>累计浏览<b>{totalReads.toLocaleString()}</b></div>
@@ -117,11 +124,11 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           {/* 账号卡片：每个账号一个独立工作区入口 */}
           {summaries.map(row => (
             <div key={row.account.id} className={css.libRow} style={{ flexDirection: 'column' }}>
-              <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div className={css.accountHead} data-testid="overview-account-head">
                 <span className={css.face} />
-                <div style={{ minWidth: 0 }}>
+                <div className={css.accountTitle} data-testid="overview-account-title">
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{row.account.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
                     <span className={css.muted} style={{ fontSize: 11 }}>人设：{row.personaName}</span>
                     {bindingFor === row.account.id ? (
                       <>
@@ -152,7 +159,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                 {row.account.connection !== undefined && <StatusBadge status={row.account.connection.status} />}
                 {row.account.enabled ? <span className={css.badgeGreen}>启用</span> : <span className={css.badgeGray}>停用</span>}
                 <span style={{ flex: 1 }} />
-                <div className={css.rowActions}>
+                <div className={css.rowActions} data-testid="overview-account-actions">
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'knowledge')}>知识库</button>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'viral')}>爆款池</button>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'drafts')}>草稿</button>
@@ -165,7 +172,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                 <div className={css.metric}>最近浏览<b>{row.reads.toLocaleString()}</b></div>
                 <div className={css.metric}>高权重样本<b>{row.highWeightCount}</b></div>
               </div>
-              <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span>爆款池：{row.viralCount} 条</span>
                 <button className={css.ghostBtn} style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => onOpenAccount(row.account.id, 'viral')}>
                   {row.viralCount > 0 ? '查看该账号爆款池' : '去采集爆款'}
