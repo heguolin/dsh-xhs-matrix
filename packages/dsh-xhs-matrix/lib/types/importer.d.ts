@@ -4,5 +4,5 @@ import { MatrixStore, type PublishedNotePayload } from './store.ts';
 export type ImportRecord = Omit<PublishedNotePayload, 'personaId' | 'sourceAccountId' | 'sourceAccountName'>;
 /** 解析一批已发布笔记；不写入存储。 */
 export declare function parsePublishedNoteImport(input: string, format: 'csv' | 'json'): ImportRecord[];
-/** 校验并原子应用一批笔记：以账号当前人设作为知识库归属。 */
-export declare function applyPublishedNoteImport(store: MatrixStore, accountId: string, records: ImportRecord[]): void;
+/** 校验并原子应用一批笔记：显式接收目标 personaId（不依赖账号当前人设），并可保留来源账号。 */
+export declare function applyPublishedNoteImport(store: MatrixStore, personaId: string, records: ImportRecord[], sourceAccountId?: string, sourceAccountName?: string): void;

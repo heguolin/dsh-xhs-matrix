@@ -93,7 +93,7 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
               const persona = store.listPersonas().find(entry => entry.id === personaId)
               if (persona !== undefined) {
                 const notes = store.listPublishedNotes(personaId)
-                const ranked = rankViralItems(account, persona, notes, [detail])
+                const ranked = rankViralItems(persona, notes, [detail])
                 const best = ranked[0]
                 store.updateViralItem(personaId, itemId, {
                   title: detail.title,
@@ -140,7 +140,7 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
           })
         }
         const notes = store.listPublishedNotes(persona.id)
-        const ranked = rankViralItems(account, persona, notes, items)
+        const ranked = rankViralItems(persona, notes, items)
         // 每次采集生成独立批次：整批可单独删除，不影响其他批次。
         const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
         const savedItems = ranked.map(item => {

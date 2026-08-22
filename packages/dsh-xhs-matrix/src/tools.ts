@@ -95,7 +95,7 @@ export function makeTools(deps: ToolsDeps) {
           skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`)
           continue
         }
-        briefs.push(composeBrief(account, persona, viralItems))
+        briefs.push(composeBrief(persona, viralItems, account.name))
       }
       if (briefs.length === 0) {
         const detail = skipped.length > 0 ? `：${skipped.join('，')}` : ''

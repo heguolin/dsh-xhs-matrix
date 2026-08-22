@@ -56,9 +56,12 @@ export function makeAccountsRoutes(store: MatrixStore): WebRoute[] {
         writeJson(res, 400, { error: 'accountId、format 和 content 必填' }); return
       }
       try {
+        const account = store.listAccounts().find(item => item.id === body.accountId)
+        if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + body.accountId }); return }
+        if (account.personaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
         const { applyPublishedNoteImport, parsePublishedNoteImport } = await import('../importer.ts')
         const records = parsePublishedNoteImport(body.content, body.format)
-        applyPublishedNoteImport(store, body.accountId, records)
+        applyPublishedNoteImport(store, account.personaId, records, account.id, account.name)
         writeJson(res, 201, { imported: records.length })
       } catch (error) { fail(res, error) }
     }),

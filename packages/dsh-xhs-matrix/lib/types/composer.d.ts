@@ -1,10 +1,10 @@
-/** 创作简报拼接：人设 + 爆款池参考 + 风格声明（纯函数）。 */
-import type { Account, Persona, ViralItem } from './types.ts';
+/** 创作简报拼接：人设 v4 字段 + 爆款池参考（按 weight DESC, score DESC 排序）+ 风格声明（纯函数）。 */
+import type { Persona, ViralItem } from './types.ts';
 /**
  * 拼接创作简报 markdown。
- * @param account - 目标账号。
- * @param persona - 账号人设。
- * @param viralItems - 该账号爆款池参考条目（pending/accepted），作为素材来源。
+ * @param persona - 人设（唯一内容所有者；使用 v4 字段：writingStyles/endingHookConstraints/endingHookExamples/forbiddenWords）。
+ * @param viralItems - 该人设共享爆款池参考（pending/accepted），作为素材来源；按 weight DESC、score DESC 排序。
+ * @param accountName - 可选账号名（仅用于简报标题展示，不参与归属）。
  * @returns 简报文本。
  */
-export declare function composeBrief(account: Account, persona: Persona, viralItems: ViralItem[]): string;
+export declare function composeBrief(persona: Persona, viralItems: ViralItem[], accountName?: string): string;

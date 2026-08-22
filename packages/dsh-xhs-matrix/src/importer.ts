@@ -73,11 +73,13 @@ export function parsePublishedNoteImport(input: string, format: 'csv' | 'json'):
   return records.map((record, index) => validateRecord(record, index))
 }
 
-/** 校验并原子应用一批笔记：以账号当前人设作为知识库归属。 */
-export function applyPublishedNoteImport(store: MatrixStore, accountId: string, records: ImportRecord[]): void {
-  const account = store.listAccounts().find(item => item.id === accountId)
-  if (account === undefined) throw new Error('账号不存在：' + accountId)
-  if (account.personaId === '') throw new Error('该账号尚未分配人设')
-  const prepared = records.map(record => ({ ...record, personaId: account.personaId, sourceAccountId: accountId, sourceAccountName: account.name }))
-  store.importPublishedNotes(account.personaId, prepared)
+/** 校验并原子应用一批笔记：显式接收目标 personaId（不依赖账号当前人设），并可保留来源账号。 */
+export function applyPublishedNoteImport(store: MatrixStore, personaId: string, records: ImportRecord[], sourceAccountId?: string, sourceAccountName?: string): void {
+  const prepared = records.map(record => ({
+    ...record,
+    personaId,
+    sourceAccountId,
+    sourceAccountName: sourceAccountName ?? (sourceAccountId !== undefined ? store.listAccounts().find(a => a.id === sourceAccountId)?.name : undefined),
+  }))
+  store.importPublishedNotes(personaId, prepared)
 }

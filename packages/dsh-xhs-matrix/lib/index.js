@@ -293,6 +293,7 @@ var CollectionScheduler = class {
 		if (account.collection === void 0 || !account.collection.enabled) return;
 		const persona = this.store.listPersonas().find((item) => item.id === account.personaId);
 		if (persona === void 0) return;
+		const accountNameSnapshot = account.name;
 		this.store.updateCollectionStatus(accountId, {
 			running: true,
 			lastStatus: "idle"
@@ -314,11 +315,12 @@ var CollectionScheduler = class {
 			});
 			return;
 		}
-		const notes = this.store.listPublishedNotes(persona.id).filter((note) => note.sourceAccountId === accountId);
+		const notes = this.store.listPublishedNotes().filter((note) => note.sourceAccountId === accountId);
 		if (result.status === "failed") {
 			for (const note of notes) this.store.saveMetricSnapshot({
 				accountId,
 				noteId: note.id,
+				accountNameSnapshot,
 				reads: 0,
 				likes: 0,
 				favorites: 0,
@@ -339,6 +341,7 @@ var CollectionScheduler = class {
 			this.store.saveMetricSnapshot({
 				accountId,
 				noteId: note.id,
+				accountNameSnapshot,
 				reads: match?.reads ?? 0,
 				likes: match?.likes ?? 0,
 				favorites: 0,
@@ -527,9 +530,18 @@ function makeAccountsRoutes(store) {
 			return;
 		}
 		try {
-			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-CnZeRvlO.js");
+			const account = store.listAccounts().find((item) => item.id === body.accountId);
+			if (account === void 0) {
+				writeJson(res, 400, { error: "账号不存在：" + body.accountId });
+				return;
+			}
+			if (account.personaId === "") {
+				writeJson(res, 400, { error: "该账号尚未分配人设" });
+				return;
+			}
+			const { applyPublishedNoteImport, parsePublishedNoteImport } = await import("./importer-ByNmotL5.js");
 			const records = parsePublishedNoteImport(body.content, body.format);
-			applyPublishedNoteImport(store, body.accountId, records);
+			applyPublishedNoteImport(store, account.personaId, records, account.id, account.name);
 			writeJson(res, 201, { imported: records.length });
 		} catch (error) {
 			fail(res, error);
@@ -1059,7 +1071,7 @@ function makeStudioRoutes(store, studio) {
 }
 //#endregion
 //#region src/collector/rank.ts
-function rankViralItems(account, persona, notes, items) {
+function rankViralItems(persona, notes, items) {
 	const terms = [
 		persona.name,
 		persona.positioning,
@@ -1074,7 +1086,7 @@ function rankViralItems(account, persona, notes, items) {
 		let score = 0;
 		if (terms !== "" && terms.split(/[,，、\s]+/).some((term) => term.length > 1 && haystack.includes(term))) {
 			score += 35;
-			reasons.push(`匹配${account.name}的人设方向`);
+			reasons.push(`匹配${persona.name}的人设方向`);
 		}
 		if (notes.some((note) => note.weight >= 4 && (haystack.includes(note.title.toLowerCase()) || note.topic !== void 0 && haystack.includes(note.topic.toLowerCase())))) {
 			score += 30;
@@ -1203,7 +1215,7 @@ function makeViralRoutes(store, provider) {
 					if (detail !== void 0) {
 						const persona = store.listPersonas().find((entry) => entry.id === personaId);
 						if (persona !== void 0) {
-							const best = rankViralItems(account, persona, store.listPublishedNotes(personaId), [detail])[0];
+							const best = rankViralItems(persona, store.listPublishedNotes(personaId), [detail])[0];
 							store.updateViralItem(personaId, itemId, {
 								title: detail.title,
 								body: detail.body ?? "",
@@ -1268,7 +1280,7 @@ function makeViralRoutes(store, provider) {
 				if (item.sourceUrl === void 0 || (item.body ?? "") !== "") return item;
 				return await fetchDetail(item.sourceUrl).catch(() => void 0) ?? item;
 			});
-			const ranked = rankViralItems(account, persona, store.listPublishedNotes(persona.id), items);
+			const ranked = rankViralItems(persona, store.listPublishedNotes(persona.id), items);
 			const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 			const savedItems = ranked.map((item) => {
 				const payload = {
@@ -1534,26 +1546,27 @@ var StudioService = class {
 };
 //#endregion
 //#region src/composer.ts
-/** 默认爆款技巧框架：人设未另行规定自身文案结构时适用。 */
-const DEFAULT_TECHNIQUES = [
-	"钩子式开头：第一句制造好奇/共鸣/冲突，吸引点击",
-	"悬念伏笔：正文埋 1-2 个悬念点引导读完，标题与开头呼应",
-	"清单/对比结构：提升可读性",
-	"结尾引导互动：提问 + 相关话题标签"
-].join("；");
 /**
 * 拼接创作简报 markdown。
-* @param account - 目标账号。
-* @param persona - 账号人设。
-* @param viralItems - 该账号爆款池参考条目（pending/accepted），作为素材来源。
+* @param persona - 人设（唯一内容所有者；使用 v4 字段：writingStyles/endingHookConstraints/endingHookExamples/forbiddenWords）。
+* @param viralItems - 该人设共享爆款池参考（pending/accepted），作为素材来源；按 weight DESC、score DESC 排序。
+* @param accountName - 可选账号名（仅用于简报标题展示，不参与归属）。
 * @returns 简报文本。
 */
-function composeBrief(account, persona, viralItems) {
-	const viralLines = viralItems.length === 0 ? ["（该账号暂无爆款池参考）"] : viralItems.map((item) => `- ${item.title}（推荐分 ${item.score}；理由：${item.reasons.join("、")}）${item.sourceUrl !== void 0 ? `｜${item.sourceUrl}` : ""}`);
+function composeBrief(persona, viralItems, accountName) {
+	const ranked = [...viralItems].sort((a, b) => b.weight - a.weight || b.score - a.score);
+	const viralLines = ranked.length === 0 ? ["（该账号暂无爆款池参考）"] : ranked.map((item) => `- ${item.title}（权重 ${item.weight}；推荐分 ${item.score}；理由：${item.reasons.join("、")}）${item.sourceUrl !== void 0 ? `｜${item.sourceUrl}` : ""}`);
+	const writingStyles = persona.writingStyles !== void 0 && persona.writingStyles.length > 0 ? persona.writingStyles.join("、") : "未设置";
+	const endingHook = persona.endingHookConstraints ?? "未设置";
+	const hookExamples = persona.endingHookExamples !== void 0 && persona.endingHookExamples.length > 0 ? persona.endingHookExamples.join("；") : "未设置";
+	const forbiddenWords = persona.forbiddenWords !== void 0 && persona.forbiddenWords.length > 0 ? persona.forbiddenWords.join("、") : "无";
 	return [
-		`【账号】${account.name}（${persona.name}）`,
+		`【账号】${accountName ?? "当前账号"}（${persona.name}）`,
 		`【人设】${persona.prompt}`,
-		`【风格】严格按「${persona.name}」人设的风格撰写（${persona.prompt}）；默认爆款技巧框架（人设未另行规定时）：${DEFAULT_TECHNIQUES}。`,
+		`【写作风格】${writingStyles}`,
+		`【结尾互动钩子】${endingHook}`,
+		`【钩子最佳案例】${hookExamples}`,
+		`【违禁词】${forbiddenWords}`,
 		`【爆款池参考】`,
 		...viralLines,
 		`【任务】按以上人设撰写小红书文案（标题 + 正文 + 话题标签），并给出封面提示词（coverPrompt）。`
@@ -1657,7 +1670,7 @@ function makeTools(deps) {
 						skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`);
 						continue;
 					}
-					briefs.push(composeBrief(account, persona, viralItems));
+					briefs.push(composeBrief(persona, viralItems, account.name));
 				}
 				if (briefs.length === 0) return {
 					ok: false,
