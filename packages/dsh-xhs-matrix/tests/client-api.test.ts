@@ -101,6 +101,29 @@ describe('XhsApi', () => {
     expect(init).toBeUndefined()
   })
 
+  it('importPublishedNotes 携带目标 personaId 与来源 accountId 并返回导入数', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ imported: 3 }))
+    const api = new XhsApi()
+    const count = await api.importPublishedNotes('a1', 'json', JSON.stringify([{ title: 't', copy: 'c' }]), 'p2')
+    expect(count).toBe(3)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/dsh-xhs-matrix/accounts/import')
+    expect(init!.method).toBe('POST')
+    const body = initBody(init)
+    expect(body.accountId).toBe('a1')
+    expect(body.personaId).toBe('p2')
+    expect(body.format).toBe('json')
+  })
+
+  it('importPublishedNotes 不传 personaId 时省略该字段（兼容期回退账号人设）', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ imported: 1 }))
+    const api = new XhsApi()
+    await api.importPublishedNotes('a1', 'json', JSON.stringify([{ title: 't', copy: 'c' }]))
+    const body = initBody(fetchMock.mock.calls[0][1] as RequestInit)
+    expect(body.accountId).toBe('a1')
+    expect('personaId' in body).toBe(false)
+  })
+
   it('setNoteWeight 发送 PATCH /notes 并携带 persona/note 与权重 body', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ note: noteFixture }))
     const api = new XhsApi()

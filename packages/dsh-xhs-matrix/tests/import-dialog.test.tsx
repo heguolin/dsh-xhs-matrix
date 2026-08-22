@@ -20,7 +20,7 @@ function typeText(host: HTMLElement, label: string, value: string): void {
 /** 渲染 ImportDialog，返回宿主节点与 api mock。 */
 async function renderDialog(personaId = 'p1') {
   const apiMock = {
-    listPersonas: vi.fn(async () => [{ id: 'p1', name: '人设一' }]),
+    listPersonas: vi.fn(async () => [{ id: 'p1', name: '人设一' }, { id: 'p2', name: '人设二' }]),
     importPublishedNotes: vi.fn(async () => 2),
   }
   const host = document.createElement('div')
@@ -43,6 +43,21 @@ describe('ImportDialog 导入', () => {
     expect(personaInput).not.toBeUndefined()
     expect(personaInput!.value).toBe('人设一')
     expect(apiMock.listPersonas).toHaveBeenCalled()
+
+    root.unmount()
+    host.remove()
+  })
+
+  it('临时切换人设作用域到 B（personaId=p2）后，导入目标为 B', async () => {
+    const { host, root, apiMock } = await renderDialog('p2')
+
+    typeText(host, '标题', '标题一')
+    typeText(host, '正文', '正文一')
+    const run = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.trim() === '导入')
+    run!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(apiMock.importPublishedNotes).toHaveBeenCalledWith('acc-a', 'json', JSON.stringify([{ title: '标题一', copy: '正文一' }]), 'p2')
 
     root.unmount()
     host.remove()
@@ -79,6 +94,7 @@ describe('ImportDialog 导入', () => {
       'acc-a',
       'json',
       JSON.stringify([{ title: '标题一', copy: '正文一' }, { title: '标题二', copy: '正文二' }]),
+      'p1',
     )
     expect(host.textContent).toContain('已导入 2 条')
 

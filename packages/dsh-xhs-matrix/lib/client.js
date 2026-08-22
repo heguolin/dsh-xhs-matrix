@@ -123,14 +123,15 @@ window.__ModuleLoader__.load({
 			async deleteAccount(id) {
 				await readJson(await fetch(XHS_API.accounts + query({ account: id }), { method: "DELETE" }));
 			}
-			async importPublishedNotes(accountId, format, content) {
+			async importPublishedNotes(accountId, format, content, personaId) {
 				return (await readJson(await fetch(XHS_API.accountImport, {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({
 						accountId,
 						format,
-						content
+						content,
+						personaId
 					})
 				}))).imported;
 			}
@@ -484,151 +485,151 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"messages": "XLBeMq_messages",
-			"personaDesc": "XLBeMq_personaDesc",
-			"dialog": "XLBeMq_dialog",
-			"brand": "XLBeMq_brand",
-			"rowActions": "XLBeMq_rowActions",
-			"chipAmber": "XLBeMq_chipAmber",
-			"bar": "XLBeMq_bar",
-			"context": "XLBeMq_context",
-			"filter": "XLBeMq_filter",
-			"studioTop": "XLBeMq_studioTop",
-			"badgeGray": "XLBeMq_badgeGray",
-			"batchCount": "XLBeMq_batchCount",
-			"itemTop": "XLBeMq_itemTop",
-			"on": "XLBeMq_on",
-			"score": "XLBeMq_score",
-			"viewGrid": "XLBeMq_viewGrid",
 			"overview": "XLBeMq_overview",
-			"studioSend": "XLBeMq_studioSend",
-			"textarea": "XLBeMq_textarea",
-			"button": "XLBeMq_button",
-			"workspace": "XLBeMq_workspace",
-			"content": "XLBeMq_content",
-			"contextLine": "XLBeMq_contextLine",
-			"batchList": "XLBeMq_batchList",
-			"topbarSub": "XLBeMq_topbarSub",
-			"chipGreen": "XLBeMq_chipGreen",
-			"contextCard": "XLBeMq_contextCard",
-			"panelTitle": "XLBeMq_panelTitle",
-			"navItem": "XLBeMq_navItem",
-			"tabs": "XLBeMq_tabs",
-			"scoreLow": "XLBeMq_scoreLow",
-			"msg": "XLBeMq_msg",
-			"dialogClose": "XLBeMq_dialogClose",
-			"toolbar": "XLBeMq_toolbar",
-			"itemActions": "XLBeMq_itemActions",
-			"chat": "XLBeMq_chat",
-			"pillWarn": "XLBeMq_pillWarn",
-			"idle": "XLBeMq_idle",
-			"tag": "XLBeMq_tag",
-			"textAction": "XLBeMq_textAction",
-			"personaList": "XLBeMq_personaList",
-			"topicTitle": "XLBeMq_topicTitle",
-			"personaAvatar": "XLBeMq_personaAvatar",
-			"primary": "XLBeMq_primary",
-			"face": "XLBeMq_face",
-			"excerpt": "XLBeMq_excerpt",
-			"item": "XLBeMq_item",
-			"ghostBtn": "XLBeMq_ghostBtn",
-			"viewHost": "XLBeMq_viewHost",
-			"below": "XLBeMq_below",
-			"personaLayout": "XLBeMq_personaLayout",
-			"topicItem": "XLBeMq_topicItem",
-			"danger": "XLBeMq_danger",
-			"brandLogo": "XLBeMq_brandLogo",
-			"metric": "XLBeMq_metric",
-			"badge": "XLBeMq_badge",
-			"muted": "XLBeMq_muted",
-			"tab": "XLBeMq_tab",
-			"studioLayout": "XLBeMq_studioLayout",
-			"warn": "XLBeMq_warn",
-			"dialogRow": "XLBeMq_dialogRow",
-			"libRow": "XLBeMq_libRow",
-			"batch": "XLBeMq_batch",
-			"post": "XLBeMq_post",
-			"sourcePanel": "XLBeMq_sourcePanel",
-			"chatInput": "XLBeMq_chatInput",
-			"weightBadge": "XLBeMq_weightBadge",
-			"card": "XLBeMq_card",
-			"meta": "XLBeMq_meta",
-			"postTitle": "XLBeMq_postTitle",
-			"studioResult": "XLBeMq_studioResult",
-			"chips": "XLBeMq_chips",
-			"pill": "XLBeMq_pill",
-			"panelHead": "XLBeMq_panelHead",
-			"scopeStats": "XLBeMq_scopeStats",
-			"split": "XLBeMq_split",
-			"meter": "XLBeMq_meter",
-			"chipRed": "XLBeMq_chipRed",
-			"topbarRight": "XLBeMq_topbarRight",
-			"bubble": "XLBeMq_bubble",
-			"weight": "XLBeMq_weight",
-			"draftLayout": "XLBeMq_draftLayout",
-			"overlay": "XLBeMq_overlay",
-			"libTitle": "XLBeMq_libTitle",
-			"accountItem": "XLBeMq_accountItem",
-			"ok": "XLBeMq_ok",
-			"studioTopSub": "XLBeMq_studioTopSub",
-			"navIcon": "XLBeMq_navIcon",
-			"chatSend": "XLBeMq_chatSend",
-			"contextline": "XLBeMq_contextline",
-			"msgAvatar": "XLBeMq_msgAvatar",
-			"noteCard": "XLBeMq_noteCard",
-			"sidebar": "XLBeMq_sidebar",
-			"postBody": "XLBeMq_postBody",
 			"scopeBand": "XLBeMq_scopeBand",
-			"chip": "XLBeMq_chip",
-			"success": "XLBeMq_success",
-			"spacer": "XLBeMq_spacer",
-			"badgeGreen": "XLBeMq_badgeGreen",
-			"panel": "XLBeMq_panel",
-			"active": "XLBeMq_active",
-			"accountAdd": "XLBeMq_accountAdd",
-			"chathead": "XLBeMq_chathead",
-			"source": "XLBeMq_source",
-			"topicReason": "XLBeMq_topicReason",
-			"dangerBtn": "XLBeMq_dangerBtn",
+			"chatInput": "XLBeMq_chatInput",
+			"panelHead": "XLBeMq_panelHead",
+			"personaAvatar": "XLBeMq_personaAvatar",
+			"me": "XLBeMq_me",
+			"tabs": "XLBeMq_tabs",
+			"viewGrid": "XLBeMq_viewGrid",
+			"group": "XLBeMq_group",
+			"libTitle": "XLBeMq_libTitle",
+			"chat": "XLBeMq_chat",
+			"studioMain": "XLBeMq_studioMain",
+			"studioResult": "XLBeMq_studioResult",
+			"on": "XLBeMq_on",
 			"empty": "XLBeMq_empty",
 			"metrics": "XLBeMq_metrics",
-			"studioComposer": "XLBeMq_studioComposer",
-			"badgeWarn": "XLBeMq_badgeWarn",
-			"input": "XLBeMq_input",
-			"error": "XLBeMq_error",
-			"libMeta": "XLBeMq_libMeta",
-			"noteGrid": "XLBeMq_noteGrid",
-			"modeSwitch": "XLBeMq_modeSwitch",
+			"textAction": "XLBeMq_textAction",
+			"chips": "XLBeMq_chips",
 			"thumb": "XLBeMq_thumb",
-			"statusDot": "XLBeMq_statusDot",
-			"libBody": "XLBeMq_libBody",
-			"group": "XLBeMq_group",
-			"accountName": "XLBeMq_accountName",
-			"topbar": "XLBeMq_topbar",
-			"draftEditor": "XLBeMq_draftEditor",
-			"field": "XLBeMq_field",
-			"warning": "XLBeMq_warning",
-			"postMeta": "XLBeMq_postMeta",
-			"editbar": "XLBeMq_editbar",
-			"studioSendGhost": "XLBeMq_studioSendGhost",
-			"me": "XLBeMq_me",
 			"msgBubble": "XLBeMq_msgBubble",
-			"miniThumb": "XLBeMq_miniThumb",
-			"personaName": "XLBeMq_personaName",
-			"badgeDanger": "XLBeMq_badgeDanger",
+			"topicItem": "XLBeMq_topicItem",
+			"sourcePanel": "XLBeMq_sourcePanel",
+			"chipGreen": "XLBeMq_chipGreen",
+			"source": "XLBeMq_source",
+			"tab": "XLBeMq_tab",
+			"chatSend": "XLBeMq_chatSend",
+			"personaList": "XLBeMq_personaList",
+			"studioTopSub": "XLBeMq_studioTopSub",
+			"chipRed": "XLBeMq_chipRed",
+			"sidebar": "XLBeMq_sidebar",
+			"score": "XLBeMq_score",
+			"badgeGreen": "XLBeMq_badgeGreen",
+			"draftEditor": "XLBeMq_draftEditor",
+			"chip": "XLBeMq_chip",
+			"navItem": "XLBeMq_navItem",
+			"modeSwitch": "XLBeMq_modeSwitch",
+			"accountItem": "XLBeMq_accountItem",
+			"dialogRow": "XLBeMq_dialogRow",
+			"brandLogo": "XLBeMq_brandLogo",
+			"input": "XLBeMq_input",
+			"chipAmber": "XLBeMq_chipAmber",
+			"contextline": "XLBeMq_contextline",
+			"weightBadge": "XLBeMq_weightBadge",
 			"dialogRowActions": "XLBeMq_dialogRowActions",
-			"studioMain": "XLBeMq_studioMain",
-			"tabActive": "XLBeMq_tabActive",
+			"messages": "XLBeMq_messages",
+			"spacer": "XLBeMq_spacer",
+			"weight": "XLBeMq_weight",
+			"topbarRight": "XLBeMq_topbarRight",
+			"context": "XLBeMq_context",
+			"scopeStats": "XLBeMq_scopeStats",
+			"statusDot": "XLBeMq_statusDot",
+			"personaDesc": "XLBeMq_personaDesc",
+			"error": "XLBeMq_error",
+			"chathead": "XLBeMq_chathead",
+			"badge": "XLBeMq_badge",
+			"personaName": "XLBeMq_personaName",
+			"ok": "XLBeMq_ok",
+			"libMeta": "XLBeMq_libMeta",
+			"badgeGray": "XLBeMq_badgeGray",
+			"topbar": "XLBeMq_topbar",
+			"below": "XLBeMq_below",
+			"warning": "XLBeMq_warning",
+			"miniThumb": "XLBeMq_miniThumb",
+			"excerpt": "XLBeMq_excerpt",
+			"item": "XLBeMq_item",
+			"pill": "XLBeMq_pill",
 			"personaItem": "XLBeMq_personaItem",
-			"filterRow": "XLBeMq_filterRow"
+			"ghostBtn": "XLBeMq_ghostBtn",
+			"batch": "XLBeMq_batch",
+			"warn": "XLBeMq_warn",
+			"metric": "XLBeMq_metric",
+			"accountName": "XLBeMq_accountName",
+			"badgeWarn": "XLBeMq_badgeWarn",
+			"textarea": "XLBeMq_textarea",
+			"filterRow": "XLBeMq_filterRow",
+			"contextLine": "XLBeMq_contextLine",
+			"card": "XLBeMq_card",
+			"itemActions": "XLBeMq_itemActions",
+			"panel": "XLBeMq_panel",
+			"tag": "XLBeMq_tag",
+			"face": "XLBeMq_face",
+			"studioLayout": "XLBeMq_studioLayout",
+			"personaLayout": "XLBeMq_personaLayout",
+			"brand": "XLBeMq_brand",
+			"primary": "XLBeMq_primary",
+			"meta": "XLBeMq_meta",
+			"noteGrid": "XLBeMq_noteGrid",
+			"accountAdd": "XLBeMq_accountAdd",
+			"badgeDanger": "XLBeMq_badgeDanger",
+			"split": "XLBeMq_split",
+			"bubble": "XLBeMq_bubble",
+			"studioTop": "XLBeMq_studioTop",
+			"panelTitle": "XLBeMq_panelTitle",
+			"muted": "XLBeMq_muted",
+			"success": "XLBeMq_success",
+			"draftLayout": "XLBeMq_draftLayout",
+			"meter": "XLBeMq_meter",
+			"libBody": "XLBeMq_libBody",
+			"workspace": "XLBeMq_workspace",
+			"topicTitle": "XLBeMq_topicTitle",
+			"button": "XLBeMq_button",
+			"batchList": "XLBeMq_batchList",
+			"studioSendGhost": "XLBeMq_studioSendGhost",
+			"filter": "XLBeMq_filter",
+			"bar": "XLBeMq_bar",
+			"content": "XLBeMq_content",
+			"dialogClose": "XLBeMq_dialogClose",
+			"idle": "XLBeMq_idle",
+			"studioSend": "XLBeMq_studioSend",
+			"msgAvatar": "XLBeMq_msgAvatar",
+			"toolbar": "XLBeMq_toolbar",
+			"batchCount": "XLBeMq_batchCount",
+			"postBody": "XLBeMq_postBody",
+			"noteCard": "XLBeMq_noteCard",
+			"itemTop": "XLBeMq_itemTop",
+			"topbarSub": "XLBeMq_topbarSub",
+			"dangerBtn": "XLBeMq_dangerBtn",
+			"scoreLow": "XLBeMq_scoreLow",
+			"danger": "XLBeMq_danger",
+			"overlay": "XLBeMq_overlay",
+			"pillWarn": "XLBeMq_pillWarn",
+			"rowActions": "XLBeMq_rowActions",
+			"topicReason": "XLBeMq_topicReason",
+			"contextCard": "XLBeMq_contextCard",
+			"libRow": "XLBeMq_libRow",
+			"field": "XLBeMq_field",
+			"msg": "XLBeMq_msg",
+			"postMeta": "XLBeMq_postMeta",
+			"viewHost": "XLBeMq_viewHost",
+			"tabActive": "XLBeMq_tabActive",
+			"postTitle": "XLBeMq_postTitle",
+			"dialog": "XLBeMq_dialog",
+			"active": "XLBeMq_active",
+			"post": "XLBeMq_post",
+			"navIcon": "XLBeMq_navIcon",
+			"editbar": "XLBeMq_editbar",
+			"studioComposer": "XLBeMq_studioComposer"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
 		/**
 		* 已在盘知识库导入（v4 人设资产视图）：导入目标为当前人设作用域。
 		* - 「归属人设」只读展示当前选中人设名（作用域由父级 XhsPanel/KnowledgeTab 持有）。
-		* - 标题（每行一个）+ 正文（与标题行号对应）构造 JSON 数组，经账号导入路由落到账号当前人设。
-		* - 若用户临时切换过人设，账号导入仍走账号自身绑定人设（见 report「导入目标」歧义说明）。
+		* - 标题（每行一个）+ 正文（与标题行号对应）构造 JSON 数组，经账号导入路由以 personaId 为**目标**落库。
+		* - personaId 为当前资产作用域人设（可被临时切换）；accountId 仅作来源账号快照，二者角色不同。
 		*/
 		function ImportDialog({ api, accountId, personaId, onDone }) {
 			const [personaName, setPersonaName] = (0, react.useState)("");
@@ -659,7 +660,7 @@ window.__ModuleLoader__.load({
 					copy: copyLines[row.index] ?? ""
 				}));
 				try {
-					const count = await api.importPublishedNotes(accountId, "json", JSON.stringify(records));
+					const count = await api.importPublishedNotes(accountId, "json", JSON.stringify(records), personaId);
 					setNotice(`已导入 ${count} 条已发布笔记。`);
 					setTitles("");
 					setCopies("");
@@ -1499,7 +1500,7 @@ window.__ModuleLoader__.load({
 			const [transferNote, setTransferNote] = (0, react.useState)(null);
 			const [transferTarget, setTransferTarget] = (0, react.useState)("");
 			const [pendingOpen, setPendingOpen] = (0, react.useState)(false);
-			const [assignTarget, setAssignTarget] = (0, react.useState)("");
+			const [pendingTargets, setPendingTargets] = (0, react.useState)({});
 			const [busy, setBusy] = (0, react.useState)(false);
 			const persona = allPersonas.find((p) => p.id === personaId);
 			const refresh = (0, react.useCallback)(async () => {
@@ -1554,10 +1555,11 @@ window.__ModuleLoader__.load({
 					setBusy(false);
 				}
 			};
-			const assign = async (pendingId, kind) => {
-				if (assignTarget === "") return;
+			const assign = async (pendingId) => {
+				const target = pendingTargets[pendingId] ?? "";
+				if (target === "") return;
 				try {
-					await api.assignPending(pendingId, assignTarget);
+					await api.assignPending(pendingId, target);
 					setPending((prev) => prev.filter((entry) => entry.id !== pendingId));
 					setError("");
 				} catch (e) {
@@ -1633,10 +1635,7 @@ window.__ModuleLoader__.load({
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.spacer }),
 								pending.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									className: panel_module_css_default.button,
-									onClick: () => {
-										setPendingOpen(true);
-										setAssignTarget("");
-									},
+									onClick: () => setPendingOpen(true),
 									children: ["待归属 ", pending.length]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
@@ -1809,8 +1808,11 @@ window.__ModuleLoader__.load({
 											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
 												className: panel_module_css_default.input,
 												"aria-label": "归属目标人设",
-												value: assignTarget,
-												onChange: (e) => setAssignTarget(e.target.value),
+												value: pendingTargets[entry.id] ?? "",
+												onChange: (e) => setPendingTargets((prev) => ({
+													...prev,
+													[entry.id]: e.target.value
+												})),
 												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
 													value: "",
 													children: "选择目标人设"
@@ -1822,7 +1824,7 @@ window.__ModuleLoader__.load({
 											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												className: panel_module_css_default.primary,
 												style: { marginTop: 8 },
-												onClick: () => void assign(entry.id, entry.kind),
+												onClick: () => void assign(entry.id),
 												children: "归属到该人设"
 											})
 										]
@@ -2814,7 +2816,7 @@ window.__ModuleLoader__.load({
 			const [transferItem, setTransferItem] = (0, react.useState)(null);
 			const [transferTarget, setTransferTarget] = (0, react.useState)("");
 			const [pendingOpen, setPendingOpen] = (0, react.useState)(false);
-			const [assignTarget, setAssignTarget] = (0, react.useState)("");
+			const [pendingTargets, setPendingTargets] = (0, react.useState)({});
 			const [busy, setBusy] = (0, react.useState)(false);
 			const [collecting, setCollecting] = (0, react.useState)(false);
 			const [reviewingId, setReviewingId] = (0, react.useState)("");
@@ -2962,9 +2964,10 @@ window.__ModuleLoader__.load({
 				}
 			};
 			const assign = async (pendingId) => {
-				if (assignTarget === "") return;
+				const target = pendingTargets[pendingId] ?? "";
+				if (target === "") return;
 				try {
-					await api.assignPending(pendingId, assignTarget);
+					await api.assignPending(pendingId, target);
 					setPending((prev) => prev.filter((entry) => entry.id !== pendingId));
 					setError("");
 				} catch (e) {
@@ -3100,10 +3103,7 @@ window.__ModuleLoader__.load({
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.spacer }),
 							pending.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 								className: panel_module_css_default.button,
-								onClick: () => {
-									setPendingOpen(true);
-									setAssignTarget("");
-								},
+								onClick: () => setPendingOpen(true),
 								children: ["待归属 ", pending.length]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
@@ -3459,8 +3459,11 @@ window.__ModuleLoader__.load({
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
 										className: panel_module_css_default.input,
 										"aria-label": "归属目标人设",
-										value: assignTarget,
-										onChange: (e) => setAssignTarget(e.target.value),
+										value: pendingTargets[entry.id] ?? "",
+										onChange: (e) => setPendingTargets((prev) => ({
+											...prev,
+											[entry.id]: e.target.value
+										})),
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
 											value: "",
 											children: "选择目标人设"

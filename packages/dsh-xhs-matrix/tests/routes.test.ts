@@ -200,6 +200,55 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(notes[0].publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 
+  it('导入可显式指定目标人设；缺省回退账号人设；未知人设 404；账号保持来源快照', async () => {
+    // 两个账号分别绑定人设 A、B。
+    const personaA = await json('/api/dsh-xhs-matrix/personas', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '人设A', prompt: '内容' }),
+    })
+    const personaAId = (personaA.body as { persona: { id: string } }).persona.id
+    const personaB = await json('/api/dsh-xhs-matrix/personas', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '人设B', prompt: '内容' }),
+    })
+    const personaBId = (personaB.body as { persona: { id: string } }).persona.id
+    const accRes = await json('/api/dsh-xhs-matrix/accounts', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '账号A', personaId: personaAId, enabled: true }),
+    })
+    const accountId = (accRes.body as { account: { id: string } }).account.id
+
+    // 显式目标人设 B：来自账号A的笔记落到人设B；sourceAccountId/Name 为账号A快照，账号A 仍绑在人设A。
+    const targeted = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: '目标B', copy: '正文' }]), personaId: personaBId }),
+    })
+    expect(targeted.status).toBe(201)
+    expect((targeted.body as { imported: number }).imported).toBe(1)
+    const notesB = store.listPublishedNotes(personaBId)
+    expect(notesB).toHaveLength(1)
+    expect(notesB[0].title).toBe('目标B')
+    expect(notesB[0].sourceAccountId).toBe(accountId)
+    expect(notesB[0].sourceAccountName).toBe('账号A')
+    // 账号自身人设 A 不受影响（不落到账号自身人设）。
+    expect(store.listPublishedNotes(personaAId)).toHaveLength(0)
+
+    // 缺省（不传 personaId）：回退到账号自身人设 A（legacy compat）。
+    const legacy = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: '回退A', copy: '正文' }]) }),
+    })
+    expect(legacy.status).toBe(201)
+    expect(store.listPublishedNotes(personaAId)).toHaveLength(1)
+
+    // 未知目标人设 → 404。
+    const bad = await json('/api/dsh-xhs-matrix/accounts/import', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, format: 'json', content: JSON.stringify([{ title: 'x', copy: 'y' }]), personaId: 'nope' }),
+    })
+    expect(bad.status).toBe(404)
+  })
+
   it('创作台保存草稿不要求 topicId', async () => {
     const accountId = await seedAccount()
     const llm: StudioLlmClient = { complete: async () => ({ text: '回复' }), stream: async (_request, onDelta) => { onDelta('回复'); return '回复' } }

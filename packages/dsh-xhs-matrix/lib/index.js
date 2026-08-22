@@ -740,13 +740,18 @@ function makeAccountsRoutes(store) {
 				writeJson(res, 400, { error: "账号不存在：" + body.accountId });
 				return;
 			}
-			if (account.personaId === "") {
-				writeJson(res, 400, { error: "该账号尚未分配人设" });
+			const targetPersonaId = typeof body.personaId === "string" && body.personaId !== "" ? body.personaId : account.personaId;
+			if (targetPersonaId === "") {
+				writeJson(res, 400, { error: "该账号尚未分配人设，或未指定目标人设" });
+				return;
+			}
+			if (!store.listPersonas().some((persona) => persona.id === targetPersonaId)) {
+				writeJson(res, 404, { error: "人设不存在：" + targetPersonaId });
 				return;
 			}
 			const { parsePublishedNoteImport } = await import("./importer-CbJ3zqor.js");
 			const records = parsePublishedNoteImport(body.content, body.format);
-			writeJson(res, 201, { imported: service.importNotes(account.personaId, records, account.id, account.name).length });
+			writeJson(res, 201, { imported: service.importNotes(targetPersonaId, records, account.id, account.name).length });
 		} catch (error) {
 			fail(res, error);
 		}

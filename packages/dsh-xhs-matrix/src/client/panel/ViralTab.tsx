@@ -30,7 +30,7 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
   const [transferItem, setTransferItem] = useState<ViralItem | null>(null)
   const [transferTarget, setTransferTarget] = useState('')
   const [pendingOpen, setPendingOpen] = useState(false)
-  const [assignTarget, setAssignTarget] = useState('')
+  const [pendingTargets, setPendingTargets] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
   const [collecting, setCollecting] = useState(false)
   const [reviewingId, setReviewingId] = useState('')
@@ -181,9 +181,11 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
   }
 
   const assign = async (pendingId: string): Promise<void> => {
-    if (assignTarget === '') return
+    // 归属目标人设由每行的独立选择下拉决定（pendingTargets[entry.id]），互不覆盖。
+    const target = pendingTargets[pendingId] ?? ''
+    if (target === '') return
     try {
-      await api.assignPending(pendingId, assignTarget)
+      await api.assignPending(pendingId, target)
       setPending(prev => prev.filter(entry => entry.id !== pendingId))
       setError('')
     } catch (e) {
@@ -271,7 +273,7 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
               <option value="manual">手动新增</option>
             </select>
             <span className={css.spacer} />
-            {pending.length > 0 && <button className={css.button} onClick={() => { setPendingOpen(true); setAssignTarget('') }}>待归属 {pending.length}</button>}
+            {pending.length > 0 && <button className={css.button} onClick={() => setPendingOpen(true)}>待归属 {pending.length}</button>}
             <button className={css.ghostBtn} onClick={openConfig}>配置 Apify</button>
             <button className={css.primary} onClick={() => void collect()} disabled={collecting}>{collecting ? '采集中…' : '采集爆款'}</button>
             <button className={css.primary} onClick={() => setManualOpen(true)}>＋ 手动新增</button>
@@ -417,7 +419,7 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
             {pending.map(entry => (
               <div key={entry.id} className={css.field} style={{ borderTop: '1px solid var(--xhs-border)', paddingTop: 10 }}>
                 <label>{(entry.payload as { title?: string }).title ?? entry.kind}</label>
-                <select className={css.input} aria-label="归属目标人设" value={assignTarget} onChange={e => setAssignTarget(e.target.value)}>
+                <select className={css.input} aria-label="归属目标人设" value={pendingTargets[entry.id] ?? ''} onChange={e => setPendingTargets(prev => ({ ...prev, [entry.id]: e.target.value }))}>
                   <option value="">选择目标人设</option>
                   {allPersonas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>

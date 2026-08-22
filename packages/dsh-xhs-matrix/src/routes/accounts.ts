@@ -60,11 +60,17 @@ export function makeAccountsRoutes(store: MatrixStore): WebRoute[] {
       try {
         const account = store.listAccounts().find(item => item.id === body.accountId)
         if (account === undefined) { writeJson(res, 400, { error: '账号不存在：' + body.accountId }); return }
-        if (account.personaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
+        // 目标人设：显式 personaId（导入目标=当前人设作用域）优先，缺省回退账号当前人设（legacy compat）。
+        // accountId 仅作为来源快照与追踪，与目标 personaId 是两个角色（非 §7.2 查询作用域冲突），二者同时出现不 409。
+        const targetPersonaId = typeof body.personaId === 'string' && body.personaId !== '' ? body.personaId : account.personaId
+        if (targetPersonaId === '') { writeJson(res, 400, { error: '该账号尚未分配人设，或未指定目标人设' }); return }
+        if (!store.listPersonas().some(persona => persona.id === targetPersonaId)) {
+          writeJson(res, 404, { error: '人设不存在：' + targetPersonaId }); return
+        }
         const { parsePublishedNoteImport } = await import('../importer.ts')
         const records = parsePublishedNoteImport(body.content, body.format)
-        // 集中写路径：通过 PersonaAssetService.importNotes 落库，避免与 importer 重复维护写路径。
-        const notes = service.importNotes(account.personaId, records, account.id, account.name)
+        // 集中写路径：通过 PersonaAssetService.importNotes 落库；来源账号快照为当前导入账号。
+        const notes = service.importNotes(targetPersonaId, records, account.id, account.name)
         writeJson(res, 201, { imported: notes.length })
       } catch (error) { fail(res, error) }
     }),

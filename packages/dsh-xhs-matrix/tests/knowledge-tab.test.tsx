@@ -40,6 +40,7 @@ function makeApi(overrides: Record<string, unknown> = {}) {
     setNoteWeight: vi.fn(async () => undefined),
     transferNotes: vi.fn(async () => [note]),
     importPublishedNotes: vi.fn(async () => 1),
+    assignPending: vi.fn(async () => note),
     ...overrides,
   }
 }
@@ -206,7 +207,62 @@ describe('KnowledgeTab 已发布知识库', () => {
     const run = findButtonExact(host, '导入')
     run!.click()
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(apiMock.importPublishedNotes).toHaveBeenCalledWith('a1', 'json', JSON.stringify([{ title: '标题一', copy: '正文一' }]))
+    expect(apiMock.importPublishedNotes).toHaveBeenCalledWith('a1', 'json', JSON.stringify([{ title: '标题一', copy: '正文一' }]), 'p1')
+
+    root.unmount()
+    host.remove()
+  })
+
+  it('临时切换人设作用域到 B 后导入，目标为 B 而非账号人设', async () => {
+    const apiMock = makeApi()
+    const { host, root } = await renderTab(apiMock, 'p2')
+
+    const importing = findButton(host, '导入已发布笔记')
+    importing!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const personaInput = Array.from(host.querySelectorAll('input')).find(i => i.readOnly)
+    expect(personaInput?.value).toBe('人设二')
+
+    const area = Array.from(host.querySelectorAll('textarea'))[0] as HTMLTextAreaElement
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!
+    setter.call(area, '标题一')
+    area.dispatchEvent(new Event('input', { bubbles: true }))
+    const area2 = Array.from(host.querySelectorAll('textarea'))[1] as HTMLTextAreaElement
+    setter.call(area2, '正文一')
+    area2.dispatchEvent(new Event('input', { bubbles: true }))
+    const run = findButtonExact(host, '导入')
+    run!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    // 导入以当前作用域人设 B 为目标，账号 a1 仅作来源快照。
+    expect(apiMock.importPublishedNotes).toHaveBeenCalledWith('a1', 'json', JSON.stringify([{ title: '标题一', copy: '正文一' }]), 'p2')
+
+    root.unmount()
+    host.remove()
+  })
+
+  it('待归属每行独立选择目标人设，互不覆盖（单行 assign）', async () => {
+    const apiMock = makeApi({
+      listPending: vi.fn(async () => [
+        { id: 'pd1', kind: 'published-note', payload: note, sourceAccountId: 'a1', sourceAccountName: '工程师傅', reason: '账号未绑定人设', migratedAt: '2026-08-20T10:00:00.000Z' },
+        { id: 'pd2', kind: 'published-note', payload: { ...note, id: 'n2', title: '另一篇' }, sourceAccountId: 'a1', sourceAccountName: '工程师傅', reason: '账号未绑定人设', migratedAt: '2026-08-20T10:00:00.000Z' },
+      ]),
+    })
+    const { host, root } = await renderTab(apiMock)
+    const pendingBtn = findButton(host, '待归属 2')
+    pendingBtn!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    const selects = Array.from(host.querySelectorAll<HTMLSelectElement>('select[aria-label="归属目标人设"]'))
+    expect(selects).toHaveLength(2)
+    setSelectValue(selects[0], 'p2')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    // 第二行未被第一行选择覆盖。
+    expect(selects[1].value).toBe('')
+
+    const assignBtns = Array.from(host.querySelectorAll('button')).filter(b => b.textContent?.includes('归属到该人设'))
+    assignBtns[0].click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(apiMock.assignPending).toHaveBeenCalledWith('pd1', 'p2')
 
     root.unmount()
     host.remove()

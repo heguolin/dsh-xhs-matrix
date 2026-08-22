@@ -125,10 +125,10 @@ export class XhsApi {
   async deleteAccount(id: string): Promise<void> {
     await readJson<{ ok: boolean }>(await fetch(XHS_API.accounts + query({ account: id }), { method: 'DELETE' }))
   }
-  async importPublishedNotes(accountId: string, format: 'csv' | 'json', content: string): Promise<number> {
+  async importPublishedNotes(accountId: string, format: 'csv' | 'json', content: string, personaId?: string): Promise<number> {
     const body = await readJson<{ imported: number }>(await fetch(XHS_API.accountImport, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId, format, content }),
+      body: JSON.stringify({ accountId, format, content, personaId }),
     }))
     return body.imported
   }

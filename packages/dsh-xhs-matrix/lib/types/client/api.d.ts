@@ -55,7 +55,7 @@ export declare class XhsApi {
         id: string;
     }>;
     deleteAccount(id: string): Promise<void>;
-    importPublishedNotes(accountId: string, format: 'csv' | 'json', content: string): Promise<number>;
+    importPublishedNotes(accountId: string, format: 'csv' | 'json', content: string, personaId?: string): Promise<number>;
     listPersonas(): Promise<Array<{
         id: string;
         name: string;

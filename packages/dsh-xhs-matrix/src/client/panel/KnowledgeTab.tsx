@@ -25,7 +25,7 @@ export function KnowledgeTab({ api, accountId, personaId, onPersonaChange }: { a
   const [transferNote, setTransferNote] = useState<PublishedNote | null>(null)
   const [transferTarget, setTransferTarget] = useState('')
   const [pendingOpen, setPendingOpen] = useState(false)
-  const [assignTarget, setAssignTarget] = useState('')
+  const [pendingTargets, setPendingTargets] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
 
   const persona = allPersonas.find(p => p.id === personaId)
@@ -87,12 +87,12 @@ export function KnowledgeTab({ api, accountId, personaId, onPersonaChange }: { a
     }
   }
 
-  const assign = async (pendingId: string, kind: 'published-note' | 'viral-item'): Promise<void> => {
-    // 归属目标人设由 entry 级选择下拉决定（每行一个 assignTarget）；这里用全局 assignTarget 简化归属。
-    void kind
-    if (assignTarget === '') return
+  const assign = async (pendingId: string): Promise<void> => {
+    // 归属目标人设由每行的独立选择下拉决定（pendingTargets[entry.id]），互不覆盖。
+    const target = pendingTargets[pendingId] ?? ''
+    if (target === '') return
     try {
-      await api.assignPending(pendingId, assignTarget)
+      await api.assignPending(pendingId, target)
       setPending(prev => prev.filter(entry => entry.id !== pendingId))
       setError('')
     } catch (e) {
@@ -148,7 +148,7 @@ export function KnowledgeTab({ api, accountId, personaId, onPersonaChange }: { a
                   {sourceAccounts.map(name => <option key={name} value={name}>{name}</option>)}
                 </select>
                 <span className={css.spacer} />
-                {pending.length > 0 && <button className={css.button} onClick={() => { setPendingOpen(true); setAssignTarget('') }}>待归属 {pending.length}</button>}
+                {pending.length > 0 && <button className={css.button} onClick={() => setPendingOpen(true)}>待归属 {pending.length}</button>}
                 <button className={css.primary} onClick={() => setImporting(true)}>导入已发布笔记</button>
               </div>
 
@@ -225,11 +225,11 @@ export function KnowledgeTab({ api, accountId, personaId, onPersonaChange }: { a
                     {pending.map(entry => (
                       <div key={entry.id} className={css.field} style={{ borderTop: '1px solid var(--xhs-border)', paddingTop: 10 }}>
                         <label>{(entry.payload as { title?: string }).title ?? entry.kind}</label>
-                        <select className={css.input} aria-label="归属目标人设" value={assignTarget} onChange={e => setAssignTarget(e.target.value)}>
+                        <select className={css.input} aria-label="归属目标人设" value={pendingTargets[entry.id] ?? ''} onChange={e => setPendingTargets(prev => ({ ...prev, [entry.id]: e.target.value }))}>
                           <option value="">选择目标人设</option>
                           {allPersonas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
-                        <button className={css.primary} style={{ marginTop: 8 }} onClick={() => void assign(entry.id, entry.kind)}>归属到该人设</button>
+                        <button className={css.primary} style={{ marginTop: 8 }} onClick={() => void assign(entry.id)}>归属到该人设</button>
                       </div>
                     ))}
                     <div className={css.rowActions}><button className={css.ghostBtn} onClick={() => setPendingOpen(false)}>关闭</button></div>
