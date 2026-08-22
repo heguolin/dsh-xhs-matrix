@@ -201,7 +201,7 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
   return (
     <div className={css.studioLayout}>
       {/* 对话区：四阶段进度 + 创作说明 + 流式最终稿 */}
-      <div className={css.studioMain}>
+      <div className={css.studioMain} style={{ minHeight: 0 }}>
         <header className={css.studioTop}>
           <div>
             <strong>专属创作台</strong>

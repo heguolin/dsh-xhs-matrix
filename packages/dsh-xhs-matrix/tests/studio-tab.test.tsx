@@ -117,6 +117,20 @@ function mockScroll(el: HTMLElement, height: number, clientHeight: number): { re
 }
 
 describe('StudioTab 结构化流式创作与智能跟随底部', () => {
+  it('创作台主列允许在固定高度网格内收缩，使消息列表成为内部滚动容器', async () => {
+    const harness = makeHarness()
+    const { host, root } = await mount(harness.api)
+    const list = scroller(host)
+    const studioMain = list.parentElement?.parentElement
+    expect(studioMain).not.toBeNull()
+
+    // 回归保护：缺少 min-height: 0 时，Grid 子项会按历史消息的固有高度撑开，
+    // 实际浏览器中列表曾膨胀至 12140px，导致上滚暂停/回到最新作用在错误的滚动层。
+    expect(getComputedStyle(studioMain!).minHeight).toBe('0')
+
+    unmount(root, host)
+  })
+
   it('流式中渲染四阶段进度、可折叠创作说明、最终稿与依据侧栏', async () => {
     const harness = makeHarness()
     const { host, root } = await mount(harness.api)

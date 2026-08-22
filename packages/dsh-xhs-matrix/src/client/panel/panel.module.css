@@ -1671,6 +1671,12 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
    .workspace 的后代，@container 基于 .workspace 的 inline-size 命中。
    不隐藏任何关键操作（进入创作台/知识库/爆款池/草稿始终可见）。
    ========================================================================== */
+@container (max-width: 720px) {
+  .studioLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @container (max-width: 420px) {
   /* 页头堆叠为纵列：标题/副标题独占整行，不再被右侧操作区挤压成逐字竖排。 */
   .topbar {
