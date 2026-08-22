@@ -99,7 +99,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
   const totalReads = summaries.reduce((sum, row) => sum + row.reads, 0)
 
   return (
-    <div>
+    <div data-testid="overview-root">
       {error !== '' && <div className={css.danger}>{error}</div>}
       {accounts.length === 0 && (
         <div className={css.empty}>还没有账号。点击右上角「＋ 添加账号」创建第一个矩阵账号，开始建立独立工作区。</div>
@@ -108,7 +108,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
       {accounts.length > 0 && (
         <>
           {/* 矩阵汇总指标 */}
-          <div className={css.metrics} style={{ marginBottom: 14 }}>
+          <div className={css.metrics} data-testid="overview-metrics" style={{ marginBottom: 14 }}>
             <div className={css.metric}>矩阵账号<b>{accounts.length}</b></div>
             <div className={css.metric}>累计已发布<b>{totalNotes}</b></div>
             <div className={css.metric}>累计浏览<b>{totalReads.toLocaleString()}</b></div>
@@ -117,11 +117,11 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
           {/* 账号卡片：每个账号一个独立工作区入口 */}
           {summaries.map(row => (
             <div key={row.account.id} className={css.libRow} style={{ flexDirection: 'column' }}>
-              <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div className={css.accountHead} data-testid="overview-account-head">
                 <span className={css.face} />
-                <div style={{ minWidth: 0 }}>
+                <div className={css.accountTitle} data-testid="overview-account-title">
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{row.account.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
                     <span className={css.muted} style={{ fontSize: 11 }}>人设：{row.personaName}</span>
                     {bindingFor === row.account.id ? (
                       <>
@@ -152,7 +152,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                 {row.account.connection !== undefined && <StatusBadge status={row.account.connection.status} />}
                 {row.account.enabled ? <span className={css.badgeGreen}>启用</span> : <span className={css.badgeGray}>停用</span>}
                 <span style={{ flex: 1 }} />
-                <div className={css.rowActions}>
+                <div className={css.rowActions} data-testid="overview-account-actions">
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'knowledge')}>知识库</button>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'viral')}>爆款池</button>
                   <button className={css.ghostBtn} onClick={() => onOpenAccount(row.account.id, 'drafts')}>草稿</button>
@@ -165,7 +165,7 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
                 <div className={css.metric}>最近浏览<b>{row.reads.toLocaleString()}</b></div>
                 <div className={css.metric}>高权重样本<b>{row.highWeightCount}</b></div>
               </div>
-              <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className={css.muted} style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span>爆款池：{row.viralCount} 条</span>
                 <button className={css.ghostBtn} style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => onOpenAccount(row.account.id, 'viral')}>
                   {row.viralCount > 0 ? '查看该账号爆款池' : '去采集爆款'}

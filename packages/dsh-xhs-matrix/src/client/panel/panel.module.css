@@ -387,6 +387,20 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   font-weight: 700;
 }
 
+.accountHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.accountTitle {
+  min-width: 0;
+  flex: 1;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 .post {
   display: flex;
   gap: 9px;
@@ -1634,5 +1648,15 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   .settingsGrid { grid-template-columns: 1fr; }
   .personaLayout { grid-template-columns: 1fr; }
   .draftLayout { grid-template-columns: 1fr; }
+  .studioLayout { grid-template-columns: 1fr; }
+
+  /* 窄宽（如 768x900 下矩阵主区约 296px）：总览压平为单列，
+     账号卡片头/操作按钮允许换行，避免中文逐字竖排与按钮溢出裁剪。
+     不隐藏任何关键操作（进入创作台/知识库/爆款池/草稿始终可见）。 */
+  .overview { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+  .accountHead { flex-wrap: wrap; }
+  .accountTitle { flex: 1 1 auto; }
+  .rowActions { flex-wrap: wrap; }
 }
 
