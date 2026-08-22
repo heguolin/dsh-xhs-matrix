@@ -190,7 +190,7 @@ export function XhsPanel(props: XhsPanelProps) {
           </div>
         </div>
 
-        <div className={css.content}>
+        <div className={css.content} data-testid="matrix-content">
           {error !== '' && <div className={css.danger}>{error}</div>}
           {currentPage === 'overview' && (
             <OverviewTab

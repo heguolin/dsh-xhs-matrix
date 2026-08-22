@@ -272,6 +272,10 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   min-width: 0;
   min-height: 0;
   background: var(--xhs-bg-main);
+  /* 让 @container 查询按「矩阵内容容器宽度」响应，而不是只按视口：
+     .topbar 与 .content 都是 .workspace 的后代，容器宽（三栏下约 304px）
+     与视口宽度解耦，避免在宽视口但窄内容区时仍逐字竖排/按钮裁剪。 */
+  container-type: inline-size;
 }
 
 .topbar {
@@ -1658,5 +1662,46 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
   .accountHead { flex-wrap: wrap; }
   .accountTitle { flex: 1 1 auto; }
   .rowActions { flex-wrap: wrap; }
+}
+
+/* ==========================================================================
+   容器宽度响应式（container-type + @container）：
+   矩阵主区在 DSH 三栏下可窄至约 304px，且即使视口很宽，内容区也可能很窄，
+   因此按「容器宽度」响应而不是只按视口媒体查询。.topbar 与 .content 都是
+   .workspace 的后代，@container 基于 .workspace 的 inline-size 命中。
+   不隐藏任何关键操作（进入创作台/知识库/爆款池/草稿始终可见）。
+   ========================================================================== */
+@container (max-width: 420px) {
+  /* 页头堆叠为纵列：标题/副标题独占整行，不再被右侧操作区挤压成逐字竖排。 */
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .topbar h3 {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .topbarSub {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .topbarRight {
+    flex-wrap: wrap;
+  }
+  /* 总览与指标压平，避免窄容器下溢出。 */
+  .overview {
+    grid-template-columns: 1fr;
+  }
+  .metrics {
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  }
+  /* 账号卡片头与操作按钮换行，保证 知识库/爆款池/草稿/进入创作台 全部可见。 */
+  .accountHead {
+    flex-wrap: wrap;
+  }
+  .rowActions {
+    flex-wrap: wrap;
+  }
 }
 
