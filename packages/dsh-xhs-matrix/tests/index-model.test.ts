@@ -33,4 +33,30 @@ describe('buildStudioLlmClient（创作台模型装配）', () => {
     const { text } = await setup.client.complete({ system: 's', messages: [{ role: 'user', content: 'c' }] })
     expect(text).toBe('你好')
   })
+
+  it('finish error 时 complete 抛错并包含 provider failure 详情', async () => {
+    // 模拟 provider 抛出后被 dsh-llm 归一化为终态 finish error chunk：
+    // 必须把 failure.message（如 'provider: invalid api key'）带进抛错信息，而不能丢弃。
+    const stream = async function* (): AsyncGenerator<StreamChunk> {
+      yield { type: 'block-start', index: 0, blockType: 'text' }
+      yield { type: 'text-delta', index: 0, text: '你好' }
+      yield { type: 'block-end', index: 0, block: { type: 'text', text: '你好' } }
+      yield { type: 'finish', reason: { kind: 'error', failure: { message: 'provider: invalid api key', code: '401' } } }
+    }
+    const setup = buildStudioLlmClient(() => ({ provider: 'deepseek-official', model: 'deepseek-v4-flash' }), () => [], () => stream())
+    await expect(setup.client.complete({ system: 's', messages: [{ role: 'user', content: 'c' }] }))
+      .rejects.toThrow(/provider: invalid api key/)
+  })
+
+  it('正常 finish stop 流不抛错并返回文本', async () => {
+    const stream = async function* (): AsyncGenerator<StreamChunk> {
+      yield { type: 'block-start', index: 0, blockType: 'text' }
+      yield { type: 'text-delta', index: 0, text: '你好' }
+      yield { type: 'block-end', index: 0, block: { type: 'text', text: '你好' } }
+      yield { type: 'finish', reason: { kind: 'stop' } }
+    }
+    const setup = buildStudioLlmClient(() => ({ provider: 'deepseek-official', model: 'deepseek-v4-flash' }), () => [], () => stream())
+    const { text } = await setup.client.complete({ system: 's', messages: [{ role: 'user', content: 'c' }] })
+    expect(text).toBe('你好')
+  })
 })

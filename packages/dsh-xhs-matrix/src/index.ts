@@ -130,8 +130,14 @@ function runModelStream(
       if (chunk.type === 'text-delta' && onDelta !== undefined) onDelta(chunk.text)
       assembler.push(chunk)
     }
-    if (assembler.finish.kind !== 'stop') {
-      throw new Error(`创作台模型调用未正常结束：finish ${assembler.finish.kind}`)
+    const finish = assembler.finish
+    if (finish.kind !== 'stop') {
+      // 非 stop 终态仍是错误（不把失败伪装成成功），但必须带上 provider 失败细节以供诊断。
+      const failure = 'failure' in finish ? finish.failure : undefined
+      const detail = failure
+        ? `${failure.message}${failure.code ? `（${failure.code}）` : ''}`
+        : undefined
+      throw new Error(`创作台模型调用未正常结束：finish ${finish.kind}${detail ? '：' + detail : ''}`)
     }
     return assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
   })()
