@@ -3,20 +3,21 @@ import type { XhsApi } from '../api.ts'
 import css from './panel.module.css'
 import { ImportDialog } from './ImportDialog.tsx'
 import { StatusBadge } from './StatusBadge.tsx'
-import { accountDot } from './XhsPanel.tsx'
-
-interface AccountRow {
-  id: string; name: string; personaId: string; enabled: boolean
-  connection?: { profileUrl?: string; externalId?: string; status: string; source?: string; lastError?: string; lastSuccessAt?: string }
-  collectionStatus?: { running: boolean; lastStatus: string; lastSuccessAt?: string; lastError?: string }
-}
+import { accountDot, type AccountRow } from './XhsPanel.tsx'
 
 /**
  * 账号管理弹窗：列表 + 创建/编辑表单 + 绑定主页 + 笔记导入入口。
- * 账号与采集状态用状态点与徽标区分，失败可重试绑定。
+ *
+ * v4：账号列表单一来源为父级 XhsPanel，本弹窗只接收 accounts 快照；创建成功后
+ * 通过 onSaved(createdId) 通知父级「刷新→选中→关闭」，不再维护无法通知侧栏的账号副本。
  */
-export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose: () => void; onSaved: () => void }) {
-  const [accounts, setAccounts] = useState<AccountRow[]>([])
+export function AccountsDialog({ api, accounts, onClose, onSaved, onChanged }: {
+  api: XhsApi
+  accounts: AccountRow[]
+  onClose: () => void
+  onSaved: (createdId: string) => Promise<void> | void
+  onChanged: () => void | Promise<void>
+}) {
   const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [name, setName] = useState('')
   const [personaId, setPersonaId] = useState('')
@@ -30,30 +31,29 @@ export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose
   const [editProfileUrl, setEditProfileUrl] = useState('')
   const [importingId, setImportingId] = useState<string | null>(null)
 
-  const refresh = useCallback(async () => {
+  const refreshPersonas = useCallback(async () => {
     try {
-      const [accs, pers] = await Promise.all([api.listAccounts(), api.listPersonas()])
-      setAccounts(accs)
-      setPersonas(pers)
+      setPersonas(await api.listPersonas())
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
   }, [api])
 
-  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => { void refreshPersonas() }, [refreshPersonas])
 
   const create = async (): Promise<void> => {
     if (name.trim() === '') { setError('请输入账号名'); return }
+    setError('')
     try {
       const { id } = await api.createAccount({ name: name.trim(), personaId, enabled: true })
       if (profileUrl.trim() !== '') {
         await api.updateAccount(id, { name: name.trim(), personaId, enabled: true, connection: { profileUrl: profileUrl.trim(), status: 'awaiting-import', source: 'manual' } })
       }
-      setName(''); setPersonaId(''); setProfileUrl('')
-      setNotice(`已添加账号「${name.trim()}」${profileUrl.trim() !== '' ? '，并绑定主页待导入' : ''}。`)
-      await refresh()
+      // 成功顺序由父级固定：已创建 → await refreshAccounts() → setAccountId(createdId) → 关闭弹窗。
+      await onSaved(id)
     } catch (e) {
+      // 失败：保留表单并显示错误，不关弹窗。
       setError(e instanceof Error ? e.message : String(e))
     }
   }
@@ -61,7 +61,7 @@ export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose
   const toggle = async (account: AccountRow): Promise<void> => {
     try {
       await api.updateAccount(account.id, { name: account.name, personaId: account.personaId, enabled: !account.enabled })
-      await refresh()
+      await onChanged()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -71,7 +71,7 @@ export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose
     if (!window.confirm('确定删除该账号？其笔记、指标、草稿与创作记录会一并删除。')) return
     try {
       await api.deleteAccount(id)
-      await refresh()
+      await onChanged()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -92,7 +92,7 @@ export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose
       })
       setEditingId(null)
       setNotice('账号信息已保存。')
-      await refresh()
+      await onChanged()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -169,11 +169,11 @@ export function AccountsDialog({ api, onClose, onSaved }: { api: XhsApi; onClose
         {accounts.length === 0 && <div className={css.empty}>暂无账号。</div>}
 
         {importingId !== null && (
-          <div style={{ marginTop: 14, padding: 14, border: `1px solid ${'var(--xhs-border)'}`, borderRadius: 12, background: 'var(--xhs-card)' }}>
+          <div style={{ marginTop: 14, padding: 14, border: '1px solid var(--xhs-border)', borderRadius: 12, background: 'var(--xhs-card)' }}>
             <ImportDialog
               api={api}
               accountId={importingId}
-              onDone={() => { void refresh(); setImportingId(null) }}
+              onDone={() => { void onChanged(); setImportingId(null) }}
             />
           </div>
         )}

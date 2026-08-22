@@ -3,6 +3,7 @@ import type { XhsApi } from '../api.ts'
 import type { NoteWeight } from '../../types.ts'
 import css from './panel.module.css'
 import { ImportDialog } from './ImportDialog.tsx'
+import { PersonaScopeSelector } from './PersonaScopeSelector.tsx'
 
 interface NoteRow {
   id: string; title: string; copy: string; publishedAt: string; source: string; weight: number; topic?: string
@@ -23,7 +24,7 @@ const FILTERS: Array<{ id: FilterId; label: string }> = [
  * 已发布知识库（设计稿 content/detail-surfaces.html）：
  * 筛选 chips + 笔记行（缩略图/指标/0-5 权重），权重即控制杆。
  */
-export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: string }) {
+export function KnowledgeTab({ api, accountId, personaId, onPersonaChange }: { api: XhsApi; accountId: string; personaId: string; onPersonaChange: (id: string) => void }) {
   const [notes, setNotes] = useState<NoteRow[]>([])
   const [metrics, setMetrics] = useState<MetricRow[]>([])
   const [filter, setFilter] = useState<FilterId>('all')
@@ -32,16 +33,16 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
   const [importing, setImporting] = useState(false)
 
   const refresh = useCallback(async () => {
-    if (accountId === '') { setNotes([]); setMetrics([]); return }
+    if (accountId === '' || personaId === '') { setNotes([]); setMetrics([]); return }
     try {
-      const [noteList, metricList] = await Promise.all([api.listNotes(accountId), api.listMetrics(accountId)])
+      const [noteList, metricList] = await Promise.all([api.listNotes(personaId), api.listMetrics(accountId)])
       setNotes(noteList)
       setMetrics(metricList)
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
-  }, [api, accountId])
+  }, [api, accountId, personaId])
 
   useEffect(() => { void refresh() }, [refresh])
 
@@ -62,7 +63,7 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
 
   const setWeight = async (noteId: string, weight: NoteWeight): Promise<void> => {
     try {
-      await api.setNoteWeight(accountId, noteId, weight)
+      await api.setNoteWeight(personaId, noteId, weight)
       setNotice(`已设置权重 ${weight}，将影响下一次推荐。`)
       await refresh()
     } catch (e) {
@@ -97,6 +98,8 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
 
       {accountId !== '' && (
         <>
+          <PersonaScopeSelector api={api} value={personaId} onChange={onPersonaChange} />
+          {personaId === '' && <div className={css.empty}>该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。</div>}
           <div className={css.filterRow}>
             {FILTERS.map(f => (
               <button key={f.id} className={filter === f.id ? `${css.filter} ${css.on}` : css.filter} onClick={() => setFilter(f.id)}>{f.label}</button>
@@ -105,7 +108,7 @@ export function KnowledgeTab({ api, accountId }: { api: XhsApi; accountId: strin
             <button className={css.primary} onClick={() => setImporting(true)}>＋ 导入笔记</button>
           </div>
 
-          {notes.length === 0 && <div className={css.empty}>该账号还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据。</div>}
+          {notes.length === 0 && <div className={css.empty}>该人设还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据到该人设。</div>}
           {notes.length > 0 && filtered.length === 0 && <div className={css.muted}>当前筛选下没有笔记。</div>}
 
           {filtered.map(note => {

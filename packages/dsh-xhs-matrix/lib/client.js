@@ -473,122 +473,122 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"studioResult": "XLBeMq_studioResult",
-			"on": "XLBeMq_on",
-			"chathead": "XLBeMq_chathead",
-			"card": "XLBeMq_card",
-			"dangerBtn": "XLBeMq_dangerBtn",
-			"score": "XLBeMq_score",
-			"ghostBtn": "XLBeMq_ghostBtn",
-			"thumb": "XLBeMq_thumb",
-			"overview": "XLBeMq_overview",
-			"brand": "XLBeMq_brand",
-			"ok": "XLBeMq_ok",
-			"overlay": "XLBeMq_overlay",
-			"bubble": "XLBeMq_bubble",
-			"bar": "XLBeMq_bar",
-			"msgAvatar": "XLBeMq_msgAvatar",
-			"draftLayout": "XLBeMq_draftLayout",
-			"group": "XLBeMq_group",
-			"topbarSub": "XLBeMq_topbarSub",
-			"studioMain": "XLBeMq_studioMain",
-			"studioSend": "XLBeMq_studioSend",
-			"navItem": "XLBeMq_navItem",
-			"meter": "XLBeMq_meter",
-			"personaLayout": "XLBeMq_personaLayout",
-			"modeSwitch": "XLBeMq_modeSwitch",
-			"muted": "XLBeMq_muted",
-			"active": "XLBeMq_active",
-			"libBody": "XLBeMq_libBody",
-			"scoreLow": "XLBeMq_scoreLow",
-			"spacer": "XLBeMq_spacer",
-			"badgeGray": "XLBeMq_badgeGray",
-			"topbarRight": "XLBeMq_topbarRight",
-			"libTitle": "XLBeMq_libTitle",
-			"topicReason": "XLBeMq_topicReason",
 			"accountAdd": "XLBeMq_accountAdd",
-			"dialogRowActions": "XLBeMq_dialogRowActions",
-			"filterRow": "XLBeMq_filterRow",
-			"weightBadge": "XLBeMq_weightBadge",
-			"viewHost": "XLBeMq_viewHost",
-			"badge": "XLBeMq_badge",
-			"draftEditor": "XLBeMq_draftEditor",
-			"badgeGreen": "XLBeMq_badgeGreen",
 			"statusDot": "XLBeMq_statusDot",
-			"topicTitle": "XLBeMq_topicTitle",
-			"viewGrid": "XLBeMq_viewGrid",
-			"chips": "XLBeMq_chips",
-			"error": "XLBeMq_error",
-			"msgBubble": "XLBeMq_msgBubble",
-			"panel": "XLBeMq_panel",
-			"studioSendGhost": "XLBeMq_studioSendGhost",
-			"personaName": "XLBeMq_personaName",
-			"workspace": "XLBeMq_workspace",
-			"chatInput": "XLBeMq_chatInput",
-			"content": "XLBeMq_content",
-			"postMeta": "XLBeMq_postMeta",
-			"personaItem": "XLBeMq_personaItem",
-			"success": "XLBeMq_success",
-			"textarea": "XLBeMq_textarea",
-			"metric": "XLBeMq_metric",
-			"field": "XLBeMq_field",
-			"libMeta": "XLBeMq_libMeta",
-			"sidebar": "XLBeMq_sidebar",
-			"pillWarn": "XLBeMq_pillWarn",
-			"danger": "XLBeMq_danger",
-			"sourcePanel": "XLBeMq_sourcePanel",
-			"postTitle": "XLBeMq_postTitle",
-			"personaAvatar": "XLBeMq_personaAvatar",
-			"button": "XLBeMq_button",
-			"chatSend": "XLBeMq_chatSend",
-			"post": "XLBeMq_post",
-			"tag": "XLBeMq_tag",
-			"weight": "XLBeMq_weight",
-			"filter": "XLBeMq_filter",
-			"tabActive": "XLBeMq_tabActive",
-			"studioTopSub": "XLBeMq_studioTopSub",
-			"topicItem": "XLBeMq_topicItem",
-			"contextLine": "XLBeMq_contextLine",
-			"contextline": "XLBeMq_contextline",
-			"dialogClose": "XLBeMq_dialogClose",
-			"input": "XLBeMq_input",
-			"studioTop": "XLBeMq_studioTop",
-			"personaList": "XLBeMq_personaList",
-			"tab": "XLBeMq_tab",
-			"empty": "XLBeMq_empty",
-			"chat": "XLBeMq_chat",
-			"dialog": "XLBeMq_dialog",
-			"badgeDanger": "XLBeMq_badgeDanger",
-			"topbar": "XLBeMq_topbar",
-			"personaDesc": "XLBeMq_personaDesc",
-			"source": "XLBeMq_source",
-			"libRow": "XLBeMq_libRow",
-			"navIcon": "XLBeMq_navIcon",
-			"postBody": "XLBeMq_postBody",
-			"brandLogo": "XLBeMq_brandLogo",
-			"idle": "XLBeMq_idle",
-			"msg": "XLBeMq_msg",
-			"contextCard": "XLBeMq_contextCard",
-			"badgeWarn": "XLBeMq_badgeWarn",
-			"panelTitle": "XLBeMq_panelTitle",
-			"editbar": "XLBeMq_editbar",
-			"primary": "XLBeMq_primary",
-			"face": "XLBeMq_face",
-			"warn": "XLBeMq_warn",
-			"pill": "XLBeMq_pill",
-			"accountItem": "XLBeMq_accountItem",
 			"me": "XLBeMq_me",
-			"rowActions": "XLBeMq_rowActions",
-			"miniThumb": "XLBeMq_miniThumb",
-			"below": "XLBeMq_below",
+			"personaLayout": "XLBeMq_personaLayout",
 			"studioLayout": "XLBeMq_studioLayout",
-			"dialogRow": "XLBeMq_dialogRow",
+			"muted": "XLBeMq_muted",
+			"field": "XLBeMq_field",
+			"studioMain": "XLBeMq_studioMain",
+			"brandLogo": "XLBeMq_brandLogo",
+			"contextline": "XLBeMq_contextline",
+			"weight": "XLBeMq_weight",
+			"personaAvatar": "XLBeMq_personaAvatar",
+			"topbarRight": "XLBeMq_topbarRight",
+			"brand": "XLBeMq_brand",
+			"sourcePanel": "XLBeMq_sourcePanel",
+			"studioTopSub": "XLBeMq_studioTopSub",
+			"content": "XLBeMq_content",
+			"score": "XLBeMq_score",
 			"tabs": "XLBeMq_tabs",
-			"messages": "XLBeMq_messages",
-			"accountName": "XLBeMq_accountName",
-			"studioComposer": "XLBeMq_studioComposer",
+			"personaDesc": "XLBeMq_personaDesc",
+			"draftEditor": "XLBeMq_draftEditor",
 			"context": "XLBeMq_context",
-			"metrics": "XLBeMq_metrics"
+			"spacer": "XLBeMq_spacer",
+			"idle": "XLBeMq_idle",
+			"panel": "XLBeMq_panel",
+			"input": "XLBeMq_input",
+			"studioComposer": "XLBeMq_studioComposer",
+			"metrics": "XLBeMq_metrics",
+			"modeSwitch": "XLBeMq_modeSwitch",
+			"dialogClose": "XLBeMq_dialogClose",
+			"ghostBtn": "XLBeMq_ghostBtn",
+			"accountItem": "XLBeMq_accountItem",
+			"ok": "XLBeMq_ok",
+			"metric": "XLBeMq_metric",
+			"overlay": "XLBeMq_overlay",
+			"face": "XLBeMq_face",
+			"badgeWarn": "XLBeMq_badgeWarn",
+			"personaName": "XLBeMq_personaName",
+			"studioSend": "XLBeMq_studioSend",
+			"tab": "XLBeMq_tab",
+			"tabActive": "XLBeMq_tabActive",
+			"tag": "XLBeMq_tag",
+			"msgBubble": "XLBeMq_msgBubble",
+			"warn": "XLBeMq_warn",
+			"topbar": "XLBeMq_topbar",
+			"empty": "XLBeMq_empty",
+			"group": "XLBeMq_group",
+			"active": "XLBeMq_active",
+			"overview": "XLBeMq_overview",
+			"below": "XLBeMq_below",
+			"topicReason": "XLBeMq_topicReason",
+			"pill": "XLBeMq_pill",
+			"bar": "XLBeMq_bar",
+			"card": "XLBeMq_card",
+			"success": "XLBeMq_success",
+			"miniThumb": "XLBeMq_miniThumb",
+			"primary": "XLBeMq_primary",
+			"sidebar": "XLBeMq_sidebar",
+			"panelTitle": "XLBeMq_panelTitle",
+			"topicItem": "XLBeMq_topicItem",
+			"libTitle": "XLBeMq_libTitle",
+			"accountName": "XLBeMq_accountName",
+			"thumb": "XLBeMq_thumb",
+			"libMeta": "XLBeMq_libMeta",
+			"meter": "XLBeMq_meter",
+			"chips": "XLBeMq_chips",
+			"messages": "XLBeMq_messages",
+			"topicTitle": "XLBeMq_topicTitle",
+			"postBody": "XLBeMq_postBody",
+			"danger": "XLBeMq_danger",
+			"chat": "XLBeMq_chat",
+			"badgeGray": "XLBeMq_badgeGray",
+			"studioSendGhost": "XLBeMq_studioSendGhost",
+			"scoreLow": "XLBeMq_scoreLow",
+			"postTitle": "XLBeMq_postTitle",
+			"msgAvatar": "XLBeMq_msgAvatar",
+			"dialogRow": "XLBeMq_dialogRow",
+			"libBody": "XLBeMq_libBody",
+			"msg": "XLBeMq_msg",
+			"chatSend": "XLBeMq_chatSend",
+			"dangerBtn": "XLBeMq_dangerBtn",
+			"weightBadge": "XLBeMq_weightBadge",
+			"badgeDanger": "XLBeMq_badgeDanger",
+			"rowActions": "XLBeMq_rowActions",
+			"chathead": "XLBeMq_chathead",
+			"personaList": "XLBeMq_personaList",
+			"viewHost": "XLBeMq_viewHost",
+			"contextLine": "XLBeMq_contextLine",
+			"editbar": "XLBeMq_editbar",
+			"badge": "XLBeMq_badge",
+			"on": "XLBeMq_on",
+			"source": "XLBeMq_source",
+			"navItem": "XLBeMq_navItem",
+			"pillWarn": "XLBeMq_pillWarn",
+			"filterRow": "XLBeMq_filterRow",
+			"draftLayout": "XLBeMq_draftLayout",
+			"studioTop": "XLBeMq_studioTop",
+			"chatInput": "XLBeMq_chatInput",
+			"dialogRowActions": "XLBeMq_dialogRowActions",
+			"post": "XLBeMq_post",
+			"filter": "XLBeMq_filter",
+			"contextCard": "XLBeMq_contextCard",
+			"bubble": "XLBeMq_bubble",
+			"button": "XLBeMq_button",
+			"libRow": "XLBeMq_libRow",
+			"viewGrid": "XLBeMq_viewGrid",
+			"personaItem": "XLBeMq_personaItem",
+			"error": "XLBeMq_error",
+			"dialog": "XLBeMq_dialog",
+			"textarea": "XLBeMq_textarea",
+			"navIcon": "XLBeMq_navIcon",
+			"postMeta": "XLBeMq_postMeta",
+			"topbarSub": "XLBeMq_topbarSub",
+			"badgeGreen": "XLBeMq_badgeGreen",
+			"studioResult": "XLBeMq_studioResult",
+			"workspace": "XLBeMq_workspace"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -692,10 +692,11 @@ window.__ModuleLoader__.load({
 		//#region src/client/panel/AccountsDialog.tsx
 		/**
 		* 账号管理弹窗：列表 + 创建/编辑表单 + 绑定主页 + 笔记导入入口。
-		* 账号与采集状态用状态点与徽标区分，失败可重试绑定。
+		*
+		* v4：账号列表单一来源为父级 XhsPanel，本弹窗只接收 accounts 快照；创建成功后
+		* 通过 onSaved(createdId) 通知父级「刷新→选中→关闭」，不再维护无法通知侧栏的账号副本。
 		*/
-		function AccountsDialog({ api, onClose, onSaved }) {
-			const [accounts, setAccounts] = (0, react.useState)([]);
+		function AccountsDialog({ api, accounts, onClose, onSaved, onChanged }) {
 			const [personas, setPersonas] = (0, react.useState)([]);
 			const [name, setName] = (0, react.useState)("");
 			const [personaId, setPersonaId] = (0, react.useState)("");
@@ -707,24 +708,23 @@ window.__ModuleLoader__.load({
 			const [editPersonaId, setEditPersonaId] = (0, react.useState)("");
 			const [editProfileUrl, setEditProfileUrl] = (0, react.useState)("");
 			const [importingId, setImportingId] = (0, react.useState)(null);
-			const refresh = (0, react.useCallback)(async () => {
+			const refreshPersonas = (0, react.useCallback)(async () => {
 				try {
-					const [accs, pers] = await Promise.all([api.listAccounts(), api.listPersonas()]);
-					setAccounts(accs);
-					setPersonas(pers);
+					setPersonas(await api.listPersonas());
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			}, [api]);
 			(0, react.useEffect)(() => {
-				refresh();
-			}, [refresh]);
+				refreshPersonas();
+			}, [refreshPersonas]);
 			const create = async () => {
 				if (name.trim() === "") {
 					setError("请输入账号名");
 					return;
 				}
+				setError("");
 				try {
 					const { id } = await api.createAccount({
 						name: name.trim(),
@@ -741,11 +741,7 @@ window.__ModuleLoader__.load({
 							source: "manual"
 						}
 					});
-					setName("");
-					setPersonaId("");
-					setProfileUrl("");
-					setNotice(`已添加账号「${name.trim()}」${profileUrl.trim() !== "" ? "，并绑定主页待导入" : ""}。`);
-					await refresh();
+					await onSaved(id);
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
@@ -757,7 +753,7 @@ window.__ModuleLoader__.load({
 						personaId: account.personaId,
 						enabled: !account.enabled
 					});
-					await refresh();
+					await onChanged();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
@@ -766,7 +762,7 @@ window.__ModuleLoader__.load({
 				if (!window.confirm("确定删除该账号？其笔记、指标、草稿与创作记录会一并删除。")) return;
 				try {
 					await api.deleteAccount(id);
-					await refresh();
+					await onChanged();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
@@ -791,7 +787,7 @@ window.__ModuleLoader__.load({
 					});
 					setEditingId(null);
 					setNotice("账号信息已保存。");
-					await refresh();
+					await onChanged();
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
@@ -971,7 +967,7 @@ window.__ModuleLoader__.load({
 							style: {
 								marginTop: 14,
 								padding: 14,
-								border: `1px solid var(--xhs-border)`,
+								border: "1px solid var(--xhs-border)",
 								borderRadius: 12,
 								background: "var(--xhs-card)"
 							},
@@ -979,7 +975,7 @@ window.__ModuleLoader__.load({
 								api,
 								accountId: importingId,
 								onDone: () => {
-									refresh();
+									onChanged();
 									setImportingId(null);
 								}
 							})
@@ -1381,6 +1377,49 @@ window.__ModuleLoader__.load({
 			] });
 		}
 		//#endregion
+		//#region src/client/panel/PersonaScopeSelector.tsx
+		/** 人设作用域选择器：展示当前作用域人设名称，下拉可临时切换。 */
+		function PersonaScopeSelector({ api, value, onChange }) {
+			const [personas, setPersonas] = (0, react.useState)([]);
+			(0, react.useEffect)(() => {
+				api.listPersonas().then((list) => setPersonas(list.map((p) => ({
+					id: p.id,
+					name: p.name
+				})))).catch(() => setPersonas([]));
+			}, [api]);
+			const currentName = value === "" ? "未分配" : personas.find((p) => p.id === value)?.name ?? "未知人设";
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: panel_module_css_default.filterRow,
+				style: { marginBottom: 10 },
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: panel_module_css_default.muted,
+						style: { alignSelf: "center" },
+						children: "当前资产人设："
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+						className: panel_module_css_default.input,
+						style: { width: 220 },
+						"aria-label": "切换人设",
+						value,
+						onChange: (e) => onChange(e.target.value),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: "",
+							children: "（未分配）"
+						}), personas.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: p.id,
+							children: p.name
+						}, p.id))]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: panel_module_css_default.muted,
+						style: { alignSelf: "center" },
+						children: currentName === "未分配" ? "该账号未绑定人设" : "作用域：" + currentName
+					})
+				]
+			});
+		}
+		//#endregion
 		//#region src/client/panel/KnowledgeTab.tsx
 		const WEIGHTS = [
 			0,
@@ -1412,7 +1451,7 @@ window.__ModuleLoader__.load({
 		* 已发布知识库（设计稿 content/detail-surfaces.html）：
 		* 筛选 chips + 笔记行（缩略图/指标/0-5 权重），权重即控制杆。
 		*/
-		function KnowledgeTab({ api, accountId }) {
+		function KnowledgeTab({ api, accountId, personaId, onPersonaChange }) {
 			const [notes, setNotes] = (0, react.useState)([]);
 			const [metrics, setMetrics] = (0, react.useState)([]);
 			const [filter, setFilter] = (0, react.useState)("all");
@@ -1420,20 +1459,24 @@ window.__ModuleLoader__.load({
 			const [notice, setNotice] = (0, react.useState)("");
 			const [importing, setImporting] = (0, react.useState)(false);
 			const refresh = (0, react.useCallback)(async () => {
-				if (accountId === "") {
+				if (accountId === "" || personaId === "") {
 					setNotes([]);
 					setMetrics([]);
 					return;
 				}
 				try {
-					const [noteList, metricList] = await Promise.all([api.listNotes(accountId), api.listMetrics(accountId)]);
+					const [noteList, metricList] = await Promise.all([api.listNotes(personaId), api.listMetrics(accountId)]);
 					setNotes(noteList);
 					setMetrics(metricList);
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api, accountId]);
+			}, [
+				api,
+				accountId,
+				personaId
+			]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
@@ -1456,7 +1499,7 @@ window.__ModuleLoader__.load({
 			};
 			const setWeight = async (noteId, weight) => {
 				try {
-					await api.setNoteWeight(accountId, noteId, weight);
+					await api.setNoteWeight(personaId, noteId, weight);
 					setNotice(`已设置权重 ${weight}，将影响下一次推荐。`);
 					await refresh();
 				} catch (e) {
@@ -1488,6 +1531,15 @@ window.__ModuleLoader__.load({
 					children: "请先在左侧选择账号。"
 				}),
 				accountId !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonaScopeSelector, {
+						api,
+						value: personaId,
+						onChange: onPersonaChange
+					}),
+					personaId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default.empty,
+						children: "该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。"
+					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default.filterRow,
 						children: [
@@ -1506,7 +1558,7 @@ window.__ModuleLoader__.load({
 					}),
 					notes.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default.empty,
-						children: "该账号还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据。"
+						children: "该人设还没有已发布笔记。点击「导入笔记」粘贴 CSV/JSON 后台数据到该人设。"
 					}),
 					notes.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default.muted,
@@ -2209,7 +2261,7 @@ window.__ModuleLoader__.load({
 		* 对话区最大化 + 右侧本次创作上下文（人设/知识库/已采纳爆款参考/指标快照），
 		* 上下文始终可见，生成结果通过人工操作保存为草稿。
 		*/
-		function StudioTab({ api, accountId, onOpenDraft }) {
+		function StudioTab({ api, accountId, personaId, onOpenDraft }) {
 			const [messages, setMessages] = (0, react.useState)([]);
 			const [input, setInput] = (0, react.useState)("");
 			const [mode, setMode] = (0, react.useState)("creative");
@@ -2238,15 +2290,14 @@ window.__ModuleLoader__.load({
 					return;
 				}
 				try {
-					const [msgList, accountList, personaList, noteList, viralList] = await Promise.all([
+					const [msgList, personaList, noteList, viralList] = await Promise.all([
 						api.listStudioMessages(accountId),
-						api.listAccounts(),
 						api.listPersonas(),
-						api.listNotes(accountId),
-						api.listViralItems(accountId, "accepted")
+						personaId === "" ? Promise.resolve([]) : api.listNotes(personaId),
+						personaId === "" ? Promise.resolve([]) : api.listViralItems(personaId, "accepted")
 					]);
 					setMessages(msgList);
-					const persona = personaList.find((p) => p.id === accountList.find((a) => a.id === accountId)?.personaId);
+					const persona = personaList.find((p) => p.id === personaId);
 					setContext({
 						personaName: persona?.name ?? "未分配",
 						hookStyles: persona?.hookStyles ?? [],
@@ -2258,7 +2309,11 @@ window.__ModuleLoader__.load({
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
-			}, [api, accountId]);
+			}, [
+				api,
+				accountId,
+				personaId
+			]);
 			(0, react.useEffect)(() => {
 				refresh();
 			}, [refresh]);
@@ -2608,7 +2663,7 @@ window.__ModuleLoader__.load({
 		* 顶部为状态筛选与「采集爆款」「配置 Apify」操作；列表按账号展示爆款条目，
 		* 待审核条目可「采纳 / 忽略」，采集与审核后自动刷新。
 		*/
-		function ViralTab({ api, accountId }) {
+		function ViralTab({ api, accountId, personaId, onPersonaChange }) {
 			const [batches, setBatches] = (0, react.useState)([]);
 			const [filter, setFilter] = (0, react.useState)("");
 			const [error, setError] = (0, react.useState)("");
@@ -2623,15 +2678,20 @@ window.__ModuleLoader__.load({
 			const [savingConfig, setSavingConfig] = (0, react.useState)(false);
 			/** 按账号与当前筛选状态重新拉取爆款池（按采集批次分组）。 */
 			const refresh = (0, react.useCallback)(async () => {
+				if (personaId === "") {
+					setBatches([]);
+					setError("");
+					return;
+				}
 				try {
-					setBatches(await api.listViralBatches(accountId, filter === "" ? void 0 : filter));
+					setBatches(await api.listViralBatches(personaId, filter === "" ? void 0 : filter));
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
 				}
 			}, [
 				api,
-				accountId,
+				personaId,
 				filter
 			]);
 			(0, react.useEffect)(() => {
@@ -2711,7 +2771,7 @@ window.__ModuleLoader__.load({
 			const review = async (itemId, status) => {
 				setReviewingId(itemId);
 				try {
-					await api.reviewViralItem(accountId, itemId, status);
+					await api.reviewViralItem(personaId, itemId, status);
 					setError("");
 					await refresh();
 				} catch (e) {
@@ -2724,7 +2784,7 @@ window.__ModuleLoader__.load({
 			const deleteBatch = async (batchId) => {
 				if (!window.confirm("确定删除这个采集批次？该批次的全部爆款（含已采纳）将被移除，不影响其他批次。")) return;
 				try {
-					await api.deleteViralBatch(accountId, batchId);
+					await api.deleteViralBatch(personaId, batchId);
 					setError("");
 					await refresh();
 				} catch (e) {
@@ -2735,6 +2795,15 @@ window.__ModuleLoader__.load({
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
 					children: error
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PersonaScopeSelector, {
+					api,
+					value: personaId,
+					onChange: onPersonaChange
+				}),
+				personaId === "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: panel_module_css_default.empty,
+					children: "该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。"
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 					className: panel_module_css_default.panel,
@@ -3017,11 +3086,11 @@ window.__ModuleLoader__.load({
 			personas: "人设配置"
 		};
 		/**
-		* 矩阵工作台（依据设计稿 content/hybrid-layout.html 的混合布局）：
-		* 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
+		* 矩阵工作台：左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
 		*
-		* 每个账号拥有独立的工作区：页面位置（pageByAccount）、创作台对话、筛选
-		* 与草稿均按账号隔离；切换账号后各自状态保留，切回即恢复。
+		* v4：人设成为内容资产主体。XhsPanel 统一保存「资产人设作用域」assetPersonaId：
+		* 默认跟随当前账号人设，知识库/爆款池允许临时切换，再次选择账号时重新跟随其
+		* 人设。asset methods 以该作用域为主参数，不再把账号 id 当作人设发送。
 		*/
 		function XhsPanel(props) {
 			const { api } = props;
@@ -3030,6 +3099,7 @@ window.__ModuleLoader__.load({
 			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [dialogOpen, setDialogOpen] = (0, react.useState)(false);
 			const [error, setError] = (0, react.useState)("");
+			const [personaScope, setPersonaScope] = (0, react.useState)(null);
 			const refreshAccounts = (0, react.useCallback)(async () => {
 				try {
 					setAccounts(await api.listAccounts());
@@ -3050,6 +3120,14 @@ window.__ModuleLoader__.load({
 			}, [accounts, accountId]);
 			const current = accounts.find((item) => item.id === accountId);
 			const currentPage = accountId === "" ? "overview" : pageByAccount[accountId] ?? "overview";
+			(0, react.useEffect)(() => {
+				setPersonaScope(null);
+			}, [accountId]);
+			const assetPersonaId = personaScope !== null && personaScope.accountId === accountId ? personaScope.personaId : current?.personaId ?? "";
+			const setAssetPersonaId = (id) => setPersonaScope({
+				accountId,
+				personaId: id
+			});
 			/** 记录当前账号所在的页面位置。 */
 			const rememberPage = (next) => {
 				if (accountId !== "") setPageByAccount((prev) => ({
@@ -3091,6 +3169,7 @@ window.__ModuleLoader__.load({
 								className: accountId === account.id ? `${panel_module_css_default.accountItem} ${panel_module_css_default.active}` : panel_module_css_default.accountItem,
 								onClick: () => setAccountId(account.id),
 								title: account.name,
+								"aria-current": accountId === account.id ? "true" : void 0,
 								children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: panel_module_css_default.face }),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
@@ -3167,15 +3246,20 @@ window.__ModuleLoader__.load({
 								}),
 								currentPage === "knowledge" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KnowledgeTab, {
 									api,
-									accountId
+									accountId,
+									personaId: assetPersonaId,
+									onPersonaChange: setAssetPersonaId
 								}, `kb-${accountId}`),
 								currentPage === "viral" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViralTab, {
 									api,
-									accountId
+									accountId,
+									personaId: assetPersonaId,
+									onPersonaChange: setAssetPersonaId
 								}, `vp-${accountId}`),
 								currentPage === "studio" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StudioTab, {
 									api,
 									accountId,
+									personaId: current?.personaId ?? "",
 									onOpenDraft: openDrafts
 								}, `st-${accountId}`),
 								currentPage === "drafts" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftsTab, {
@@ -3189,9 +3273,14 @@ window.__ModuleLoader__.load({
 					}),
 					dialogOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AccountsDialog, {
 						api,
+						accounts,
 						onClose: () => setDialogOpen(false),
-						onSaved: (createdId) => {
-							if (createdId !== void 0) setAccountId(createdId);
+						onSaved: async (createdId) => {
+							await refreshAccounts();
+							setAccountId(createdId);
+							setDialogOpen(false);
+						},
+						onChanged: () => {
 							refreshAccounts();
 						}
 					})

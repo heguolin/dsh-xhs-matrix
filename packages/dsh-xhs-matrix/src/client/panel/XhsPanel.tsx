@@ -34,14 +34,11 @@ const NAV_GROUPS: Array<{ group: string; items: Array<{ id: PageId; icon: string
   },
 ]
 
-interface AccountRow {
-  id: string; name: string; personaId: string; enabled: boolean
-  connection?: { status: string }
-  collectionStatus?: { running: boolean; lastStatus: string }
-}
+/** 账号行（与 api.listAccounts 返回结构一致，供侧栏/总览/弹窗共用）。 */
+export type AccountRow = Awaited<ReturnType<XhsApi['listAccounts']>>[number]
 
 /** 根据连接与采集状态计算左侧状态点（绿/橙/红/灰）。 */
-export function accountDot(account: AccountRow): 'ok' | 'warn' | 'error' | 'idle' {
+export function accountDot(account: { connection?: { status: string }; collectionStatus?: { running: boolean; lastStatus: string } }): 'ok' | 'warn' | 'error' | 'idle' {
   const status = account.connection?.status ?? ''
   if (status === 'failed' || account.collectionStatus?.lastStatus === 'failed') return 'error'
   if (status === 'awaiting-import' || status === 'unbound' || account.collectionStatus?.running) return 'warn'
@@ -64,11 +61,11 @@ export interface XhsPanelProps {
 }
 
 /**
- * 矩阵工作台（依据设计稿 content/hybrid-layout.html 的混合布局）：
- * 左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
+ * 矩阵工作台：左侧导航承载账号切换与运营/创作/设置模块，右侧为当前账号的独立工作区。
  *
- * 每个账号拥有独立的工作区：页面位置（pageByAccount）、创作台对话、筛选
- * 与草稿均按账号隔离；切换账号后各自状态保留，切回即恢复。
+ * v4：人设成为内容资产主体。XhsPanel 统一保存「资产人设作用域」assetPersonaId：
+ * 默认跟随当前账号人设，知识库/爆款池允许临时切换，再次选择账号时重新跟随其
+ * 人设。asset methods 以该作用域为主参数，不再把账号 id 当作人设发送。
  */
 export function XhsPanel(props: XhsPanelProps) {
   const { api } = props
@@ -77,6 +74,8 @@ export function XhsPanel(props: XhsPanelProps) {
   const [accounts, setAccounts] = useState<AccountRow[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [error, setError] = useState('')
+  // 人设作用域：personaScope 记录「当前账号临时切换到的目标人设」；无记录时跟随当前账号人设。
+  const [personaScope, setPersonaScope] = useState<{ accountId: string; personaId: string } | null>(null)
 
   const refreshAccounts = useCallback(async () => {
     try {
@@ -97,6 +96,15 @@ export function XhsPanel(props: XhsPanelProps) {
 
   const current = accounts.find(item => item.id === accountId)
   const currentPage = accountId === '' ? 'overview' : (pageByAccount[accountId] ?? 'overview')
+
+  // 资产人设作用域：默认跟随当前账号人设；当前账号临时切换后采用临时值；切换账号即重置。
+  useEffect(() => {
+    setPersonaScope(null)
+  }, [accountId])
+  const assetPersonaId = personaScope !== null && personaScope.accountId === accountId
+    ? personaScope.personaId
+    : (current?.personaId ?? '')
+  const setAssetPersonaId = (id: string): void => setPersonaScope({ accountId, personaId: id })
 
   /** 记录当前账号所在的页面位置。 */
   const rememberPage = (next: PageId): void => {
@@ -130,6 +138,7 @@ export function XhsPanel(props: XhsPanelProps) {
             className={accountId === account.id ? `${css.accountItem} ${css.active}` : css.accountItem}
             onClick={() => setAccountId(account.id)}
             title={account.name}
+            aria-current={accountId === account.id ? 'true' : undefined}
           >
             <span className={css.face} />
             <span className={css.accountName}>{account.name}</span>
@@ -192,10 +201,26 @@ export function XhsPanel(props: XhsPanelProps) {
               onAccountUpdated={() => { void refreshAccounts() }}
             />
           )}
-          {currentPage === 'knowledge' && <KnowledgeTab key={`kb-${accountId}`} api={api} accountId={accountId} />}
-          {currentPage === 'viral' && <ViralTab key={`vp-${accountId}`} api={api} accountId={accountId} />}
+          {currentPage === 'knowledge' && (
+            <KnowledgeTab
+              key={`kb-${accountId}`}
+              api={api}
+              accountId={accountId}
+              personaId={assetPersonaId}
+              onPersonaChange={setAssetPersonaId}
+            />
+          )}
+          {currentPage === 'viral' && (
+            <ViralTab
+              key={`vp-${accountId}`}
+              api={api}
+              accountId={accountId}
+              personaId={assetPersonaId}
+              onPersonaChange={setAssetPersonaId}
+            />
+          )}
           {currentPage === 'studio' && (
-            <StudioTab key={`st-${accountId}`} api={api} accountId={accountId} onOpenDraft={openDrafts} />
+            <StudioTab key={`st-${accountId}`} api={api} accountId={accountId} personaId={current?.personaId ?? ''} onOpenDraft={openDrafts} />
           )}
           {currentPage === 'drafts' && <DraftsTab key={`df-${accountId}`} api={api} accountId={accountId} onOpenStudio={openStudio} />}
           {currentPage === 'personas' && <PersonasTab api={api} />}
@@ -205,11 +230,15 @@ export function XhsPanel(props: XhsPanelProps) {
       {dialogOpen && (
         <AccountsDialog
           api={api}
+          accounts={accounts}
           onClose={() => setDialogOpen(false)}
-          onSaved={(createdId?: string) => {
-            if (createdId !== undefined) setAccountId(createdId)
-            void refreshAccounts()
+          onSaved={async (createdId: string) => {
+            // 成功顺序固定：刷新账号 → 选中新账号 → 关闭弹窗。
+            await refreshAccounts()
+            setAccountId(createdId)
+            setDialogOpen(false)
           }}
+          onChanged={() => { void refreshAccounts() }}
         />
       )}
     </div>

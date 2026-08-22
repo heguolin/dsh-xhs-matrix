@@ -24,6 +24,7 @@ const pendingItem: ViralItem = {
 async function renderTab() {
   const batch = { id: 'b1', accountId: 'acc-a', collectedAt: '2026-08-20T10:00:00.000Z', itemCount: 1, items: [pendingItem] }
   const apiMock = {
+    listPersonas: vi.fn(async () => [{ id: 'p1', name: '人设一' }]),
     listViralBatches: vi.fn(async () => [batch]),
     collectViral: vi.fn(async () => []),
     reviewViralItem: vi.fn(async (_accountId: string, itemId: string, status: string) => ({ ...pendingItem, id: itemId, status })),
@@ -34,7 +35,7 @@ async function renderTab() {
   const host = document.createElement('div')
   document.body.appendChild(host)
   const root: Root = createRoot(host)
-  root.render(<ViralTab api={apiMock as unknown as XhsApi} accountId="acc-a" />)
+  root.render(<ViralTab api={apiMock as unknown as XhsApi} accountId="acc-a" personaId="p1" onPersonaChange={() => {}} />)
   await new Promise(resolve => setTimeout(resolve, 100))
   return { host, root, apiMock }
 }
@@ -57,14 +58,14 @@ describe('ViralTab 爆款池', () => {
     expect(host.textContent).toContain('推荐分 86')
     expect(host.textContent).toContain('命中穿搭方向')
     expect(host.textContent).toContain('待审核')
-    expect(apiMock.listViralBatches).toHaveBeenCalledWith('acc-a', undefined)
+    expect(apiMock.listViralBatches).toHaveBeenCalledWith('p1', undefined)
 
     // 点「采纳」→ reviewViralItem(accountId, id, 'accepted') 并刷新列表
     const adopt = findButton(host, '采纳')
     expect(adopt).not.toBeUndefined()
     adopt!.click()
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(apiMock.reviewViralItem).toHaveBeenCalledWith('acc-a', 'v1', 'accepted')
+    expect(apiMock.reviewViralItem).toHaveBeenCalledWith('p1', 'v1', 'accepted')
     expect(apiMock.listViralBatches).toHaveBeenCalledTimes(2)
 
     root.unmount()

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { XhsApi } from '../api.ts'
 import type { ViralBatch, ViralItem, ViralStatus } from '../../types.ts'
 import css from './panel.module.css'
+import { PersonaScopeSelector } from './PersonaScopeSelector.tsx'
 
 /** 正文摘要的截断长度（字符）。 */
 const BODY_PREVIEW_LENGTH = 120
@@ -54,7 +55,7 @@ function ViralRow({ item, busy, onReview }: {
  * 顶部为状态筛选与「采集爆款」「配置 Apify」操作；列表按账号展示爆款条目，
  * 待审核条目可「采纳 / 忽略」，采集与审核后自动刷新。
  */
-export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string }) {
+export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: XhsApi; accountId: string; personaId: string; onPersonaChange: (id: string) => void }) {
   const [batches, setBatches] = useState<Array<ViralBatch & { items: ViralItem[] }>>([])
   const [filter, setFilter] = useState<'' | ViralStatus>('')
   const [error, setError] = useState('')
@@ -72,13 +73,14 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
 
   /** 按账号与当前筛选状态重新拉取爆款池（按采集批次分组）。 */
   const refresh = useCallback(async () => {
+    if (personaId === '') { setBatches([]); setError(''); return }
     try {
-      setBatches(await api.listViralBatches(accountId, filter === '' ? undefined : filter))
+      setBatches(await api.listViralBatches(personaId, filter === '' ? undefined : filter))
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
-  }, [api, accountId, filter])
+  }, [api, personaId, filter])
 
   useEffect(() => { void refresh() }, [refresh])
 
@@ -163,7 +165,7 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   const review = async (itemId: string, status: ReviewAction): Promise<void> => {
     setReviewingId(itemId)
     try {
-      await api.reviewViralItem(accountId, itemId, status)
+      await api.reviewViralItem(personaId, itemId, status)
       setError('')
       await refresh()
     } catch (e) {
@@ -177,7 +179,7 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   const deleteBatch = async (batchId: string): Promise<void> => {
     if (!window.confirm('确定删除这个采集批次？该批次的全部爆款（含已采纳）将被移除，不影响其他批次。')) return
     try {
-      await api.deleteViralBatch(accountId, batchId)
+      await api.deleteViralBatch(personaId, batchId)
       setError('')
       await refresh()
     } catch (e) {
@@ -188,6 +190,9 @@ export function ViralTab({ api, accountId }: { api: XhsApi; accountId: string })
   return (
     <div>
       {error !== '' && <div className={css.danger}>{error}</div>}
+
+      <PersonaScopeSelector api={api} value={personaId} onChange={onPersonaChange} />
+      {personaId === '' && <div className={css.empty}>该账号未绑定人设，请在右上角切换到某个人设，或先到「人设配置」为账号绑定人设。</div>}
 
       <section className={css.panel}>
         <div className={css.panelTitle}>

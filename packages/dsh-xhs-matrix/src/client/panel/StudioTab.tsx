@@ -10,7 +10,7 @@ interface StudioEvidence { persona?: string; noteIds: string[]; trendIds: string
  * 对话区最大化 + 右侧本次创作上下文（人设/知识库/已采纳爆款参考/指标快照），
  * 上下文始终可见，生成结果通过人工操作保存为草稿。
  */
-export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accountId: string; onOpenDraft: () => void }) {
+export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: XhsApi; accountId: string; personaId: string; onOpenDraft: () => void }) {
   const [messages, setMessages] = useState<StudioMessageRow[]>([])
   const [input, setInput] = useState('')
   const [mode, setMode] = useState<'creative' | 'full'>('creative')
@@ -26,15 +26,14 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
   const refresh = useCallback(async () => {
     if (accountId === '') { setMessages([]); setContext({ personaName: '', hookStyles: [], noteCount: 0, highCount: 0, viralCount: 0 }); return }
     try {
-      const [msgList, accountList, personaList, noteList, viralList] = await Promise.all([
+      const [msgList, personaList, noteList, viralList] = await Promise.all([
         api.listStudioMessages(accountId),
-        api.listAccounts(),
         api.listPersonas(),
-        api.listNotes(accountId),
-        api.listViralItems(accountId, 'accepted'),
+        personaId === '' ? Promise.resolve([]) : api.listNotes(personaId),
+        personaId === '' ? Promise.resolve([]) : api.listViralItems(personaId, 'accepted'),
       ])
       setMessages(msgList)
-      const persona = personaList.find(p => p.id === accountList.find(a => a.id === accountId)?.personaId)
+      const persona = personaList.find(p => p.id === personaId)
       setContext({
         personaName: persona?.name ?? '未分配',
         hookStyles: persona?.hookStyles ?? [],
@@ -46,7 +45,7 @@ export function StudioTab({ api, accountId, onOpenDraft }: { api: XhsApi; accoun
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
-  }, [api, accountId])
+  }, [api, accountId, personaId])
 
   useEffect(() => { void refresh() }, [refresh])
 
