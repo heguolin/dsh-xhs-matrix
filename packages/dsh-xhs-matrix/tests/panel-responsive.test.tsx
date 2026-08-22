@@ -141,6 +141,20 @@ describe('容器宽度响应式（container-type + @container，不依赖视口�
     expect(cq).toMatch(/\.rowActions\s*\{[^}]*flex-wrap:\s*wrap\s*;/)
   })
 
+  it('窄容器下操作区受卡片宽度约束，按钮以两列换行而不是按固有宽度溢出', () => {
+    const m = css.match(/@container\s*\(max-width:\s*420px\)\s*\{([\s\S]*?)\n\}(\s*$)/)
+    expect(m).not.toBeNull()
+    const cq = m?.[1] ?? ''
+
+    // 回归保护：如果 rowActions 仍保持基础规则中的 flex:none，它会以约 305px
+    // 的固有宽度溢出约 222px 的 accountHead；必须先占满并收缩到卡片宽度，
+    // 再让四个按钮按两列换行。
+    expect(cq).toMatch(/\.rowActions\s*\{[^}]*flex:\s*1\s+1\s+100%\s*;/)
+    expect(cq).toMatch(/\.rowActions\s*\{[^}]*width:\s*100%\s*;/)
+    expect(cq).toMatch(/\.rowActions\s*\{[^}]*min-width:\s*0\s*;/)
+    expect(cq).toMatch(/\.rowActions\s*>\s*button\s*\{[^}]*flex:\s*1\s+1\s+calc\(50%\s*-\s*4px\)\s*;/)
+  })
+
   it('XhsPanel 页头标题/副标题与账号卡片四操作按钮渲染且不隐藏', async () => {
     const { host, root } = await renderPanel()
     // 矩阵内容区（.content）作为容器查询子树存在。

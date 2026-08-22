@@ -1701,7 +1701,12 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
     flex-wrap: wrap;
   }
   .rowActions {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
     flex-wrap: wrap;
   }
+  .rowActions > button {
+    flex: 1 1 calc(50% - 4px);
+  }
 }
-
