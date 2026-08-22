@@ -8,6 +8,17 @@ interface DraftRow {
   copy: string; coverPrompt: string; tags?: string; status: string
   metrics?: { reads: number; likes: number; comments: number; collected: string }
   evidence?: { persona?: string; noteIds: string[]; trendIds: string[]; reasons: string[] }
+  personaIdSnapshot?: string
+  qualityReport?: { reviewStatus: string; forbiddenWordHits: Array<{ word: string; position: number }>; checkedAt: string; personaSnapshot?: string }
+}
+
+/** 渲染质检报告摘要。 */
+function qualitySummary(report: DraftRow['qualityReport']): string {
+  if (report === undefined) return '未检查'
+  const statusText = report.reviewStatus === 'passed' ? '通过' : report.reviewStatus === 'failed' ? '未通过' : '未检查'
+  const words = report.forbiddenWordHits.map(h => h.word).filter(w => w !== '').join('、')
+  const date = (report.checkedAt ?? '').slice(0, 10) || report.checkedAt || ''
+  return `${statusText} · 违禁词命中 ${report.forbiddenWordHits.length} 处${words !== '' ? `（${words}）` : ''} · 检查于 ${date || '未知'}`
 }
 
 /**
@@ -122,6 +133,12 @@ export function DraftsTab({ api, accountId, onOpenStudio }: { api: XhsApi; accou
                     <div className={css.muted}>阅读 {draft.metrics.reads} · 点赞 {draft.metrics.likes} · 评论 {draft.metrics.comments}（采集于 {draft.metrics.collected.slice(0, 10)}）</div>
                   </div>
                 )}
+                <div className={css.source}>
+                  <b>人设快照</b>{draft.personaIdSnapshot !== undefined && draft.personaIdSnapshot !== '' ? draft.personaIdSnapshot : '（历史未归属）'}
+                </div>
+                <div className={css.source}>
+                  <b>质检报告</b>{qualitySummary(draft.qualityReport)}
+                </div>
                 <DraftEditor api={api} accountId={draft.accountId} draft={draft} onSaved={() => void refresh()} />
               </div>
             )}

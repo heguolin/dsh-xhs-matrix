@@ -8,9 +8,9 @@ import type {
 } from '../types.ts'
 import type { AccountPayload, PersonaPayload } from '../store.ts'
 
-/** 携带路由 JSON 错误消息的客户端错误。 */
+/** 携带路由 JSON 错误消息的客户端错误；status 为 HTTP 状态码，payload 为原始路由体。 */
 export class XhsApiError extends Error {
-  constructor(message: string) {
+  constructor(message: string, public readonly status?: number, public readonly payload?: unknown) {
     super(message)
     this.name = 'XhsApiError'
   }
@@ -27,7 +27,7 @@ async function readJson<T>(response: Response): Promise<T> {
     const message = typeof body === 'object' && body !== null && typeof (body as { error?: unknown }).error === 'string'
       ? (body as { error: string }).error
       : `HTTP ${response.status}`
-    throw new XhsApiError(message)
+    throw new XhsApiError(message, response.status, body)
   }
   return body as T
 }
@@ -354,8 +354,8 @@ export class XhsApi {
   }
 
   // ------------------------------------------------------------ 草稿
-  async listDrafts(): Promise<Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }>> {
-    const body = await readJson<{ drafts: Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; status: DraftStatus; metrics?: DraftMetrics }> }>(await fetch(XHS_API.drafts))
+  async listDrafts(): Promise<Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; tags?: string; status: DraftStatus; metrics?: DraftMetrics; evidence?: DraftEvidence; personaIdSnapshot?: string; qualityReport?: DraftQualityReport }>> {
+    const body = await readJson<{ drafts: Array<{ id: string; accountId: string; date: string; copy: string; coverPrompt: string; tags?: string; status: DraftStatus; metrics?: DraftMetrics; evidence?: DraftEvidence; personaIdSnapshot?: string; qualityReport?: DraftQualityReport }> }>(await fetch(XHS_API.drafts))
     return body.drafts
   }
   async setDraftStatus(draftId: string, status: 'published' | 'dropped', metrics?: DraftMetrics): Promise<void> {

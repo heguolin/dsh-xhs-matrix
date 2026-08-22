@@ -7,9 +7,10 @@ interface PersonaRow {
   positioning?: string; audience?: string; expertise?: string; contentDirections?: string
   hookStyles?: string[]; bodyStructure?: string; endingStyle?: string
   forbiddenExpressions?: string; topicCriteria?: string; defaultHashtags?: string[]
+  writingStyles?: string[]; endingHookConstraints?: string; endingHookExamples?: string[]; forbiddenWords?: string[]
 }
 
-const HOOK_OPTIONS = ['反常识', '痛点切入', '真实对比', '教程结构', '经验清单', '互动提问']
+interface PersonaUsage { accountCount: number; noteCount: number; viralCount: number }
 
 /** 人设列表项：仅名称与摘要。 */
 function personaSummary(p: PersonaRow): string {
@@ -17,11 +18,14 @@ function personaSummary(p: PersonaRow): string {
 }
 
 /**
- * 人设配置（设计稿 content/detail-surfaces.html）：
- * 左侧选择人设，右侧结构化两栏编辑——定位/受众/禁用表达 + 写作风格/钩子/结构/标准。
+ * 人设配置（设计稿 content/detail-surfaces.html + 人设资产 UI 参考稿）：
+ * 左侧选择人设，右侧四区块——写作风格(01/VOICE) / 结尾互动钩子(02/ENDING)
+ * / 人设违禁词(03/SAFETY) / 生效范围(04/SAVE)。写作风格可自由增删，
+ * 旧 hookStyles 不再标为钩子；toneTags 仍是独立的口癖/语气标签。
  */
 export function PersonasTab({ api }: { api: XhsApi }) {
   const [personas, setPersonas] = useState<PersonaRow[]>([])
+  const [accounts, setAccounts] = useState<Array<{ id: string; name: string; personaId: string }>>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -35,16 +39,21 @@ export function PersonasTab({ api }: { api: XhsApi }) {
   const [audience, setAudience] = useState('')
   const [expertise, setExpertise] = useState('')
   const [contentDirections, setContentDirections] = useState('')
-  const [hookStyles, setHookStyles] = useState<string[]>([])
+  const [writingStyles, setWritingStyles] = useState<string[]>([])
+  const [styleDraft, setStyleDraft] = useState('')
   const [bodyStructure, setBodyStructure] = useState('')
-  const [endingStyle, setEndingStyle] = useState('')
-  const [forbiddenExpressions, setForbiddenExpressions] = useState('')
+  const [endingHookConstraints, setEndingHookConstraints] = useState('')
+  const [endingHookExamples, setEndingHookExamples] = useState<string[]>([])
+  const [forbiddenWords, setForbiddenWords] = useState<string[]>([])
+  const [forbiddenDraft, setForbiddenDraft] = useState('')
   const [topicCriteria, setTopicCriteria] = useState('')
   const [defaultHashtags, setDefaultHashtags] = useState('')
 
   const refresh = useCallback(async () => {
     try {
-      setPersonas(await api.listPersonas())
+      const [personaList, accountList] = await Promise.all([api.listPersonas(), api.listAccounts()])
+      setPersonas(personaList)
+      setAccounts(accountList)
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -63,10 +72,13 @@ export function PersonasTab({ api }: { api: XhsApi }) {
     setAudience(persona.audience ?? '')
     setExpertise(persona.expertise ?? '')
     setContentDirections(persona.contentDirections ?? '')
-    setHookStyles(persona.hookStyles ?? [])
+    setWritingStyles(persona.writingStyles ?? persona.hookStyles ?? [])
+    setStyleDraft('')
     setBodyStructure(persona.bodyStructure ?? '')
-    setEndingStyle(persona.endingStyle ?? '')
-    setForbiddenExpressions(persona.forbiddenExpressions ?? '')
+    setEndingHookConstraints(persona.endingHookConstraints ?? persona.endingStyle ?? '')
+    setEndingHookExamples(persona.endingHookExamples ?? [])
+    setForbiddenWords(persona.forbiddenWords ?? [])
+    setForbiddenDraft('')
     setTopicCriteria(persona.topicCriteria ?? '')
     setDefaultHashtags((persona.defaultHashtags ?? []).join(', '))
   }
@@ -76,13 +88,30 @@ export function PersonasTab({ api }: { api: XhsApi }) {
     setCreating(true)
     setName(''); setPrompt(''); setToneTags('')
     setPositioning(''); setAudience(''); setExpertise(''); setContentDirections('')
-    setHookStyles([]); setBodyStructure(''); setEndingStyle('')
-    setForbiddenExpressions(''); setTopicCriteria(''); setDefaultHashtags('')
+    setWritingStyles([]); setStyleDraft(''); setBodyStructure('')
+    setEndingHookConstraints(''); setEndingHookExamples([])
+    setForbiddenWords([]); setForbiddenDraft('')
+    setTopicCriteria(''); setDefaultHashtags('')
   }
 
   const splitList = (text: string): string[] | undefined => {
     const items = text.split(/[,，]/).map(t => t.trim()).filter(t => t !== '')
     return items.length > 0 ? items : undefined
+  }
+
+  /** 提交写作风格标签（回车）：去重，非空。 */
+  const commitStyle = (): void => {
+    const value = styleDraft.trim()
+    if (value === '') return
+    setWritingStyles(prev => prev.includes(value) ? prev : [...prev, value])
+    setStyleDraft('')
+  }
+
+  const commitForbidden = (): void => {
+    const value = forbiddenDraft.trim()
+    if (value === '') return
+    setForbiddenWords(prev => prev.includes(value) ? prev : [...prev, value])
+    setForbiddenDraft('')
   }
 
   const save = async (): Promise<void> => {
@@ -95,10 +124,14 @@ export function PersonasTab({ api }: { api: XhsApi }) {
       audience: audience.trim() === '' ? undefined : audience.trim(),
       expertise: expertise.trim() === '' ? undefined : expertise.trim(),
       contentDirections: contentDirections.trim() === '' ? undefined : contentDirections.trim(),
-      hookStyles: hookStyles.length > 0 ? hookStyles : undefined,
+      writingStyles: writingStyles.length > 0 ? writingStyles : undefined,
+      hookStyles: writingStyles.length > 0 ? writingStyles : undefined,
       bodyStructure: bodyStructure.trim() === '' ? undefined : bodyStructure.trim(),
-      endingStyle: endingStyle.trim() === '' ? undefined : endingStyle.trim(),
-      forbiddenExpressions: forbiddenExpressions.trim() === '' ? undefined : forbiddenExpressions.trim(),
+      endingHookConstraints: endingHookConstraints.trim() === '' ? undefined : endingHookConstraints.trim(),
+      endingStyle: endingHookConstraints.trim() === '' ? undefined : endingHookConstraints.trim(),
+      endingHookExamples: endingHookExamples.length > 0 ? endingHookExamples : undefined,
+      forbiddenWords: forbiddenWords.length > 0 ? forbiddenWords : undefined,
+      forbiddenExpressions: forbiddenWords.length > 0 ? forbiddenWords.join('、') : undefined,
       topicCriteria: topicCriteria.trim() === '' ? undefined : topicCriteria.trim(),
       defaultHashtags: splitList(defaultHashtags),
     }
@@ -127,13 +160,21 @@ export function PersonasTab({ api }: { api: XhsApi }) {
       setNotice('人设已删除。')
       await refresh()
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      // 领域不变量：人设仍有绑定账号或内容资产时禁止删除（409），展示依赖数量。
+      const usage = (e as { payload?: { usage?: PersonaUsage }; body?: { usage?: PersonaUsage }; usage?: PersonaUsage }).payload?.usage
+        ?? (e as { body?: { usage?: PersonaUsage } }).body?.usage
+        ?? (e as { usage?: PersonaUsage }).usage
+      if (usage !== undefined) {
+        setError(`无法删除：该人设仍有 ${usage.accountCount} 个账号、${usage.noteCount} 篇笔记、${usage.viralCount} 条爆款，请先转移或处理。`)
+      } else {
+        setError(e instanceof Error ? e.message : String(e))
+      }
     }
   }
 
-  const toggleHook = (style: string): void => {
-    setHookStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style])
-  }
+  const boundAccounts = selectedId === null
+    ? []
+    : accounts.filter(a => a.personaId === selectedId)
 
   return (
     <div>
@@ -160,7 +201,7 @@ export function PersonasTab({ api }: { api: XhsApi }) {
 
       {(selectedId !== null || creating) && (
         <div className={css.personaLayout}>
-          {/* 左：定位与系统提示词 */}
+          {/* 左：定位与提示词 */}
           <section className={css.panel}>
             <div className={css.panelTitle}><span>账号定位与提示词</span></div>
             <div className={css.field}><label>人设名</label><input className={css.input} value={name} onChange={e => setName(e.target.value)} /></div>
@@ -168,28 +209,95 @@ export function PersonasTab({ api }: { api: XhsApi }) {
             <div className={css.field}><label>一句话定位</label><input className={css.input} value={positioning} onChange={e => setPositioning(e.target.value)} placeholder="实用派测评 · 真实、不夸张" /></div>
             <div className={css.field}><label>目标受众</label><input className={css.input} value={audience} onChange={e => setAudience(e.target.value)} placeholder="25-35 岁职场人，想提升效率但反感夸大宣传" /></div>
             <div className={css.field}><label>领域 / 专业度</label><input className={css.input} value={expertise} onChange={e => setExpertise(e.target.value)} placeholder="AI 工具、职场效率" /></div>
-            <div className={css.field}><label>禁用表达（逗号分隔）</label><input className={css.input} value={forbiddenExpressions} onChange={e => setForbiddenExpressions(e.target.value)} placeholder="绝对化承诺, 纯鸡汤" /></div>
-          </section>
-
-          {/* 右：写作风格 */}
-          <section className={css.panel}>
-            <div className={css.panelTitle}><span>写作风格</span></div>
-            <div className={css.field}><label>钩子风格 · 可多选</label>
-              <div className={css.chips}>
-                {HOOK_OPTIONS.map(style => (
-                  <button key={style} className={hookStyles.includes(style) ? `${css.tag} ${css.on}` : css.tag} onClick={() => toggleHook(style)}>{style}</button>
-                ))}
-              </div>
-            </div>
-            <div className={css.field}><label>正文结构</label><input className={css.input} value={bodyStructure} onChange={e => setBodyStructure(e.target.value)} placeholder="场景 → 问题 → 实测过程 → 结论 → 互动提问" /></div>
-            <div className={css.field}><label>结尾风格</label><input className={css.input} value={endingStyle} onChange={e => setEndingStyle(e.target.value)} placeholder="总结价值 + 互动提问" /></div>
-            <div className={css.field}><label>内容方向</label><textarea className={css.textarea} rows={2} value={contentDirections} onChange={e => setContentDirections(e.target.value)} placeholder="真实体验、工具对比、可复现方法" /></div>
             <div className={css.field}><label>选题标准</label><textarea className={css.textarea} rows={2} value={topicCriteria} onChange={e => setTopicCriteria(e.target.value)} placeholder="必须有具体价值；优先真实体验、工具对比" /></div>
             <div className={css.field}><label>默认话题（逗号分隔）</label><input className={css.input} value={defaultHashtags} onChange={e => setDefaultHashtags(e.target.value)} placeholder="#效率工具, #职场成长" /></div>
-            <div className={css.field}><label>口癖标签（逗号分隔）</label><input className={css.input} value={toneTags} onChange={e => setToneTags(e.target.value)} placeholder="口语化, 结尾提问" /></div>
-            <div className={css.rowActions}>
-              <button className={css.primary} onClick={() => void save()}>保存设置</button>
-              {!creating && selectedId !== null && <button className={css.dangerBtn} onClick={() => void remove()}>删除人设</button>}
+            <div className={css.field}><label>口癖标签（逗号分隔，不属于写作风格）</label><input className={css.input} value={toneTags} onChange={e => setToneTags(e.target.value)} placeholder="口语化, 结尾提问" /></div>
+          </section>
+
+          {/* 右：写作风格 / 结尾互动钩子 / 人设违禁词 / 生效范围 */}
+          <section className={css.panel}>
+            <div className={css.panelTitle}><span>写作规则与人设安全</span></div>
+
+            <div className={css.settingsGrid}>
+              <div className={css.settingsCard}>
+                <div className={css.sectionNo}>01 / VOICE</div>
+                <div className={css.settingsTitle}>写作风格</div>
+                <div className={css.field}>
+                  <label>风格标签 · 可自由新增、编辑、删除</label>
+                  <div className={css.tagEditor}>
+                    {writingStyles.map(style => (
+                      <button key={style} className={css.styleChip} onClick={() => setWritingStyles(prev => prev.filter(s => s !== style))}>{style} <span className={css.tagRemove}>×</span></button>
+                    ))}
+                    <input
+                      className={css.tagEditorInput}
+                      value={styleDraft}
+                      onChange={e => setStyleDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStyle() } }}
+                      placeholder="输入自定义风格后回车"
+                    />
+                  </div>
+                  <div className={css.helper}>这些是正文表达风格，不再称为“钩子”。预设只做建议，不限制输入。</div>
+                </div>
+                <div className={css.field}><label>正文结构</label><input className={css.input} value={bodyStructure} onChange={e => setBodyStructure(e.target.value)} placeholder="场景 → 问题 → 实测过程 → 结论 → 互动提问" /></div>
+                <div className={css.field}><label>内容方向</label><textarea className={css.textarea} rows={2} value={contentDirections} onChange={e => setContentDirections(e.target.value)} placeholder="真实体验、工具对比、可复现方法" /></div>
+              </div>
+
+              <div className={css.settingsCard}>
+                <div className={css.sectionNo}>02 / ENDING</div>
+                <div className={css.settingsTitle}>结尾互动钩子</div>
+                <div className={css.field}><label>约束词 · 自由文本</label><textarea className={css.textarea} rows={3} value={endingHookConstraints} onChange={e => setEndingHookConstraints(e.target.value)} placeholder="自然邀请读者分享经验或一起学习；不要强迫点赞关注，不制造焦虑。" /></div>
+                <div className={css.field}>
+                  <label>最佳案例 · 可增删</label>
+                  {endingHookExamples.map((example, index) => (
+                    <div key={index} className={css.example}>
+                      <b>{String(index + 1).padStart(2, '0')}</b>
+                      <input
+                        className={css.input}
+                        value={example}
+                        onChange={e => setEndingHookExamples(prev => prev.map((item, i) => i === index ? e.target.value : item))}
+                        placeholder="输入最佳案例"
+                      />
+                      <button className={css.ghostBtn} onClick={() => setEndingHookExamples(prev => prev.filter((_, i) => i !== index))}>删除案例</button>
+                    </div>
+                  ))}
+                  <button className={css.ghostBtn} onClick={() => setEndingHookExamples(prev => [...prev, ''])}>＋ 添加案例</button>
+                </div>
+              </div>
+
+              <div className={css.settingsCard}>
+                <div className={css.sectionNo}>03 / SAFETY</div>
+                <div className={css.settingsTitle}>人设违禁词</div>
+                <div className={css.field}>
+                  <label>每个人设独立配置</label>
+                  <div className={css.tagEditor}>
+                    {forbiddenWords.map(word => (
+                      <button key={word} className={css.wordChip} onClick={() => setForbiddenWords(prev => prev.filter(w => w !== word))}>{word} <span className={css.tagRemove}>×</span></button>
+                    ))}
+                    <input
+                      className={css.tagEditorInput}
+                      value={forbiddenDraft}
+                      onChange={e => setForbiddenDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitForbidden() } }}
+                      placeholder="输入违禁词后回车"
+                    />
+                  </div>
+                  <div className={css.helper}>参考素材命中：提示但允许保存。生成稿命中：阻止保存，并标出具体位置。</div>
+                </div>
+              </div>
+
+              <div className={css.settingsCard}>
+                <div className={css.sectionNo}>04 / SAVE</div>
+                <div className={css.settingsTitle}>生效范围</div>
+                <p className={css.muted} style={{ margin: '0 0 8px' }}>
+                  绑定账号：{boundAccounts.length === 0 ? '（暂无）' : boundAccounts.map(a => a.name).join('、')}
+                </p>
+                <p className={css.helper}>账号换绑不会迁移历史资产；如需迁移，必须在知识库或爆款池显式操作。</p>
+                <div className={css.rowActions}>
+                  <button className={css.primary} onClick={() => void save()}>保存设置</button>
+                  <button className={css.ghostBtn} onClick={() => { if (selectedId !== null) { const p = personas.find(x => x.id === selectedId); if (p !== undefined) load(p) } else startCreate() }}>放弃更改</button>
+                </div>
+                {!creating && selectedId !== null && <button className={css.dangerBtn} style={{ marginTop: 10 }} onClick={() => void remove()}>删除人设</button>}
+              </div>
             </div>
           </section>
         </div>

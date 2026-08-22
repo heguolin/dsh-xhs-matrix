@@ -49,9 +49,9 @@ export function OverviewTab({ api, accounts, onOpenAccount, onOpenStudio, onAcco
       setPersonas(personaList)
       const rows = await Promise.all(accounts.map(async account => {
         const [noteList, metricList, viralList] = await Promise.all([
-          api.listNotes(account.id),
+          api.listNotes({ accountId: account.id }),
           api.listMetrics(account.id),
-          api.listViralItems(account.id),
+          api.listViralItems({ accountId: account.id }),
         ])
         // 每篇笔记最新指标快照（按 collectedAt 取最近一次）
         const latestByNote = new Map<string, { reads: number; collectedAt: string }>()

@@ -2,9 +2,11 @@
 import type { StudioSseEvent } from '../studio.ts';
 import type { DraftEvidence, DraftMetrics, DraftQualityReport, DraftStatus, NoteWeight, PendingOwnership, PublishedNote, ViralBatch, ViralItem, ViralStatus } from '../types.ts';
 import type { AccountPayload, PersonaPayload } from '../store.ts';
-/** 携带路由 JSON 错误消息的客户端错误。 */
+/** 携带路由 JSON 错误消息的客户端错误；status 为 HTTP 状态码，payload 为原始路由体。 */
 export declare class XhsApiError extends Error {
-    constructor(message: string);
+    readonly status?: number | undefined;
+    readonly payload?: unknown | undefined;
+    constructor(message: string, status?: number | undefined, payload?: unknown | undefined);
 }
 /**
  * 人设作用域：公开资产方法以 personaId（string）为主参数；兼容期使用显式
@@ -187,8 +189,12 @@ export declare class XhsApi {
         date: string;
         copy: string;
         coverPrompt: string;
+        tags?: string;
         status: DraftStatus;
         metrics?: DraftMetrics;
+        evidence?: DraftEvidence;
+        personaIdSnapshot?: string;
+        qualityReport?: DraftQualityReport;
     }>>;
     setDraftStatus(draftId: string, status: 'published' | 'dropped', metrics?: DraftMetrics): Promise<void>;
     updateDraft(draftId: string, payload: {

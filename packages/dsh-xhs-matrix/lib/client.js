@@ -27,10 +27,14 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/api.ts
 		/** 浏览器侧 API 客户端：面板组件唯一的数据通道（同源 fetch）。 */
-		/** 携带路由 JSON 错误消息的客户端错误。 */
+		/** 携带路由 JSON 错误消息的客户端错误；status 为 HTTP 状态码，payload 为原始路由体。 */
 		var XhsApiError = class extends Error {
-			constructor(message) {
+			status;
+			payload;
+			constructor(message, status, payload) {
 				super(message);
+				this.status = status;
+				this.payload = payload;
 				this.name = "XhsApiError";
 			}
 		};
@@ -41,7 +45,7 @@ window.__ModuleLoader__.load({
 			} catch {
 				throw new XhsApiError(`HTTP ${response.status}: invalid JSON response`);
 			}
-			if (!response.ok) throw new XhsApiError(typeof body === "object" && body !== null && typeof body.error === "string" ? body.error : `HTTP ${response.status}`);
+			if (!response.ok) throw new XhsApiError(typeof body === "object" && body !== null && typeof body.error === "string" ? body.error : `HTTP ${response.status}`, response.status, body);
 			return body;
 		}
 		function query(params) {
@@ -462,7 +466,13 @@ window.__ModuleLoader__.load({
 			"panel.title": "小红书矩阵",
 			"tab.accounts": "账号",
 			"tab.personas": "人设",
-			"tab.drafts": "草稿"
+			"tab.drafts": "草稿",
+			"panel.persona.writingStyle": "写作风格",
+			"panel.persona.endingHook": "结尾互动钩子",
+			"panel.persona.forbiddenWords": "人设违禁词",
+			"panel.persona.scope": "生效范围",
+			"panel.draft.personaSnapshot": "人设快照",
+			"panel.draft.qualityReport": "质检报告"
 		};
 		/** 英文字典（键对齐）。 */
 		const en = {
@@ -471,12 +481,18 @@ window.__ModuleLoader__.load({
 			"panel.title": "XHS Matrix",
 			"tab.accounts": "Accounts",
 			"tab.personas": "Personas",
-			"tab.drafts": "Drafts"
+			"tab.drafts": "Drafts",
+			"panel.persona.writingStyle": "Writing style",
+			"panel.persona.endingHook": "Ending interaction hook",
+			"panel.persona.forbiddenWords": "Forbidden words",
+			"panel.persona.scope": "Effective scope",
+			"panel.draft.personaSnapshot": "Persona snapshot",
+			"panel.draft.qualityReport": "Quality report"
 		};
 		//#endregion
 		//#region \0xhs-css:/home/administrator/tmp/deepseek-harness/dsh-xhs-matrix/.superpowers/worktrees/xhs-persona-v4/packages/dsh-xhs-matrix/src/client/panel/panel.module.css.mjs
-		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.XLBeMq_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.XLBeMq_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.XLBeMq_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.XLBeMq_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.XLBeMq_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.XLBeMq_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.XLBeMq_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.XLBeMq_accountItem:hover{border-color:var(--xhs-red)}.XLBeMq_accountItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.XLBeMq_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.XLBeMq_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.XLBeMq_statusDot.XLBeMq_ok{background:#31ae7e}.XLBeMq_statusDot.XLBeMq_warn{background:#f2a43e}.XLBeMq_statusDot.XLBeMq_error{background:#e25662}.XLBeMq_statusDot.XLBeMq_idle{background:#e4d9db}.XLBeMq_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.XLBeMq_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.XLBeMq_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_navItem.XLBeMq_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.XLBeMq_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.XLBeMq_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.XLBeMq_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.XLBeMq_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.XLBeMq_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.XLBeMq_topbarRight{align-items:center;gap:10px;display:flex}.XLBeMq_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.XLBeMq_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.XLBeMq_modeSwitch button.XLBeMq_on{background:var(--xhs-red);color:#fff;font-weight:600}.XLBeMq_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.XLBeMq_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.XLBeMq_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.XLBeMq_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.XLBeMq_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.XLBeMq_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.XLBeMq_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.XLBeMq_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_post:first-of-type{border-top:0}.XLBeMq_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.XLBeMq_postBody{flex:1;min-width:0}.XLBeMq_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.XLBeMq_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.XLBeMq_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.XLBeMq_chat{flex-direction:column;height:100%;min-height:0;display:flex}.XLBeMq_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.XLBeMq_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.XLBeMq_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_bubble.XLBeMq_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.XLBeMq_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.XLBeMq_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.XLBeMq_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.XLBeMq_chips{flex-wrap:wrap;gap:6px;display:flex}.XLBeMq_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_contextline:first-of-type{border-top:0}.XLBeMq_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.XLBeMq_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.XLBeMq_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.XLBeMq_studioTop strong{color:var(--xhs-text);font-size:14px}.XLBeMq_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.XLBeMq_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.XLBeMq_msg.XLBeMq_me{flex-direction:row-reverse;margin-left:auto}.XLBeMq_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgAvatar{background:var(--xhs-face);color:#8a3945}.XLBeMq_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.XLBeMq_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.XLBeMq_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.XLBeMq_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.XLBeMq_studioSend:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.XLBeMq_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.XLBeMq_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.XLBeMq_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.XLBeMq_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.XLBeMq_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.XLBeMq_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.XLBeMq_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.XLBeMq_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.XLBeMq_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.XLBeMq_tag.XLBeMq_on{background:var(--xhs-red);color:#fff}.XLBeMq_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.XLBeMq_filter.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.XLBeMq_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.XLBeMq_libBody{flex:1;min-width:0}.XLBeMq_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.XLBeMq_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.XLBeMq_weight{gap:4px;margin-top:8px;display:flex}.XLBeMq_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.XLBeMq_weight button:hover{border-color:var(--xhs-red)}.XLBeMq_weight button.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.XLBeMq_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.XLBeMq_topicItem:first-of-type{border-top:0}.XLBeMq_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.XLBeMq_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.XLBeMq_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.XLBeMq_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.XLBeMq_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.XLBeMq_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.XLBeMq_personaItem:hover{border-color:var(--xhs-red)}.XLBeMq_personaItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.XLBeMq_personaName{font-size:13px;font-weight:700}.XLBeMq_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.XLBeMq_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.XLBeMq_draftEditor,.XLBeMq_sourcePanel{min-width:0}.XLBeMq_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.XLBeMq_source:first-of-type{border-top:0}.XLBeMq_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.XLBeMq_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.XLBeMq_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.XLBeMq_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.XLBeMq_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.XLBeMq_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.XLBeMq_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.XLBeMq_dialogClose:hover{color:var(--xhs-red)}.XLBeMq_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.XLBeMq_dialogRow .XLBeMq_face{width:28px;height:28px}.XLBeMq_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.XLBeMq_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.XLBeMq_field label{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.XLBeMq_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.XLBeMq_primary:hover{background:var(--xhs-red-deep)}.XLBeMq_primary:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.XLBeMq_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.XLBeMq_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.XLBeMq_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.XLBeMq_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.XLBeMq_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.XLBeMq_muted{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.XLBeMq_rowActions{flex:none;align-items:center;gap:8px;display:flex}.XLBeMq_spacer{flex:1}.XLBeMq_scopeBand{border-left:4px solid var(--xhs-red);background:var(--xhs-red-soft2);border-radius:0 12px 12px 0;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;margin-bottom:18px;padding:16px 18px;display:grid}.XLBeMq_scopeBand h2{color:var(--xhs-text);margin:0 0 3px;font-size:15px}.XLBeMq_scopeBand p{color:var(--xhs-text-sub);margin:0;font-size:12px}.XLBeMq_scopeStats{gap:18px;display:flex}.XLBeMq_scopeStats b{color:var(--xhs-red-text);font-size:17px;display:block}.XLBeMq_scopeStats span{color:var(--xhs-text-sub);font-size:10px}.XLBeMq_toolbar{flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;display:flex}.XLBeMq_noteGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;display:grid}.XLBeMq_noteCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;padding:16px}.XLBeMq_noteCard h3{color:var(--xhs-text);margin:10px 0 6px;font-size:14px}.XLBeMq_noteCard p{color:#6c5d60;margin:0 0 10px;font-size:12px}.XLBeMq_chip{color:#67595c;background:#f0ecea;border-radius:999px;align-items:center;gap:5px;padding:4px 8px;font-size:11px;display:inline-flex}.XLBeMq_chipRed{color:var(--xhs-red-text);background:#ffe7ec}.XLBeMq_chipGreen{color:var(--xhs-green);background:#e7f6ef}.XLBeMq_chipAmber{color:#9a5b08;background:#fff0d9}.XLBeMq_split{grid-template-columns:210px minmax(0,1fr);align-items:start;gap:14px;display:grid}.XLBeMq_batchList{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;overflow:hidden}.XLBeMq_panelHead{border-bottom:1px solid var(--xhs-border);justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;display:flex}.XLBeMq_panelHead h3{color:var(--xhs-text);margin:0;font-size:13px}.XLBeMq_batch{background:var(--xhs-card);text-align:left;cursor:pointer;border:0;border-bottom:1px solid #f2e9e7;width:100%;padding:12px 14px}.XLBeMq_batch:last-child{border-bottom:0}.XLBeMq_batch.XLBeMq_active{box-shadow:inset 3px 0 var(--xhs-red);background:#fff8f8}.XLBeMq_batch strong{color:var(--xhs-text);margin-bottom:4px;font-size:12px;display:block}.XLBeMq_batch small{color:var(--xhs-text-sub)}.XLBeMq_batchCount{float:right;color:var(--xhs-red-text);font-weight:800}.XLBeMq_item{border-bottom:1px solid #f0e7e5;padding:15px 16px}.XLBeMq_item:last-child{border-bottom:0}.XLBeMq_itemTop{justify-content:space-between;align-items:flex-start;gap:12px;display:flex}.XLBeMq_item h4{color:var(--xhs-text);margin:0 0 5px;font-size:14px}.XLBeMq_meta{color:var(--xhs-text-sub);flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:11px;display:flex}.XLBeMq_excerpt{color:#5c4d50;margin:10px 0;font-size:12px}.XLBeMq_itemActions{flex-wrap:wrap;align-items:center;gap:10px;display:flex}.XLBeMq_textAction{color:#78696c;cursor:pointer;background:0 0;border:0;padding:4px;font-size:11px}.XLBeMq_textAction:hover{color:var(--xhs-red-text)}.XLBeMq_warning{color:#8b570f;background:#fff6e8;border-left:3px solid #e7a746;border-radius:0 8px 8px 0;margin-top:10px;padding:7px 9px;font-size:11px}@media (width<=860px){.XLBeMq_noteGrid,.XLBeMq_split{grid-template-columns:1fr}}";
-		const tagId = "dsh-xhs-matrix/panel.module.css?v=0925ff89";
+		const css = "[data-dsh-xhsmatrix-view]{--xhs-red:#ff2442;--xhs-red-deep:#e01e39;--xhs-red-text:#d52b43;--xhs-red-soft:#fff0f2;--xhs-red-soft2:#fff5f6;--xhs-bg:#fff8f7;--xhs-bg-main:snow;--xhs-card:#fff;--xhs-text:#321f22;--xhs-text-sub:#ab9095;--xhs-text-weak:#b89ca1;--xhs-border:#f1e2e4;--xhs-border-soft:#f7edef;--xhs-face:#ffd4da;--xhs-thumb:#ffe0e4;--xhs-green:#269267;--xhs-green-soft:#e4f8ef;--xhs-warn:#b76c16;--xhs-warn-soft:#fff2df;--xhs-error:#c33c4b;--xhs-error-soft:#ffe9ec;--xhs-shadow:0 3px 10px #b63b4708;z-index:60;background:var(--xhs-bg);color:var(--xhs-text);font-family:Inter,Microsoft YaHei,PingFang SC,sans-serif;display:none;position:absolute;inset:0}html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-ssh-active]) [data-dsh-xhsmatrix-view]{display:grid}[data-pane=conversation],[class*=centerCol]{position:relative}[data-dsh-xhsmatrix-entry]{width:100%;color:inherit;text-align:left;cursor:pointer;background:0 0;border:none;border-radius:8px;align-items:center;gap:8px;padding:6px 10px;font-size:13px;display:flex}[data-dsh-xhsmatrix-entry]:hover{color:#ff2442;background:#ff24420f}[data-dsh-xhsmatrix-entry][data-active]{color:#ff2442;background:#ff244214;font-weight:600}.XLBeMq_viewHost{background:var(--xhs-bg);color:var(--xhs-text);position:absolute;inset:0;overflow:hidden}.XLBeMq_viewGrid{grid-template-rows:minmax(0,1fr);grid-template-columns:188px 1fr;min-width:0;height:100%;display:grid}.XLBeMq_sidebar{background:var(--xhs-card);border-right:1px solid var(--xhs-border);flex-direction:column;grid-area:1/1;min-height:0;padding:16px 12px;display:flex;overflow-y:auto}.XLBeMq_brand{color:var(--xhs-text);align-items:center;gap:8px;margin:0 2px 18px;font-size:14px;font-weight:800;display:flex}.XLBeMq_brandLogo{background:var(--xhs-red);color:#fff;border-radius:9px;flex:none;place-items:center;width:28px;height:28px;font-size:12px;display:grid}.XLBeMq_group{color:var(--xhs-text-sub);letter-spacing:.5px;margin:14px 8px 6px;font-size:10px;font-weight:600}.XLBeMq_accountItem{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;text-align:left;border-radius:9px;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:7px 8px;font-size:12px;transition:border-color .15s,background .15s;display:flex}.XLBeMq_accountItem:hover{border-color:var(--xhs-red)}.XLBeMq_accountItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_face{background:var(--xhs-face);border-radius:50%;flex:none;width:24px;height:24px}.XLBeMq_accountName{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.XLBeMq_statusDot{border-radius:50%;flex:none;width:8px;height:8px}.XLBeMq_statusDot.XLBeMq_ok{background:#31ae7e}.XLBeMq_statusDot.XLBeMq_warn{background:#f2a43e}.XLBeMq_statusDot.XLBeMq_error{background:#e25662}.XLBeMq_statusDot.XLBeMq_idle{background:#e4d9db}.XLBeMq_accountAdd{border:1px dashed var(--xhs-border);width:100%;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border-radius:9px;align-items:center;gap:6px;padding:7px 10px;font-size:12px;display:flex}.XLBeMq_accountAdd:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_navItem{width:100%;color:var(--xhs-text-sub);text-align:left;cursor:pointer;background:0 0;border:none;border-radius:9px;align-items:center;gap:8px;margin:2px 0;padding:8px 10px;font-size:13px;display:flex}.XLBeMq_navItem:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_navItem.XLBeMq_active{background:var(--xhs-red-soft);color:var(--xhs-red);font-weight:700}.XLBeMq_navIcon{text-align:center;flex:none;width:16px;font-size:12px}.XLBeMq_workspace{background:var(--xhs-bg-main);flex-direction:column;grid-area:1/2;min-width:0;min-height:0;display:flex}.XLBeMq_topbar{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;display:flex}.XLBeMq_topbar h3{color:var(--xhs-text);margin:0;font-size:17px;font-weight:700}.XLBeMq_topbarSub{color:var(--xhs-text-sub);margin-top:2px;font-size:11px}.XLBeMq_topbarRight{align-items:center;gap:10px;display:flex}.XLBeMq_modeSwitch{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:10px;gap:4px;width:max-content;padding:3px;display:flex}.XLBeMq_modeSwitch button{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:7px;padding:6px 12px;font-size:12px}.XLBeMq_modeSwitch button.XLBeMq_on{background:var(--xhs-red);color:#fff;font-weight:600}.XLBeMq_content{flex:1;min-height:0;padding:18px 22px;overflow-y:auto}.XLBeMq_overview{grid-template-columns:1.15fr .85fr;gap:14px;display:grid}.XLBeMq_panel{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.XLBeMq_panelTitle{color:var(--xhs-text);justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:700;display:flex}.XLBeMq_metrics{grid-template-columns:repeat(3,1fr);gap:8px;display:grid}.XLBeMq_metric{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:10px;padding:10px;font-size:11px}.XLBeMq_metric b{color:var(--xhs-red);margin-top:3px;font-size:20px;font-weight:700;display:block}.XLBeMq_post{border-top:1px solid var(--xhs-border-soft);align-items:flex-start;gap:9px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_post:first-of-type{border-top:0}.XLBeMq_thumb{background:var(--xhs-thumb);border-radius:7px;flex:none;width:34px;height:34px}.XLBeMq_postBody{flex:1;min-width:0}.XLBeMq_postTitle{color:var(--xhs-text);text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.XLBeMq_postMeta{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_bar{background:#f4e3e6;border-radius:99px;height:5px;margin-top:6px;overflow:hidden}.XLBeMq_bar i{background:var(--xhs-red);border-radius:99px;height:100%;display:block}.XLBeMq_chat{flex-direction:column;height:100%;min-height:0;display:flex}.XLBeMq_chathead{color:var(--xhs-text);border-bottom:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;padding-bottom:10px;font-size:12px;font-weight:700;display:flex}.XLBeMq_pill{background:var(--xhs-green-soft);color:var(--xhs-green);white-space:nowrap;border-radius:99px;padding:4px 8px;font-size:10px}.XLBeMq_pillWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_bubble{background:var(--xhs-red-soft2);max-width:92%;color:var(--xhs-text);border-radius:10px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_bubble.XLBeMq_me{background:var(--xhs-red);color:#fff;align-self:flex-end}.XLBeMq_chatInput{border:1px solid var(--xhs-border);color:var(--xhs-text-weak);background:var(--xhs-card);border-radius:9px;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding:10px;font-size:12px;display:flex}.XLBeMq_chatSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}.XLBeMq_below{grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;display:grid}.XLBeMq_chips{flex-wrap:wrap;gap:6px;display:flex}.XLBeMq_contextline{border-top:1px solid var(--xhs-border-soft);justify-content:space-between;align-items:center;gap:8px;padding:9px 0;font-size:12px;display:flex}.XLBeMq_contextline:first-of-type{border-top:0}.XLBeMq_studioLayout{grid-template-columns:1fr 268px;gap:0;height:100%;min-height:0;display:grid}.XLBeMq_studioMain{background:var(--xhs-bg-main);flex-direction:column;min-width:0;display:flex}.XLBeMq_studioTop{border-bottom:1px solid var(--xhs-border);background:var(--xhs-card);justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;display:flex}.XLBeMq_studioTop strong{color:var(--xhs-text);font-size:14px}.XLBeMq_studioTopSub{color:var(--xhs-text-sub);margin-top:3px;font-size:11px}.XLBeMq_messages{flex:1;min-height:0;padding:16px 20px;overflow-y:auto}.XLBeMq_msg{gap:9px;max-width:92%;margin-bottom:14px;display:flex}.XLBeMq_msg.XLBeMq_me{flex-direction:row-reverse;margin-left:auto}.XLBeMq_msgAvatar{background:var(--xhs-red);color:#fff;border-radius:8px;flex:none;place-items:center;width:26px;height:26px;font-size:11px;display:grid}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgAvatar{background:var(--xhs-face);color:#8a3945}.XLBeMq_msgBubble{background:var(--xhs-card);border:1px solid var(--xhs-border);color:var(--xhs-text);box-shadow:var(--xhs-shadow);white-space:pre-wrap;word-break:break-word;border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.7}.XLBeMq_msg.XLBeMq_me .XLBeMq_msgBubble{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_studioResult{background:var(--xhs-red-soft2);border-radius:9px;margin-top:9px;padding:9px 11px;font-size:12px;line-height:1.6}.XLBeMq_studioResult b{color:var(--xhs-red-text);margin-bottom:5px;display:block}.XLBeMq_studioComposer{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-end;gap:8px;margin:0 20px 16px;padding:8px 8px 8px 14px;display:flex}.XLBeMq_studioComposer textarea{resize:none;color:var(--xhs-text);background:0 0;border:none;outline:none;flex:1;min-height:44px;max-height:140px;font-family:inherit;font-size:13px;line-height:1.6}.XLBeMq_studioSend{background:var(--xhs-red);color:#fff;cursor:pointer;border:0;border-radius:8px;flex:none;padding:8px 14px;font-size:12px;font-weight:600}.XLBeMq_studioSend:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_studioSendGhost{background:var(--xhs-card);color:var(--xhs-red-text);border:1px solid var(--xhs-border)}.XLBeMq_studioSendGhost:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_context{background:var(--xhs-card);border-left:1px solid var(--xhs-border);min-height:0;padding:16px 14px;overflow-y:auto}.XLBeMq_context h4{color:var(--xhs-text);margin:0 0 12px;font-size:12px;font-weight:700}.XLBeMq_contextCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:10px;margin-bottom:10px;padding:11px}.XLBeMq_contextCard h5{color:var(--xhs-text);margin:0 0 7px;font-size:11px;font-weight:700}.XLBeMq_contextLine{color:#8f777c;border-top:1px solid var(--xhs-border-soft);margin-top:7px;padding-top:7px;font-size:11px;line-height:1.55}.XLBeMq_contextLine:first-of-type{border-top:0;margin-top:0;padding-top:0}.XLBeMq_meter{background:#f3e4e6;border-radius:99px;height:6px;margin-top:6px;overflow:hidden}.XLBeMq_meter i{background:var(--xhs-red);border-radius:99px;width:86%;height:100%;display:block}.XLBeMq_tag{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin:2px;padding:4px 8px;font-size:11px;display:inline-block}.XLBeMq_tag.XLBeMq_on{background:var(--xhs-red);color:#fff}.XLBeMq_filterRow{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_filter{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text-sub);cursor:pointer;border-radius:99px;padding:6px 12px;font-size:12px}.XLBeMq_filter.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red)}.XLBeMq_libRow{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:flex-start;gap:10px;margin-bottom:9px;padding:12px 14px;display:flex}.XLBeMq_miniThumb{background:var(--xhs-thumb);border-radius:8px;flex:none;width:38px;height:38px}.XLBeMq_libBody{flex:1;min-width:0}.XLBeMq_libTitle{color:var(--xhs-text);font-size:13px;font-weight:600}.XLBeMq_libMeta{color:var(--xhs-text-sub);margin-top:4px;font-size:11px}.XLBeMq_weight{gap:4px;margin-top:8px;display:flex}.XLBeMq_weight button{background:var(--xhs-red-soft2);border:1px solid var(--xhs-border);width:22px;height:22px;color:var(--xhs-red-text);cursor:pointer;border-radius:5px;place-items:center;padding:0;font-size:11px;display:grid}.XLBeMq_weight button:hover{border-color:var(--xhs-red)}.XLBeMq_weight button.XLBeMq_on{background:var(--xhs-red);color:#fff;border-color:var(--xhs-red);font-weight:700}.XLBeMq_topicItem{border-top:1px solid var(--xhs-border-soft);padding:11px 0;font-size:13px}.XLBeMq_topicItem:first-of-type{border-top:0}.XLBeMq_topicTitle{color:var(--xhs-text);margin-bottom:5px;font-weight:600;display:block}.XLBeMq_topicReason{color:var(--xhs-text-sub);font-size:11px;line-height:1.6}.XLBeMq_score{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:99px;margin-top:5px;padding:2px 8px;font-size:11px;display:inline-block}.XLBeMq_scoreLow{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_personaLayout{grid-template-columns:.95fr 1.05fr;gap:14px;display:grid}.XLBeMq_personaList{flex-direction:column;gap:8px;margin-bottom:14px;display:flex}.XLBeMq_personaItem{border:1px solid var(--xhs-border);background:var(--xhs-card);cursor:pointer;text-align:left;width:100%;color:var(--xhs-text);border-radius:11px;align-items:center;gap:10px;padding:11px 13px;display:flex}.XLBeMq_personaItem:hover{border-color:var(--xhs-red)}.XLBeMq_personaItem.XLBeMq_active{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_personaAvatar{background:var(--xhs-face);border-radius:50%;flex:none;width:34px;height:34px}.XLBeMq_personaName{font-size:13px;font-weight:700}.XLBeMq_personaDesc{color:var(--xhs-text-sub);text-overflow:ellipsis;white-space:nowrap;margin-top:2px;font-size:11px;overflow:hidden}.XLBeMq_draftLayout{grid-template-columns:1fr .85fr;gap:14px;width:100%;display:grid}.XLBeMq_draftEditor,.XLBeMq_sourcePanel{min-width:0}.XLBeMq_source{border-top:1px solid var(--xhs-border-soft);padding:8px 0;font-size:12px;line-height:1.6}.XLBeMq_source:first-of-type{border-top:0}.XLBeMq_source b{color:var(--xhs-red-text);margin-bottom:3px;display:block}.XLBeMq_weightBadge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:99px;margin-left:6px;padding:1px 7px;font-size:10px;font-weight:400}.XLBeMq_editbar{flex-wrap:wrap;gap:6px;margin-top:12px;display:flex}.XLBeMq_overlay{z-index:200;background:#321f2259;place-items:center;display:grid;position:fixed;inset:0}.XLBeMq_dialog{background:var(--xhs-bg-main);border:1px solid var(--xhs-border);border-radius:14px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);padding:18px 20px;overflow-y:auto;box-shadow:0 12px 40px #321f222e}.XLBeMq_dialog h3{color:var(--xhs-text);margin:0 0 14px;font-size:16px;font-weight:700}.XLBeMq_dialogClose{float:right;color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;padding:2px 6px;font-size:18px;line-height:1}.XLBeMq_dialogClose:hover{color:var(--xhs-red)}.XLBeMq_dialogRow{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:11px;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;font-size:13px;display:flex}.XLBeMq_dialogRow .XLBeMq_face{width:28px;height:28px}.XLBeMq_dialogRowActions{flex:none;gap:6px;margin-left:auto;display:flex}.XLBeMq_field{flex-direction:column;gap:6px;margin-bottom:12px;display:flex}.XLBeMq_field label{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_input{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);border-radius:8px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_input:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_textarea{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);resize:vertical;border-radius:8px;min-height:80px;padding:8px 12px;font-size:13px;transition:border-color .15s,box-shadow .15s}.XLBeMq_textarea:focus{border-color:var(--xhs-red);outline:none;box-shadow:0 0 0 3px #ff244214}.XLBeMq_button{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-text);cursor:pointer;border-radius:8px;padding:8px 16px;font-size:12px;transition:border-color .15s,color .15s,background .15s}.XLBeMq_button:hover{border-color:var(--xhs-red);color:var(--xhs-red)}.XLBeMq_primary{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;transition:background .15s}.XLBeMq_primary:hover{background:var(--xhs-red-deep)}.XLBeMq_primary:disabled{opacity:.6;cursor:not-allowed}.XLBeMq_ghostBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-red-text);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_ghostBtn:hover{border-color:var(--xhs-red);background:var(--xhs-red-soft)}.XLBeMq_dangerBtn{border:1px solid var(--xhs-border);background:var(--xhs-card);color:var(--xhs-error);cursor:pointer;border-radius:8px;padding:7px 14px;font-size:12px}.XLBeMq_dangerBtn:hover{border-color:var(--xhs-error);background:var(--xhs-error-soft)}.XLBeMq_tabs{flex-wrap:wrap;gap:6px;margin-bottom:14px;display:flex}.XLBeMq_tab{color:var(--xhs-text-sub);cursor:pointer;background:0 0;border:none;border-radius:999px;padding:7px 14px;font-size:12px}.XLBeMq_tab:hover{background:var(--xhs-red-soft);color:var(--xhs-red)}.XLBeMq_tabActive{background:var(--xhs-red);color:#fff;cursor:pointer;border:none;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}.XLBeMq_card{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px;display:flex}.XLBeMq_badge{background:var(--xhs-red-soft);color:var(--xhs-red-text);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGreen{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeGray{color:var(--xhs-text-sub);background:#f5f1f1;border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeDanger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_badgeWarn{background:var(--xhs-warn-soft);color:var(--xhs-warn);border-radius:999px;padding:2px 10px;font-size:11px;display:inline-block}.XLBeMq_success{background:var(--xhs-green-soft);color:var(--xhs-green);border-radius:8px;margin-bottom:10px;padding:10px 14px;font-size:12px}.XLBeMq_empty{background:var(--xhs-red-soft2);color:var(--xhs-text-sub);border-radius:9px;margin-bottom:10px;padding:12px 14px;font-size:12px}.XLBeMq_muted{color:var(--xhs-text-sub);font-size:12px}.XLBeMq_danger{background:var(--xhs-error-soft);color:var(--xhs-error);border-radius:8px;margin-bottom:10px;padding:9px 12px;font-size:12px}.XLBeMq_rowActions{flex:none;align-items:center;gap:8px;display:flex}.XLBeMq_spacer{flex:1}.XLBeMq_scopeBand{border-left:4px solid var(--xhs-red);background:var(--xhs-red-soft2);border-radius:0 12px 12px 0;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;margin-bottom:18px;padding:16px 18px;display:grid}.XLBeMq_scopeBand h2{color:var(--xhs-text);margin:0 0 3px;font-size:15px}.XLBeMq_scopeBand p{color:var(--xhs-text-sub);margin:0;font-size:12px}.XLBeMq_scopeStats{gap:18px;display:flex}.XLBeMq_scopeStats b{color:var(--xhs-red-text);font-size:17px;display:block}.XLBeMq_scopeStats span{color:var(--xhs-text-sub);font-size:10px}.XLBeMq_toolbar{flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;display:flex}.XLBeMq_noteGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;display:grid}.XLBeMq_noteCard{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;padding:16px}.XLBeMq_noteCard h3{color:var(--xhs-text);margin:10px 0 6px;font-size:14px}.XLBeMq_noteCard p{color:#6c5d60;margin:0 0 10px;font-size:12px}.XLBeMq_chip{color:#67595c;background:#f0ecea;border-radius:999px;align-items:center;gap:5px;padding:4px 8px;font-size:11px;display:inline-flex}.XLBeMq_chipRed{color:var(--xhs-red-text);background:#ffe7ec}.XLBeMq_chipGreen{color:var(--xhs-green);background:#e7f6ef}.XLBeMq_chipAmber{color:#9a5b08;background:#fff0d9}.XLBeMq_split{grid-template-columns:210px minmax(0,1fr);align-items:start;gap:14px;display:grid}.XLBeMq_batchList{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:12px;overflow:hidden}.XLBeMq_panelHead{border-bottom:1px solid var(--xhs-border);justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;display:flex}.XLBeMq_panelHead h3{color:var(--xhs-text);margin:0;font-size:13px}.XLBeMq_batch{background:var(--xhs-card);text-align:left;cursor:pointer;border:0;border-bottom:1px solid #f2e9e7;width:100%;padding:12px 14px}.XLBeMq_batch:last-child{border-bottom:0}.XLBeMq_batch.XLBeMq_active{box-shadow:inset 3px 0 var(--xhs-red);background:#fff8f8}.XLBeMq_batch strong{color:var(--xhs-text);margin-bottom:4px;font-size:12px;display:block}.XLBeMq_batch small{color:var(--xhs-text-sub)}.XLBeMq_batchCount{float:right;color:var(--xhs-red-text);font-weight:800}.XLBeMq_item{border-bottom:1px solid #f0e7e5;padding:15px 16px}.XLBeMq_item:last-child{border-bottom:0}.XLBeMq_itemTop{justify-content:space-between;align-items:flex-start;gap:12px;display:flex}.XLBeMq_item h4{color:var(--xhs-text);margin:0 0 5px;font-size:14px}.XLBeMq_meta{color:var(--xhs-text-sub);flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:11px;display:flex}.XLBeMq_excerpt{color:#5c4d50;margin:10px 0;font-size:12px}.XLBeMq_itemActions{flex-wrap:wrap;align-items:center;gap:10px;display:flex}.XLBeMq_textAction{color:#78696c;cursor:pointer;background:0 0;border:0;padding:4px;font-size:11px}.XLBeMq_textAction:hover{color:var(--xhs-red-text)}.XLBeMq_warning{color:#8b570f;background:#fff6e8;border-left:3px solid #e7a746;border-radius:0 8px 8px 0;margin-top:10px;padding:7px 9px;font-size:11px}.XLBeMq_settingsGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:4px;display:grid}.XLBeMq_settingsCard{background:var(--xhs-card);border:1px solid var(--xhs-border);border-radius:12px;min-width:0;padding:14px}.XLBeMq_sectionNo{color:var(--xhs-red);letter-spacing:.12em;font-size:10px;font-weight:700}.XLBeMq_settingsTitle{color:var(--xhs-text);margin:6px 0 12px;font-size:14px;font-weight:700}.XLBeMq_tagEditor{border:1px solid var(--xhs-border);background:var(--xhs-card);border-radius:8px;flex-wrap:wrap;gap:6px;padding:8px;display:flex}.XLBeMq_tagEditorInput{min-width:120px;color:var(--xhs-text);background:0 0;border:0;outline:0;flex:1;font-size:13px}.XLBeMq_styleChip,.XLBeMq_wordChip{cursor:pointer;border:0;border-radius:999px;align-items:center;gap:4px;padding:4px 8px;font-size:11px;display:inline-flex}.XLBeMq_styleChip{background:var(--xhs-red-soft);color:var(--xhs-red-text)}.XLBeMq_wordChip{background:var(--xhs-warn-soft);color:var(--xhs-warn)}.XLBeMq_tagRemove{font-weight:700}.XLBeMq_example{background:var(--xhs-red-soft2);border-radius:8px;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:8px;margin-bottom:8px;padding:9px;display:grid}.XLBeMq_example b{color:var(--xhs-red);font-size:12px;font-weight:700}.XLBeMq_helper{color:var(--xhs-text-sub);margin-top:6px;font-size:11px}@media (width<=860px){.XLBeMq_noteGrid,.XLBeMq_split,.XLBeMq_settingsGrid,.XLBeMq_personaLayout,.XLBeMq_draftLayout{grid-template-columns:1fr}}";
+		const tagId = "dsh-xhs-matrix/panel.module.css?v=9a128d29";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "dsh-xhs-matrix";
@@ -485,143 +501,154 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"overview": "XLBeMq_overview",
-			"scopeBand": "XLBeMq_scopeBand",
-			"chatInput": "XLBeMq_chatInput",
-			"panelHead": "XLBeMq_panelHead",
-			"personaAvatar": "XLBeMq_personaAvatar",
-			"me": "XLBeMq_me",
-			"tabs": "XLBeMq_tabs",
-			"viewGrid": "XLBeMq_viewGrid",
-			"group": "XLBeMq_group",
-			"libTitle": "XLBeMq_libTitle",
-			"chat": "XLBeMq_chat",
-			"studioMain": "XLBeMq_studioMain",
-			"studioResult": "XLBeMq_studioResult",
-			"on": "XLBeMq_on",
-			"empty": "XLBeMq_empty",
-			"metrics": "XLBeMq_metrics",
-			"textAction": "XLBeMq_textAction",
-			"chips": "XLBeMq_chips",
-			"thumb": "XLBeMq_thumb",
-			"msgBubble": "XLBeMq_msgBubble",
-			"topicItem": "XLBeMq_topicItem",
-			"sourcePanel": "XLBeMq_sourcePanel",
+			"panelTitle": "XLBeMq_panelTitle",
+			"viewHost": "XLBeMq_viewHost",
 			"chipGreen": "XLBeMq_chipGreen",
-			"source": "XLBeMq_source",
-			"tab": "XLBeMq_tab",
-			"chatSend": "XLBeMq_chatSend",
-			"personaList": "XLBeMq_personaList",
-			"studioTopSub": "XLBeMq_studioTopSub",
-			"chipRed": "XLBeMq_chipRed",
-			"sidebar": "XLBeMq_sidebar",
-			"score": "XLBeMq_score",
-			"badgeGreen": "XLBeMq_badgeGreen",
-			"draftEditor": "XLBeMq_draftEditor",
-			"chip": "XLBeMq_chip",
-			"navItem": "XLBeMq_navItem",
-			"modeSwitch": "XLBeMq_modeSwitch",
-			"accountItem": "XLBeMq_accountItem",
 			"dialogRow": "XLBeMq_dialogRow",
-			"brandLogo": "XLBeMq_brandLogo",
-			"input": "XLBeMq_input",
-			"chipAmber": "XLBeMq_chipAmber",
-			"contextline": "XLBeMq_contextline",
-			"weightBadge": "XLBeMq_weightBadge",
-			"dialogRowActions": "XLBeMq_dialogRowActions",
-			"messages": "XLBeMq_messages",
-			"spacer": "XLBeMq_spacer",
-			"weight": "XLBeMq_weight",
-			"topbarRight": "XLBeMq_topbarRight",
-			"context": "XLBeMq_context",
-			"scopeStats": "XLBeMq_scopeStats",
 			"statusDot": "XLBeMq_statusDot",
-			"personaDesc": "XLBeMq_personaDesc",
-			"error": "XLBeMq_error",
-			"chathead": "XLBeMq_chathead",
-			"badge": "XLBeMq_badge",
-			"personaName": "XLBeMq_personaName",
-			"ok": "XLBeMq_ok",
-			"libMeta": "XLBeMq_libMeta",
-			"badgeGray": "XLBeMq_badgeGray",
-			"topbar": "XLBeMq_topbar",
-			"below": "XLBeMq_below",
-			"warning": "XLBeMq_warning",
-			"miniThumb": "XLBeMq_miniThumb",
-			"excerpt": "XLBeMq_excerpt",
-			"item": "XLBeMq_item",
+			"sourcePanel": "XLBeMq_sourcePanel",
+			"contextCard": "XLBeMq_contextCard",
+			"tabs": "XLBeMq_tabs",
+			"studioTop": "XLBeMq_studioTop",
 			"pill": "XLBeMq_pill",
-			"personaItem": "XLBeMq_personaItem",
+			"tagEditor": "XLBeMq_tagEditor",
+			"weight": "XLBeMq_weight",
+			"topicReason": "XLBeMq_topicReason",
+			"chat": "XLBeMq_chat",
+			"viewGrid": "XLBeMq_viewGrid",
+			"overview": "XLBeMq_overview",
+			"pillWarn": "XLBeMq_pillWarn",
+			"draftEditor": "XLBeMq_draftEditor",
+			"spacer": "XLBeMq_spacer",
+			"danger": "XLBeMq_danger",
+			"dialogClose": "XLBeMq_dialogClose",
+			"draftLayout": "XLBeMq_draftLayout",
+			"success": "XLBeMq_success",
+			"tagRemove": "XLBeMq_tagRemove",
+			"content": "XLBeMq_content",
+			"scopeBand": "XLBeMq_scopeBand",
+			"meta": "XLBeMq_meta",
+			"item": "XLBeMq_item",
+			"msgBubble": "XLBeMq_msgBubble",
+			"noteCard": "XLBeMq_noteCard",
+			"helper": "XLBeMq_helper",
+			"studioResult": "XLBeMq_studioResult",
+			"dialog": "XLBeMq_dialog",
+			"badgeGray": "XLBeMq_badgeGray",
+			"source": "XLBeMq_source",
+			"libTitle": "XLBeMq_libTitle",
+			"button": "XLBeMq_button",
+			"postBody": "XLBeMq_postBody",
+			"dangerBtn": "XLBeMq_dangerBtn",
+			"settingsCard": "XLBeMq_settingsCard",
+			"error": "XLBeMq_error",
+			"sidebar": "XLBeMq_sidebar",
+			"libBody": "XLBeMq_libBody",
 			"ghostBtn": "XLBeMq_ghostBtn",
+			"toolbar": "XLBeMq_toolbar",
 			"batch": "XLBeMq_batch",
+			"post": "XLBeMq_post",
+			"tag": "XLBeMq_tag",
+			"chipAmber": "XLBeMq_chipAmber",
+			"brandLogo": "XLBeMq_brandLogo",
+			"tagEditorInput": "XLBeMq_tagEditorInput",
+			"primary": "XLBeMq_primary",
 			"warn": "XLBeMq_warn",
 			"metric": "XLBeMq_metric",
-			"accountName": "XLBeMq_accountName",
-			"badgeWarn": "XLBeMq_badgeWarn",
-			"textarea": "XLBeMq_textarea",
-			"filterRow": "XLBeMq_filterRow",
+			"studioSend": "XLBeMq_studioSend",
+			"muted": "XLBeMq_muted",
+			"sectionNo": "XLBeMq_sectionNo",
+			"tab": "XLBeMq_tab",
 			"contextLine": "XLBeMq_contextLine",
-			"card": "XLBeMq_card",
-			"itemActions": "XLBeMq_itemActions",
+			"dialogRowActions": "XLBeMq_dialogRowActions",
 			"panel": "XLBeMq_panel",
-			"tag": "XLBeMq_tag",
+			"scoreLow": "XLBeMq_scoreLow",
+			"personaName": "XLBeMq_personaName",
+			"empty": "XLBeMq_empty",
+			"chips": "XLBeMq_chips",
+			"bubble": "XLBeMq_bubble",
+			"messages": "XLBeMq_messages",
+			"input": "XLBeMq_input",
+			"personaLayout": "XLBeMq_personaLayout",
+			"scopeStats": "XLBeMq_scopeStats",
+			"settingsGrid": "XLBeMq_settingsGrid",
+			"thumb": "XLBeMq_thumb",
+			"chatSend": "XLBeMq_chatSend",
+			"postMeta": "XLBeMq_postMeta",
+			"topbarRight": "XLBeMq_topbarRight",
+			"bar": "XLBeMq_bar",
+			"filter": "XLBeMq_filter",
+			"personaAvatar": "XLBeMq_personaAvatar",
+			"idle": "XLBeMq_idle",
+			"studioMain": "XLBeMq_studioMain",
 			"face": "XLBeMq_face",
 			"studioLayout": "XLBeMq_studioLayout",
-			"personaLayout": "XLBeMq_personaLayout",
-			"brand": "XLBeMq_brand",
-			"primary": "XLBeMq_primary",
-			"meta": "XLBeMq_meta",
-			"noteGrid": "XLBeMq_noteGrid",
-			"accountAdd": "XLBeMq_accountAdd",
-			"badgeDanger": "XLBeMq_badgeDanger",
-			"split": "XLBeMq_split",
-			"bubble": "XLBeMq_bubble",
-			"studioTop": "XLBeMq_studioTop",
-			"panelTitle": "XLBeMq_panelTitle",
-			"muted": "XLBeMq_muted",
-			"success": "XLBeMq_success",
-			"draftLayout": "XLBeMq_draftLayout",
 			"meter": "XLBeMq_meter",
-			"libBody": "XLBeMq_libBody",
-			"workspace": "XLBeMq_workspace",
-			"topicTitle": "XLBeMq_topicTitle",
-			"button": "XLBeMq_button",
-			"batchList": "XLBeMq_batchList",
-			"studioSendGhost": "XLBeMq_studioSendGhost",
-			"filter": "XLBeMq_filter",
-			"bar": "XLBeMq_bar",
-			"content": "XLBeMq_content",
-			"dialogClose": "XLBeMq_dialogClose",
-			"idle": "XLBeMq_idle",
-			"studioSend": "XLBeMq_studioSend",
-			"msgAvatar": "XLBeMq_msgAvatar",
-			"toolbar": "XLBeMq_toolbar",
-			"batchCount": "XLBeMq_batchCount",
-			"postBody": "XLBeMq_postBody",
-			"noteCard": "XLBeMq_noteCard",
-			"itemTop": "XLBeMq_itemTop",
-			"topbarSub": "XLBeMq_topbarSub",
-			"dangerBtn": "XLBeMq_dangerBtn",
-			"scoreLow": "XLBeMq_scoreLow",
-			"danger": "XLBeMq_danger",
-			"overlay": "XLBeMq_overlay",
-			"pillWarn": "XLBeMq_pillWarn",
-			"rowActions": "XLBeMq_rowActions",
-			"topicReason": "XLBeMq_topicReason",
-			"contextCard": "XLBeMq_contextCard",
 			"libRow": "XLBeMq_libRow",
-			"field": "XLBeMq_field",
-			"msg": "XLBeMq_msg",
-			"postMeta": "XLBeMq_postMeta",
-			"viewHost": "XLBeMq_viewHost",
-			"tabActive": "XLBeMq_tabActive",
-			"postTitle": "XLBeMq_postTitle",
-			"dialog": "XLBeMq_dialog",
+			"chathead": "XLBeMq_chathead",
+			"studioSendGhost": "XLBeMq_studioSendGhost",
 			"active": "XLBeMq_active",
-			"post": "XLBeMq_post",
-			"navIcon": "XLBeMq_navIcon",
+			"topicTitle": "XLBeMq_topicTitle",
+			"filterRow": "XLBeMq_filterRow",
+			"excerpt": "XLBeMq_excerpt",
+			"tabActive": "XLBeMq_tabActive",
+			"accountName": "XLBeMq_accountName",
+			"badgeGreen": "XLBeMq_badgeGreen",
+			"textAction": "XLBeMq_textAction",
+			"topbarSub": "XLBeMq_topbarSub",
+			"split": "XLBeMq_split",
+			"accountItem": "XLBeMq_accountItem",
+			"badgeWarn": "XLBeMq_badgeWarn",
+			"noteGrid": "XLBeMq_noteGrid",
+			"metrics": "XLBeMq_metrics",
+			"context": "XLBeMq_context",
+			"personaDesc": "XLBeMq_personaDesc",
+			"overlay": "XLBeMq_overlay",
+			"navItem": "XLBeMq_navItem",
+			"textarea": "XLBeMq_textarea",
+			"itemActions": "XLBeMq_itemActions",
+			"panelHead": "XLBeMq_panelHead",
+			"warning": "XLBeMq_warning",
+			"topicItem": "XLBeMq_topicItem",
+			"workspace": "XLBeMq_workspace",
+			"accountAdd": "XLBeMq_accountAdd",
+			"field": "XLBeMq_field",
+			"postTitle": "XLBeMq_postTitle",
+			"miniThumb": "XLBeMq_miniThumb",
+			"libMeta": "XLBeMq_libMeta",
+			"badgeDanger": "XLBeMq_badgeDanger",
+			"batchList": "XLBeMq_batchList",
+			"batchCount": "XLBeMq_batchCount",
+			"personaList": "XLBeMq_personaList",
+			"settingsTitle": "XLBeMq_settingsTitle",
+			"wordChip": "XLBeMq_wordChip",
+			"example": "XLBeMq_example",
+			"me": "XLBeMq_me",
+			"studioComposer": "XLBeMq_studioComposer",
+			"badge": "XLBeMq_badge",
 			"editbar": "XLBeMq_editbar",
-			"studioComposer": "XLBeMq_studioComposer"
+			"msgAvatar": "XLBeMq_msgAvatar",
+			"chatInput": "XLBeMq_chatInput",
+			"rowActions": "XLBeMq_rowActions",
+			"chipRed": "XLBeMq_chipRed",
+			"brand": "XLBeMq_brand",
+			"navIcon": "XLBeMq_navIcon",
+			"on": "XLBeMq_on",
+			"styleChip": "XLBeMq_styleChip",
+			"score": "XLBeMq_score",
+			"group": "XLBeMq_group",
+			"chip": "XLBeMq_chip",
+			"studioTopSub": "XLBeMq_studioTopSub",
+			"topbar": "XLBeMq_topbar",
+			"msg": "XLBeMq_msg",
+			"card": "XLBeMq_card",
+			"modeSwitch": "XLBeMq_modeSwitch",
+			"ok": "XLBeMq_ok",
+			"weightBadge": "XLBeMq_weightBadge",
+			"personaItem": "XLBeMq_personaItem",
+			"below": "XLBeMq_below",
+			"itemTop": "XLBeMq_itemTop",
+			"contextline": "XLBeMq_contextline"
 		};
 		//#endregion
 		//#region src/client/panel/ImportDialog.tsx
@@ -1040,6 +1067,15 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region src/client/panel/DraftEditor.tsx
+		/** 渲染质检报告摘要：审校状态、违禁词命中与检查时间。 */
+		function qualitySummary$1(report) {
+			if (report === void 0) return "未检查";
+			const statusText = report.reviewStatus === "passed" ? "通过" : report.reviewStatus === "failed" ? "未通过" : "未检查";
+			const hits = report.forbiddenWordHits.length;
+			const words = report.forbiddenWordHits.map((h) => h.word).filter((w) => w !== "").join("、");
+			const date = (report.checkedAt ?? "").slice(0, 10) || report.checkedAt || "";
+			return `${statusText} · 违禁词命中 ${hits} 处${words !== "" ? `（${words}）` : ""} · 检查于 ${date || "未知"}`;
+		}
 		/**
 		* 草稿编辑器（设计稿 content/detail-surfaces.html）：
 		* 左栏正文直接编辑 + 编辑动作（重写标题/优化开头），右栏本次生成依据；
@@ -1060,11 +1096,11 @@ window.__ModuleLoader__.load({
 				(async () => {
 					try {
 						if (evidence.noteIds.length > 0) {
-							const notes = await api.listNotes(accountId);
+							const notes = await api.listNotes({ accountId });
 							setNoteTitles(Object.fromEntries(notes.filter((n) => evidence.noteIds.includes(n.id)).map((n) => [n.id, n.title])));
 						}
 						if (evidence.trendIds.length > 0) {
-							const virals = await api.listViralItems(accountId);
+							const virals = await api.listViralItems({ accountId });
 							setViralTitles(Object.fromEntries(virals.filter((v) => evidence.trendIds.includes(v.id)).map((v) => [v.id, v.title])));
 						}
 					} catch {}
@@ -1185,48 +1221,73 @@ window.__ModuleLoader__.load({
 					]
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
 					className: `${panel_module_css_default.panel} ${panel_module_css_default.sourcePanel}`,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.panelTitle,
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "本次生成依据" })
-					}), draft.evidence === void 0 || draft.evidence.reasons.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default.muted,
-						children: "该草稿无生成依据记录（可能为手动创建）。"
-					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-						draft.evidence.persona !== void 0 && draft.evidence.persona !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.source,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["人设规则 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.weightBadge,
-								children: "已使用"
-							})] }), draft.evidence.persona]
-						}),
-						draft.evidence.noteIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.source,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["本地笔记 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.weightBadge,
-								children: "高权重参考"
-							})] }), draft.evidence.noteIds.map((id) => `· ${noteTitles[id] ?? id}`).join("\n")]
-						}),
-						draft.evidence.trendIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default.source,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["已采纳爆款参考 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: panel_module_css_default.weightBadge,
-								children: "外部数据"
-							})] }), draft.evidence.trendIds.map((id) => `· ${viralTitles[id] ?? id}`).join("\n")]
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "本次生成依据" })
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default.source,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "匹配理由" }), draft.evidence.reasons.join("；")]
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["人设快照 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.weightBadge,
+								children: "生成时人设"
+							})] }), draft.personaIdSnapshot !== void 0 && draft.personaIdSnapshot !== "" ? draft.personaIdSnapshot : "（历史未归属）"]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default.source,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "编辑提醒" }), "已生成原创草稿，不复制外部原文；保存后仍为草稿状态。"]
-						})
-					] })]
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["质检报告 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: panel_module_css_default.weightBadge,
+								children: "去 AI 味/违禁词"
+							})] }), qualitySummary$1(draft.qualityReport)]
+						}),
+						draft.evidence === void 0 || draft.evidence.reasons.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.muted,
+							children: "该草稿无生成依据记录（可能为手动创建）。"
+						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							draft.evidence.persona !== void 0 && draft.evidence.persona !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.source,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["人设规则 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.weightBadge,
+									children: "已使用"
+								})] }), draft.evidence.persona]
+							}),
+							draft.evidence.noteIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.source,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["本地笔记 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.weightBadge,
+									children: "高权重参考"
+								})] }), draft.evidence.noteIds.map((id) => `· ${noteTitles[id] ?? id}`).join("\n")]
+							}),
+							draft.evidence.trendIds.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.source,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["已采纳爆款参考 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: panel_module_css_default.weightBadge,
+									children: "外部数据"
+								})] }), draft.evidence.trendIds.map((id) => `· ${viralTitles[id] ?? id}`).join("\n")]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.source,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "匹配理由" }), draft.evidence.reasons.join("；")]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default.source,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "编辑提醒" }), "已生成原创草稿，不复制外部原文；保存后仍为草稿状态。"]
+							})
+						] })
+					]
 				})]
 			});
 		}
 		//#endregion
 		//#region src/client/panel/DraftsTab.tsx
+		/** 渲染质检报告摘要。 */
+		function qualitySummary(report) {
+			if (report === void 0) return "未检查";
+			const statusText = report.reviewStatus === "passed" ? "通过" : report.reviewStatus === "failed" ? "未通过" : "未检查";
+			const words = report.forbiddenWordHits.map((h) => h.word).filter((w) => w !== "").join("、");
+			const date = (report.checkedAt ?? "").slice(0, 10) || report.checkedAt || "";
+			return `${statusText} · 违禁词命中 ${report.forbiddenWordHits.length} 处${words !== "" ? `（${words}）` : ""} · 检查于 ${date || "未知"}`;
+		}
 		/**
 		* 草稿箱：列表 + 展开编辑（DraftEditor 双栏）+ 标记 published/dropped + 录入指标。
 		* 草稿保持「草稿」状态，发布由人工在端内完成。
@@ -1416,6 +1477,14 @@ window.__ModuleLoader__.load({
 												"）"
 											]
 										})]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.source,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "人设快照" }), draft.personaIdSnapshot !== void 0 && draft.personaIdSnapshot !== "" ? draft.personaIdSnapshot : "（历史未归属）"]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: panel_module_css_default.source,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "质检报告" }), qualitySummary(draft.qualityReport)]
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DraftEditor, {
 										api,
@@ -1868,9 +1937,9 @@ window.__ModuleLoader__.load({
 					setPersonas(personaList);
 					const rows = await Promise.all(accounts.map(async (account) => {
 						const [noteList, metricList, viralList] = await Promise.all([
-							api.listNotes(account.id),
+							api.listNotes({ accountId: account.id }),
 							api.listMetrics(account.id),
-							api.listViralItems(account.id)
+							api.listViralItems({ accountId: account.id })
 						]);
 						const latestByNote = /* @__PURE__ */ new Map();
 						for (const m of metricList) {
@@ -2125,24 +2194,19 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region src/client/panel/PersonasTab.tsx
-		const HOOK_OPTIONS = [
-			"反常识",
-			"痛点切入",
-			"真实对比",
-			"教程结构",
-			"经验清单",
-			"互动提问"
-		];
 		/** 人设列表项：仅名称与摘要。 */
 		function personaSummary(p) {
 			return p.positioning || p.expertise || p.contentDirections || p.prompt || "";
 		}
 		/**
-		* 人设配置（设计稿 content/detail-surfaces.html）：
-		* 左侧选择人设，右侧结构化两栏编辑——定位/受众/禁用表达 + 写作风格/钩子/结构/标准。
+		* 人设配置（设计稿 content/detail-surfaces.html + 人设资产 UI 参考稿）：
+		* 左侧选择人设，右侧四区块——写作风格(01/VOICE) / 结尾互动钩子(02/ENDING)
+		* / 人设违禁词(03/SAFETY) / 生效范围(04/SAVE)。写作风格可自由增删，
+		* 旧 hookStyles 不再标为钩子；toneTags 仍是独立的口癖/语气标签。
 		*/
 		function PersonasTab({ api }) {
 			const [personas, setPersonas] = (0, react.useState)([]);
+			const [accounts, setAccounts] = (0, react.useState)([]);
 			const [selectedId, setSelectedId] = (0, react.useState)(null);
 			const [creating, setCreating] = (0, react.useState)(false);
 			const [error, setError] = (0, react.useState)("");
@@ -2154,15 +2218,20 @@ window.__ModuleLoader__.load({
 			const [audience, setAudience] = (0, react.useState)("");
 			const [expertise, setExpertise] = (0, react.useState)("");
 			const [contentDirections, setContentDirections] = (0, react.useState)("");
-			const [hookStyles, setHookStyles] = (0, react.useState)([]);
+			const [writingStyles, setWritingStyles] = (0, react.useState)([]);
+			const [styleDraft, setStyleDraft] = (0, react.useState)("");
 			const [bodyStructure, setBodyStructure] = (0, react.useState)("");
-			const [endingStyle, setEndingStyle] = (0, react.useState)("");
-			const [forbiddenExpressions, setForbiddenExpressions] = (0, react.useState)("");
+			const [endingHookConstraints, setEndingHookConstraints] = (0, react.useState)("");
+			const [endingHookExamples, setEndingHookExamples] = (0, react.useState)([]);
+			const [forbiddenWords, setForbiddenWords] = (0, react.useState)([]);
+			const [forbiddenDraft, setForbiddenDraft] = (0, react.useState)("");
 			const [topicCriteria, setTopicCriteria] = (0, react.useState)("");
 			const [defaultHashtags, setDefaultHashtags] = (0, react.useState)("");
 			const refresh = (0, react.useCallback)(async () => {
 				try {
-					setPersonas(await api.listPersonas());
+					const [personaList, accountList] = await Promise.all([api.listPersonas(), api.listAccounts()]);
+					setPersonas(personaList);
+					setAccounts(accountList);
 					setError("");
 				} catch (e) {
 					setError(e instanceof Error ? e.message : String(e));
@@ -2181,10 +2250,13 @@ window.__ModuleLoader__.load({
 				setAudience(persona.audience ?? "");
 				setExpertise(persona.expertise ?? "");
 				setContentDirections(persona.contentDirections ?? "");
-				setHookStyles(persona.hookStyles ?? []);
+				setWritingStyles(persona.writingStyles ?? persona.hookStyles ?? []);
+				setStyleDraft("");
 				setBodyStructure(persona.bodyStructure ?? "");
-				setEndingStyle(persona.endingStyle ?? "");
-				setForbiddenExpressions(persona.forbiddenExpressions ?? "");
+				setEndingHookConstraints(persona.endingHookConstraints ?? persona.endingStyle ?? "");
+				setEndingHookExamples(persona.endingHookExamples ?? []);
+				setForbiddenWords(persona.forbiddenWords ?? []);
+				setForbiddenDraft("");
 				setTopicCriteria(persona.topicCriteria ?? "");
 				setDefaultHashtags((persona.defaultHashtags ?? []).join(", "));
 			};
@@ -2198,16 +2270,32 @@ window.__ModuleLoader__.load({
 				setAudience("");
 				setExpertise("");
 				setContentDirections("");
-				setHookStyles([]);
+				setWritingStyles([]);
+				setStyleDraft("");
 				setBodyStructure("");
-				setEndingStyle("");
-				setForbiddenExpressions("");
+				setEndingHookConstraints("");
+				setEndingHookExamples([]);
+				setForbiddenWords([]);
+				setForbiddenDraft("");
 				setTopicCriteria("");
 				setDefaultHashtags("");
 			};
 			const splitList = (text) => {
 				const items = text.split(/[,，]/).map((t) => t.trim()).filter((t) => t !== "");
 				return items.length > 0 ? items : void 0;
+			};
+			/** 提交写作风格标签（回车）：去重，非空。 */
+			const commitStyle = () => {
+				const value = styleDraft.trim();
+				if (value === "") return;
+				setWritingStyles((prev) => prev.includes(value) ? prev : [...prev, value]);
+				setStyleDraft("");
+			};
+			const commitForbidden = () => {
+				const value = forbiddenDraft.trim();
+				if (value === "") return;
+				setForbiddenWords((prev) => prev.includes(value) ? prev : [...prev, value]);
+				setForbiddenDraft("");
 			};
 			const save = async () => {
 				if (name.trim() === "") {
@@ -2222,10 +2310,14 @@ window.__ModuleLoader__.load({
 					audience: audience.trim() === "" ? void 0 : audience.trim(),
 					expertise: expertise.trim() === "" ? void 0 : expertise.trim(),
 					contentDirections: contentDirections.trim() === "" ? void 0 : contentDirections.trim(),
-					hookStyles: hookStyles.length > 0 ? hookStyles : void 0,
+					writingStyles: writingStyles.length > 0 ? writingStyles : void 0,
+					hookStyles: writingStyles.length > 0 ? writingStyles : void 0,
 					bodyStructure: bodyStructure.trim() === "" ? void 0 : bodyStructure.trim(),
-					endingStyle: endingStyle.trim() === "" ? void 0 : endingStyle.trim(),
-					forbiddenExpressions: forbiddenExpressions.trim() === "" ? void 0 : forbiddenExpressions.trim(),
+					endingHookConstraints: endingHookConstraints.trim() === "" ? void 0 : endingHookConstraints.trim(),
+					endingStyle: endingHookConstraints.trim() === "" ? void 0 : endingHookConstraints.trim(),
+					endingHookExamples: endingHookExamples.length > 0 ? endingHookExamples : void 0,
+					forbiddenWords: forbiddenWords.length > 0 ? forbiddenWords : void 0,
+					forbiddenExpressions: forbiddenWords.length > 0 ? forbiddenWords.join("、") : void 0,
 					topicCriteria: topicCriteria.trim() === "" ? void 0 : topicCriteria.trim(),
 					defaultHashtags: splitList(defaultHashtags)
 				};
@@ -2253,12 +2345,12 @@ window.__ModuleLoader__.load({
 					setNotice("人设已删除。");
 					await refresh();
 				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
+					const usage = e.payload?.usage ?? e.body?.usage ?? e.usage;
+					if (usage !== void 0) setError(`无法删除：该人设仍有 ${usage.accountCount} 个账号、${usage.noteCount} 篇笔记、${usage.viralCount} 条爆款，请先转移或处理。`);
+					else setError(e instanceof Error ? e.message : String(e));
 				}
 			};
-			const toggleHook = (style) => {
-				setHookStyles((prev) => prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style]);
-			};
+			const boundAccounts = selectedId === null ? [] : accounts.filter((a) => a.personaId === selectedId);
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 				error !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default.danger,
@@ -2355,62 +2447,6 @@ window.__ModuleLoader__.load({
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "禁用表达（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: panel_module_css_default.input,
-									value: forbiddenExpressions,
-									onChange: (e) => setForbiddenExpressions(e.target.value),
-									placeholder: "绝对化承诺, 纯鸡汤"
-								})]
-							})
-						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-						className: panel_module_css_default.panel,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: panel_module_css_default.panelTitle,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "写作风格" })
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "钩子风格 · 可多选" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: panel_module_css_default.chips,
-									children: HOOK_OPTIONS.map((style) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										className: hookStyles.includes(style) ? `${panel_module_css_default.tag} ${panel_module_css_default.on}` : panel_module_css_default.tag,
-										onClick: () => toggleHook(style),
-										children: style
-									}, style))
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文结构" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: panel_module_css_default.input,
-									value: bodyStructure,
-									onChange: (e) => setBodyStructure(e.target.value),
-									placeholder: "场景 → 问题 → 实测过程 → 结论 → 互动提问"
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "结尾风格" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: panel_module_css_default.input,
-									value: endingStyle,
-									onChange: (e) => setEndingStyle(e.target.value),
-									placeholder: "总结价值 + 互动提问"
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "内容方向" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-									className: panel_module_css_default.textarea,
-									rows: 2,
-									value: contentDirections,
-									onChange: (e) => setContentDirections(e.target.value),
-									placeholder: "真实体验、工具对比、可复现方法"
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.field,
 								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "选题标准" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 									className: panel_module_css_default.textarea,
 									rows: 2,
@@ -2430,26 +2466,237 @@ window.__ModuleLoader__.load({
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default.field,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "口癖标签（逗号分隔）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "口癖标签（逗号分隔，不属于写作风格）" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 									className: panel_module_css_default.input,
 									value: toneTags,
 									onChange: (e) => setToneTags(e.target.value),
 									placeholder: "口语化, 结尾提问"
 								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: panel_module_css_default.rowActions,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.primary,
-									onClick: () => void save(),
-									children: "保存设置"
-								}), !creating && selectedId !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									className: panel_module_css_default.dangerBtn,
-									onClick: () => void remove(),
-									children: "删除人设"
-								})]
 							})
 						]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+						className: panel_module_css_default.panel,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: panel_module_css_default.panelTitle,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "写作规则与人设安全" })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: panel_module_css_default.settingsGrid,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.settingsCard,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.sectionNo,
+											children: "01 / VOICE"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.settingsTitle,
+											children: "写作风格"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "风格标签 · 可自由新增、编辑、删除" }),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: panel_module_css_default.tagEditor,
+													children: [writingStyles.map((style) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+														className: panel_module_css_default.styleChip,
+														onClick: () => setWritingStyles((prev) => prev.filter((s) => s !== style)),
+														children: [
+															style,
+															" ",
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: panel_module_css_default.tagRemove,
+																children: "×"
+															})
+														]
+													}, style)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+														className: panel_module_css_default.tagEditorInput,
+														value: styleDraft,
+														onChange: (e) => setStyleDraft(e.target.value),
+														onKeyDown: (e) => {
+															if (e.key === "Enter") {
+																e.preventDefault();
+																commitStyle();
+															}
+														},
+														placeholder: "输入自定义风格后回车"
+													})]
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													className: panel_module_css_default.helper,
+													children: "这些是正文表达风格，不再称为“钩子”。预设只做建议，不限制输入。"
+												})
+											]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "正文结构" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+												className: panel_module_css_default.input,
+												value: bodyStructure,
+												onChange: (e) => setBodyStructure(e.target.value),
+												placeholder: "场景 → 问题 → 实测过程 → 结论 → 互动提问"
+											})]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "内容方向" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+												className: panel_module_css_default.textarea,
+												rows: 2,
+												value: contentDirections,
+												onChange: (e) => setContentDirections(e.target.value),
+												placeholder: "真实体验、工具对比、可复现方法"
+											})]
+										})
+									]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.settingsCard,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.sectionNo,
+											children: "02 / ENDING"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.settingsTitle,
+											children: "结尾互动钩子"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "约束词 · 自由文本" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+												className: panel_module_css_default.textarea,
+												rows: 3,
+												value: endingHookConstraints,
+												onChange: (e) => setEndingHookConstraints(e.target.value),
+												placeholder: "自然邀请读者分享经验或一起学习；不要强迫点赞关注，不制造焦虑。"
+											})]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "最佳案例 · 可增删" }),
+												endingHookExamples.map((example, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: panel_module_css_default.example,
+													children: [
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: String(index + 1).padStart(2, "0") }),
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+															className: panel_module_css_default.input,
+															value: example,
+															onChange: (e) => setEndingHookExamples((prev) => prev.map((item, i) => i === index ? e.target.value : item)),
+															placeholder: "输入最佳案例"
+														}),
+														/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+															className: panel_module_css_default.ghostBtn,
+															onClick: () => setEndingHookExamples((prev) => prev.filter((_, i) => i !== index)),
+															children: "删除案例"
+														})
+													]
+												}, index)),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													className: panel_module_css_default.ghostBtn,
+													onClick: () => setEndingHookExamples((prev) => [...prev, ""]),
+													children: "＋ 添加案例"
+												})
+											]
+										})
+									]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.settingsCard,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.sectionNo,
+											children: "03 / SAFETY"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.settingsTitle,
+											children: "人设违禁词"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.field,
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", { children: "每个人设独立配置" }),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: panel_module_css_default.tagEditor,
+													children: [forbiddenWords.map((word) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+														className: panel_module_css_default.wordChip,
+														onClick: () => setForbiddenWords((prev) => prev.filter((w) => w !== word)),
+														children: [
+															word,
+															" ",
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																className: panel_module_css_default.tagRemove,
+																children: "×"
+															})
+														]
+													}, word)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+														className: panel_module_css_default.tagEditorInput,
+														value: forbiddenDraft,
+														onChange: (e) => setForbiddenDraft(e.target.value),
+														onKeyDown: (e) => {
+															if (e.key === "Enter") {
+																e.preventDefault();
+																commitForbidden();
+															}
+														},
+														placeholder: "输入违禁词后回车"
+													})]
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													className: panel_module_css_default.helper,
+													children: "参考素材命中：提示但允许保存。生成稿命中：阻止保存，并标出具体位置。"
+												})
+											]
+										})
+									]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default.settingsCard,
+									children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.sectionNo,
+											children: "04 / SAVE"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: panel_module_css_default.settingsTitle,
+											children: "生效范围"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+											className: panel_module_css_default.muted,
+											style: { margin: "0 0 8px" },
+											children: ["绑定账号：", boundAccounts.length === 0 ? "（暂无）" : boundAccounts.map((a) => a.name).join("、")]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+											className: panel_module_css_default.helper,
+											children: "账号换绑不会迁移历史资产；如需迁移，必须在知识库或爆款池显式操作。"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: panel_module_css_default.rowActions,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.primary,
+												onClick: () => void save(),
+												children: "保存设置"
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												className: panel_module_css_default.ghostBtn,
+												onClick: () => {
+													if (selectedId !== null) {
+														const p = personas.find((x) => x.id === selectedId);
+														if (p !== void 0) load(p);
+													} else startCreate();
+												},
+												children: "放弃更改"
+											})]
+										}),
+										!creating && selectedId !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											className: panel_module_css_default.dangerBtn,
+											style: { marginTop: 10 },
+											onClick: () => void remove(),
+											children: "删除人设"
+										})
+									]
+								})
+							]
+						})]
 					})]
 				})
 			] });

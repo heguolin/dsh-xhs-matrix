@@ -1392,8 +1392,96 @@ html[data-dsh-xhsmatrix-active]:not([data-dsh-taskboard-active]):not([data-dsh-s
 .textAction { padding: 4px; border: 0; background: transparent; color: #78696c; font-size: 11px; cursor: pointer; }
 .textAction:hover { color: var(--xhs-red-text); }
 .warning { margin-top: 10px; padding: 7px 9px; color: #8b570f; background: #fff6e8; border-left: 3px solid #e7a746; border-radius: 0 8px 8px 0; font-size: 11px; }
+
+/* ==========================================================================
+   人设写作规则：写作风格 / 结尾互动钩子 / 人设违禁词 / 生效范围
+   ========================================================================== */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.settingsCard {
+  background: var(--xhs-card);
+  border: 1px solid var(--xhs-border);
+  border-radius: 12px;
+  padding: 14px;
+  min-width: 0;
+}
+
+.sectionNo {
+  color: var(--xhs-red);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.settingsTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--xhs-text);
+  margin: 6px 0 12px;
+}
+
+.tagEditor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--xhs-border);
+  background: var(--xhs-card);
+  border-radius: 8px;
+}
+
+.tagEditorInput {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--xhs-text);
+}
+
+.styleChip,
+.wordChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.styleChip { background: var(--xhs-red-soft); color: var(--xhs-red-text); }
+.wordChip { background: var(--xhs-warn-soft); color: var(--xhs-warn); }
+
+.tagRemove { font-weight: 700; }
+
+.example {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 9px;
+  background: var(--xhs-red-soft2);
+  border-radius: 8px;
+}
+
+.example b { color: var(--xhs-red); font-weight: 700; font-size: 12px; }
+
+.helper { color: var(--xhs-text-sub); font-size: 11px; margin-top: 6px; }
+
 @media (max-width: 860px) {
   .noteGrid { grid-template-columns: 1fr; }
   .split { grid-template-columns: 1fr; }
+  .settingsGrid { grid-template-columns: 1fr; }
+  .personaLayout { grid-template-columns: 1fr; }
+  .draftLayout { grid-template-columns: 1fr; }
 }
 

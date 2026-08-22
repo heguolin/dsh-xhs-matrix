@@ -12,6 +12,16 @@ interface DraftRow {
         trendIds: string[];
         reasons: string[];
     };
+    personaIdSnapshot?: string;
+    qualityReport?: {
+        reviewStatus: string;
+        forbiddenWordHits: Array<{
+            word: string;
+            position: number;
+        }>;
+        checkedAt: string;
+        personaSnapshot?: string;
+    };
 }
 /**
  * 草稿编辑器（设计稿 content/detail-surfaces.html）：
