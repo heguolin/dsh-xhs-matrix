@@ -1,4 +1,4 @@
-import { n as MatrixStoreError, t as MatrixStore } from "./store-CQC3B8ei.js";
+import { n as MatrixStoreError, t as MatrixStore } from "./store-Bd4a2BEw.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";

@@ -101,11 +101,20 @@ export interface StudioMessagePayload {
     personaIdSnapshot?: string;
     requestId?: string;
 }
+/** MatrixStore 构造选项：时钟与原子写 rename 注入（用于 v3→v4 故障恢复测试）。 */
+export interface MatrixStoreOptions {
+    /** 备份时间戳时钟（测试注入固定时间）。 */
+    now?: () => Date;
+    /** 覆盖原子写 rename（故障注入：写入 v4 失败）。 */
+    rename?: (from: string, to: string) => void;
+}
 /**
  * 持久化存储：整个 StoreFile 一个文件，写操作后整体原子落盘。
  * @param filePath - 存储文件路径（测试注入临时路径）。
+ * @param options - 可选注入项（时钟 / rename）。
  */
 export declare class MatrixStore {
+    private readonly options;
     static validateAccountPayload(payload: unknown): string | undefined;
     static validatePersonaPayload(payload: unknown): string | undefined;
     private readonly filePath;
@@ -117,10 +126,10 @@ export declare class MatrixStore {
     private requirePersonaViral;
     /** 校验 note weight 是否合法 0-5 整数。 */
     private static checkWeight;
-    constructor(filePath?: string);
+    constructor(filePath?: string, options?: MatrixStoreOptions);
     /** 读取并校验存储文件；缺失则返回空结构。 */
     load(): StoreFile;
-    /** 原子落盘（tmp + rename）。 */
+    /** 原子落盘（tmp-<pid>-<random> + rename；失败时清理临时文件并抛出）。 */
     save(): void;
     listViralItems(personaId?: string, status?: ViralStatus, batchId?: string): ViralItem[];
     listViralBatches(personaId: string, sourceAccountId?: string): ViralBatch[];

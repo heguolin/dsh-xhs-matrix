@@ -1,14 +1,14 @@
 /** 私有 JSON 文件存储（~/.dsh/dsh-xhs-matrix.json），原子写 + 格式版本。 */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import type {
   Account, CollectionConfig, CollectionStatus, Draft, DraftMetrics, DraftQualityReport, DraftStatus,
   MatrixSettings, MetricSnapshot, NoteWeight, PendingOwnership, Persona, PublishedNote, StoreFile,
   StudioMessage, ViralBatch, ViralItem, ViralStatus,
 } from './types.ts'
-import { defaultMatrixSettings, migrateStoreFile } from './migration.ts'
+import { atomicWriteStoreFile, backupStoreFile, defaultMatrixSettings, migrateStoreFile, migrateStoreFileV3ToV4, type StoreFileV3 } from './migration.ts'
 
 /** 存储文件格式版本。 */
 export const MATRIX_STORE_VERSION = 4
@@ -134,11 +134,21 @@ function nextId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
 }
 
+/** MatrixStore 构造选项：时钟与原子写 rename 注入（用于 v3→v4 故障恢复测试）。 */
+export interface MatrixStoreOptions {
+  /** 备份时间戳时钟（测试注入固定时间）。 */
+  now?: () => Date
+  /** 覆盖原子写 rename（故障注入：写入 v4 失败）。 */
+  rename?: (from: string, to: string) => void
+}
+
 /**
  * 持久化存储：整个 StoreFile 一个文件，写操作后整体原子落盘。
  * @param filePath - 存储文件路径（测试注入临时路径）。
+ * @param options - 可选注入项（时钟 / rename）。
  */
 export class MatrixStore {
+  private readonly options: MatrixStoreOptions
   static validateAccountPayload(payload: unknown): string | undefined {
     const p = payload as Partial<AccountPayload> | null
     if (typeof p !== 'object' || p === null) return 'body 必须是 JSON 对象'
@@ -196,8 +206,9 @@ export class MatrixStore {
     if (!Number.isInteger(weight) || weight < 0 || weight > 5) throw new MatrixStoreError('权重必须是 0-5 的整数')
   }
   
-  constructor(filePath: string = matrixStorePath()) {
+  constructor(filePath: string = matrixStorePath(), options: MatrixStoreOptions = {}) {
     this.filePath = resolve(filePath)
+    this.options = options
     this.data = empty()
     // 实例化时自动加载已存在的存储文件，保证新实例直接可见已持久化的数据。
     if (existsSync(this.filePath)) this.load()
@@ -225,8 +236,15 @@ export class MatrixStore {
       this.save()
       return this.data
     }
+    if (rawVersion === 3) {
+      // v3 → v4：先带时间戳备份原 v3，再原子写入 v4；写入失败时原 v3 与备份均可用。
+      const migrated = migrateStoreFileV3ToV4(file as unknown as StoreFileV3)
+      backupStoreFile(this.filePath, this.options.now)
+      atomicWriteStoreFile(this.filePath, migrated, { rename: this.options.rename })
+      this.data = migrated
+      return this.data
+    }
     if (rawVersion !== MATRIX_STORE_VERSION) {
-      // v3 用户文件由后续 Task（v3→v4 备份、原子迁移与失败恢复）处理。
       throw new MatrixStoreError('存储文件 version 不匹配：期望 ' + MATRIX_STORE_VERSION + '，实际 ' + rawVersion)
     }
     const now = new Date().toISOString()
@@ -252,12 +270,9 @@ export class MatrixStore {
     return this.data
   }
   
-  /** 原子落盘（tmp + rename）。 */
+  /** 原子落盘（tmp-<pid>-<random> + rename；失败时清理临时文件并抛出）。 */
   save(): void {
-    mkdirSync(dirname(this.filePath), { recursive: true })
-    const tmp = this.filePath + '.tmp'
-    writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf8')
-    renameSync(tmp, this.filePath)
+    atomicWriteStoreFile(this.filePath, this.data, { rename: this.options.rename })
   }
 
   // ---------------------------------------------------------------- 爆款池

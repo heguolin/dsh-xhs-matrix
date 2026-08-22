@@ -1,9 +1,10 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { MATRIX_STORE_VERSION, MatrixStore, MatrixStoreError, matrixStorePath } from '../src/store.ts'
-import { migrateStoreFile } from '../src/migration.ts'
+import { migrateStoreFile, backupStoreFile, type StoreFileV3 } from '../src/migration.ts'
+import type { StoreFile } from '../src/types.ts'
 
 const ISO = '2026-08-22T00:00:00.000Z'
 
@@ -273,5 +274,62 @@ describe('MatrixStore', () => {
     const pending = store.listPendingOwnership()[0]
     expect(() => store.assignPendingOwnership(pending.id, 'ghost-persona')).toThrow(/人设/)
     expect(store.listPendingOwnership()).toHaveLength(1)
+  })
+})
+
+// ------------------------------------------------ backup / atomic write (v3 → v4)
+function seedV3File(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'xhs-v3-'))
+  const file = join(dir, 'xhs.json')
+  const v3: StoreFileV3 = {
+    version: 3,
+    accounts: [{ id: 'a1', name: '账号A', personaId: 'p1', enabled: true, createdAt: ISO, connection: { status: 'unbound' }, collection: { enabled: false, intervalMinutes: 1440, maxItems: 100 }, collectionStatus: { running: false, lastStatus: 'idle' } }],
+    personas: [{ id: 'p1', name: 'P', prompt: 'p', createdAt: ISO }],
+    drafts: [],
+    publishedNotes: [{ id: 'n1', accountId: 'a1', title: 't', copy: 'c', publishedAt: '2026-08-20', source: 'manual', weight: 3, createdAt: ISO, updatedAt: ISO }],
+    metricSnapshots: [],
+    viralItems: [{ id: 'v1', accountId: 'a1', title: '爆款', body: '正文', source: 'apify', status: 'pending', score: 8, reasons: [], collectedAt: ISO }],
+    studioMessages: [],
+    settings: { apify: { actorId: '', apiToken: '', maxItems: 10, requestTimeoutMs: 30000, maxPolls: 120 } },
+  }
+  writeFileSync(file, JSON.stringify(v3, null, 2), 'utf8')
+  return file
+}
+
+function findBackups(filePath: string): string[] {
+  return readdirSync(dirname(filePath)).filter(f => f.startsWith(basename(filePath) + '.bak-')).sort().map(f => join(dirname(filePath), f))
+}
+
+function loadWithInjectedRenameFailure(filePath: string): StoreFile {
+  return new MatrixStore(filePath, { rename: () => { throw new Error('injected rename failure') } }).load()
+}
+
+describe('v3 备份与原子迁移', () => {
+  it('备份 v3 文件逐字节一致', () => {
+    const filePath = seedV3File()
+    const before = readFileSync(filePath)
+    const backup = backupStoreFile(filePath, () => new Date('2026-08-22T01:00:00.000Z'))
+    expect(readFileSync(backup)).toEqual(before)
+    expect(findBackups(filePath)).toHaveLength(1)
+  })
+
+  it('写 v4 失败时原 v3 与备份均可用', () => {
+    const filePath = seedV3File()
+    const before = readFileSync(filePath)
+    expect(() => loadWithInjectedRenameFailure(filePath)).toThrow()
+    expect(readFileSync(filePath)).toEqual(before)
+    expect(readFileSync(findBackups(filePath)[0])).toEqual(before)
+  })
+
+  it('v3 文件加载后原子迁为 v4 并可再次加载', () => {
+    const filePath = seedV3File()
+    const data = new MatrixStore(filePath).load()
+    expect(data.version).toBe(4)
+    expect(data.publishedNotes[0]).toMatchObject({ personaId: 'p1', sourceAccountId: 'a1' })
+    expect(data.viralItems[0]).toMatchObject({ personaId: 'p1', weight: 1, status: 'pending' })
+    const persisted = JSON.parse(readFileSync(filePath, 'utf8')) as { version: number }
+    expect(persisted.version).toBe(4)
+    expect(findBackups(filePath)).toHaveLength(1)
+    expect(new MatrixStore(filePath).load().version).toBe(4)
   })
 })
