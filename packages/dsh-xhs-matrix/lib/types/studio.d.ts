@@ -24,6 +24,16 @@ export declare function parseCoverPrompt(text: string): {
     copy: string;
     coverPrompt: string;
 };
+/** 第一阶段原始初稿的标记：标记前为可审计创作计划，标记后为需自然化的原始初稿。 */
+export declare const RAW_DRAFT_MARKER = "\u3010\u8349\u7A3F\u3011";
+/**
+ * 从第一阶段模型输出中拆分「可审计创作计划」与「原始初稿」。
+ * 无标记时将整段视为原始初稿（计划为空），用于非流式路径的防御性回退。
+ */
+export declare function splitPlanDraft(text: string): {
+    plan: string;
+    rawDraft: string;
+};
 /** 创作上下文组装结果。 */
 export interface StudioContext {
     context: string;
@@ -99,6 +109,13 @@ export declare class StudioService {
     private requirePersona;
     private buildSystemPrompt;
     private buildMessages;
+    /**
+     * 阶段一：流式调用模型。只把【草稿】标记前的可审计创作计划作为 plan_delta 转发；
+     * 标记后的原始初稿在服务端缓冲（不转发、不写会话），返回给阶段二自然化。
+     */
+    private streamPhase1;
+    /** 计算 text 尾部与标记前缀重叠的最大长度（不含完整标记本身）。 */
+    private trailingMarkerPrefixLength;
     private buildEvidence;
     /** 追加用户消息，组装上下文（只读当前人设快照），两阶段生成，质量通过后保存助手消息。 */
     send(accountId: string, input: string, mode: 'full' | 'creative', maxInputChars?: number): Promise<{

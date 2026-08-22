@@ -1,4 +1,4 @@
-import { i as scanForbiddenWords, n as MatrixStoreError, r as createQualityService, t as MatrixStore } from "./store-CDyFCzM2.js";
+import { a as splitLegacyForbidden, i as scanForbiddenWords, n as MatrixStoreError, r as createQualityService, t as MatrixStore } from "./store-D8JHoWds.js";
 import { BlockAssembler, createAssistantMessage, createUserMessage } from "@deepseek-ai/dsh-llm";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "schemastery";
@@ -1168,6 +1168,23 @@ function parseCoverPrompt(text) {
 		coverPrompt: text.slice(index + 7).trim()
 	};
 }
+/** 第一阶段原始初稿的标记：标记前为可审计创作计划，标记后为需自然化的原始初稿。 */
+const RAW_DRAFT_MARKER = "【草稿】";
+/**
+* 从第一阶段模型输出中拆分「可审计创作计划」与「原始初稿」。
+* 无标记时将整段视为原始初稿（计划为空），用于非流式路径的防御性回退。
+*/
+function splitPlanDraft(text) {
+	const index = text.indexOf(RAW_DRAFT_MARKER);
+	if (index < 0) return {
+		plan: "",
+		rawDraft: text
+	};
+	return {
+		plan: text.slice(0, index),
+		rawDraft: text.slice(index + 4)
+	};
+}
 /** 上下文估算的每字符 token 上界（用于可见的限制提示）。 */
 const CHARS_PER_TOKEN = 3;
 /** 只读取当前账号矩阵数据并组装为上下文；绝不复用主工作区内容。 */
@@ -1282,7 +1299,10 @@ var StudioService = class {
 			"不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。",
 			"参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。",
 			"生成结果不会自动发布；草稿必须由用户明确保存后才会落库。",
-			"【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：",
+			"【输出格式】先输出一份可审计的创作说明（目标受众、选题角度、正文结构、结尾钩子策略），然后另起一行输出【草稿】标记，再输出完整初稿。格式如下：",
+			"【创作说明】<目标受众 / 选题角度 / 正文结构 / 结尾钩子策略>",
+			"【草稿】",
+			"<完整初稿正文>",
 			"【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>"
 		].join("\n");
 	}
@@ -1294,6 +1314,45 @@ var StudioService = class {
 			role: "user",
 			content: input
 		}];
+	}
+	/**
+	* 阶段一：流式调用模型。只把【草稿】标记前的可审计创作计划作为 plan_delta 转发；
+	* 标记后的原始初稿在服务端缓冲（不转发、不写会话），返回给阶段二自然化。
+	*/
+	async streamPhase1(request, onPlanDelta) {
+		let rawDraft = "";
+		let scratch = "";
+		let markerFound = false;
+		await this.llm.stream(request, (delta) => {
+			if (markerFound) {
+				rawDraft += delta;
+				return;
+			}
+			scratch += delta;
+			const markerIndex = scratch.indexOf(RAW_DRAFT_MARKER);
+			if (markerIndex >= 0) {
+				const plan = scratch.slice(0, markerIndex);
+				if (plan !== "") onPlanDelta(plan);
+				rawDraft += scratch.slice(markerIndex + 4);
+				scratch = "";
+				markerFound = true;
+				return;
+			}
+			const holdLength = this.trailingMarkerPrefixLength(scratch);
+			const emitLength = scratch.length - holdLength;
+			if (emitLength > 0) {
+				onPlanDelta(scratch.slice(0, emitLength));
+				scratch = scratch.slice(emitLength);
+			}
+		});
+		if (!markerFound && scratch !== "") onPlanDelta(scratch);
+		return rawDraft;
+	}
+	/** 计算 text 尾部与标记前缀重叠的最大长度（不含完整标记本身）。 */
+	trailingMarkerPrefixLength(text) {
+		let best = 0;
+		for (let k = 1; k < 4; k++) if (text.endsWith("【草稿】".slice(0, k))) best = k;
+		return best;
 	}
 	buildEvidence(accountId, persona) {
 		const notes = this.store.listPublishedNotes(persona.id);
@@ -1314,11 +1373,11 @@ var StudioService = class {
 		const history = this.store.listStudioMessages(accountId, persona.id);
 		const messages = this.buildMessages(history, input);
 		const system = this.buildSystemPrompt(built.context);
-		const rawDraft = (await this.llm.complete({
+		const { rawDraft } = splitPlanDraft((await this.llm.complete({
 			system,
 			messages,
 			maxTokens: 4e3
-		})).text;
+		})).text);
 		const finalCopy = await this.quality.naturalizeStream(rawDraft, persona, () => {});
 		const { report, allowed } = this.quality.check(finalCopy, persona);
 		if (!allowed) throw new QualityBlockedError(`命中人设违禁词，禁止保存：${report.forbiddenWordHits.map((hit) => hit.word).join("、")}`);
@@ -1378,7 +1437,7 @@ var StudioService = class {
 				type: "phase",
 				phase: "drafting"
 			});
-			const rawDraft = await this.llm.stream({
+			const rawDraft = await this.streamPhase1({
 				system,
 				messages,
 				maxTokens: 4e3
@@ -2091,7 +2150,7 @@ function makeTools(deps) {
 						skipped.push(`${account.name}（今日已生成）`);
 						continue;
 					}
-					const viralItems = store.listViralItems(account.personaId).filter((item) => item.status === "pending" || item.status === "accepted");
+					const viralItems = store.listViralItems(account.personaId, "accepted");
 					if (viralItems.length === 0) {
 						skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`);
 						continue;
@@ -2176,7 +2235,8 @@ function makeTools(deps) {
 				};
 				const persona = personaOf(account.personaId);
 				if (persona !== void 0) {
-					const hits = scanForbiddenWords(args.copy, persona.forbiddenWords ?? []);
+					const forbiddenWords = persona.forbiddenWords ?? splitLegacyForbidden(persona.forbiddenExpressions) ?? [];
+					const hits = scanForbiddenWords(args.copy, forbiddenWords);
 					if (hits.length > 0) return {
 						ok: false,
 						message: `命中人设违禁词，禁止保存草稿：${hits.map((h) => h.word).join("、")}（位置 ${hits.map((h) => h.position).join(",")}）`,

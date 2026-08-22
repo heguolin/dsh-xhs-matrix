@@ -29,6 +29,7 @@ describe('xhs 工具族', () => {
     const persona = store.upsertPersona({ name: '干货风', prompt: '专业、数据支撑' })
     const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
     store.saveViralItem({ personaId: persona.id, title: '通勤穿搭公式', body: '正文', source: 'apify', score: 80, reasons: ['命中人设方向'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id)[0].id, 'accepted')
     const [today] = makeTools({ store, ctx: {} as any })
     const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
     expect(result.ok).toBe(true)
@@ -267,5 +268,31 @@ describe('xhs 工具族', () => {
     const draft = store.listDrafts()[0]
     expect(draft.qualityReport?.reviewStatus).toBe('passed')
     expect(draft.personaIdSnapshot).toBe(persona.id)
+  })
+
+  it('xhs_today：只使用已采纳爆款，pending/ignored 不进入创作简报', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    store.saveViralItem({ personaId: persona.id, title: '待审核爆款', body: '正文', source: 'apify', score: 70, reasons: ['命中人设方向'] })
+    store.saveViralItem({ personaId: persona.id, title: '已采纳爆款', body: '正文', source: 'apify', score: 80, reasons: ['高互动'] })
+    store.reviewViralItem(persona.id, store.listViralItems(persona.id).find(item => item.title === '已采纳爆款')!.id, 'accepted')
+    const [today] = makeTools({ store, ctx: {} as any })
+    const result = await today.execute({}, execStub) as { ok: boolean; briefs: string[] }
+    expect(result.ok).toBe(true)
+    expect(result.briefs[0]).toContain('已采纳爆款')
+    expect(result.briefs[0]).not.toContain('待审核爆款')
+  })
+
+  it('xhs_draft_save：仅 legacy forbiddenExpressions 时同样阻止保存', async () => {
+    const store = newStore()
+    const persona = store.upsertPersona({ name: '干货风', prompt: '专业', forbiddenExpressions: '必看,震惊' })
+    const account = store.upsertAccount({ name: '账号A', personaId: persona.id, enabled: true })
+    const tools = makeTools({ store, ctx: {} as any })
+    const saveTool = tools.find(t => t.name === 'xhs_draft_save')!
+    const blocked = await saveTool.execute({ accountId: account.id, copy: '这篇必看', coverPrompt: 'p' }, execStub) as { ok: boolean; message: string }
+    expect(blocked.ok).toBe(false)
+    expect(blocked.message).toContain('违禁词')
+    expect(store.listDrafts()).toHaveLength(0)
   })
 })

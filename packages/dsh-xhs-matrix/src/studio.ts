@@ -28,6 +28,19 @@ export function parseCoverPrompt(text: string): { copy: string; coverPrompt: str
   return { copy, coverPrompt }
 }
 
+/** 第一阶段原始初稿的标记：标记前为可审计创作计划，标记后为需自然化的原始初稿。 */
+export const RAW_DRAFT_MARKER = '【草稿】'
+
+/**
+ * 从第一阶段模型输出中拆分「可审计创作计划」与「原始初稿」。
+ * 无标记时将整段视为原始初稿（计划为空），用于非流式路径的防御性回退。
+ */
+export function splitPlanDraft(text: string): { plan: string; rawDraft: string } {
+  const index = text.indexOf(RAW_DRAFT_MARKER)
+  if (index < 0) return { plan: '', rawDraft: text }
+  return { plan: text.slice(0, index), rawDraft: text.slice(index + RAW_DRAFT_MARKER.length) }
+}
+
 /** 创作上下文组装结果。 */
 export interface StudioContext {
   context: string
@@ -187,7 +200,10 @@ export class StudioService {
       '不要读取或操作 DeepSeek Harness 主工作区的文件、会话或工具，也不要回答与矩阵创作无关的问题。',
       '参考爆款池中已采纳的爆款时只借鉴选题角度、结构和用户需求，不得复制原文、图片、独特经历，也不得仅替换词语改写。',
       '生成结果不会自动发布；草稿必须由用户明确保存后才会落库。',
-      '【输出格式】生成完整文案后，在末尾另起一行输出封面提示词，以【封面提示词】开头：',
+      '【输出格式】先输出一份可审计的创作说明（目标受众、选题角度、正文结构、结尾钩子策略），然后另起一行输出【草稿】标记，再输出完整初稿。格式如下：',
+      '【创作说明】<目标受众 / 选题角度 / 正文结构 / 结尾钩子策略>',
+      '【草稿】',
+      '<完整初稿正文>',
       '【封面提示词】<封面画面描述，100 字内，含主体/场景/风格/配色/文案字>',
     ].join('\n')
   }
@@ -197,6 +213,51 @@ export class StudioService {
       ...history.map(message => ({ role: message.role as 'user' | 'assistant', content: message.content })),
       { role: 'user' as const, content: input },
     ]
+  }
+
+  /**
+   * 阶段一：流式调用模型。只把【草稿】标记前的可审计创作计划作为 plan_delta 转发；
+   * 标记后的原始初稿在服务端缓冲（不转发、不写会话），返回给阶段二自然化。
+   */
+  private async streamPhase1(request: StudioCompleteRequest, onPlanDelta: (delta: string) => void): Promise<string> {
+    let rawDraft = ''
+    let scratch = ''
+    let markerFound = false
+    await this.llm.stream(request, delta => {
+      if (markerFound) {
+        rawDraft += delta
+        return
+      }
+      scratch += delta
+      const markerIndex = scratch.indexOf(RAW_DRAFT_MARKER)
+      if (markerIndex >= 0) {
+        const plan = scratch.slice(0, markerIndex)
+        if (plan !== '') onPlanDelta(plan)
+        rawDraft += scratch.slice(markerIndex + RAW_DRAFT_MARKER.length)
+        scratch = ''
+        markerFound = true
+        return
+      }
+      // 与标记前缀可能重叠的尾部暂不转发，等待更多增量以确定是否构成标记。
+      const holdLength = this.trailingMarkerPrefixLength(scratch)
+      const emitLength = scratch.length - holdLength
+      if (emitLength > 0) {
+        onPlanDelta(scratch.slice(0, emitLength))
+        scratch = scratch.slice(emitLength)
+      }
+    })
+    // 流结束仍未出现标记：剩余内容视为计划，原始初稿为空。
+    if (!markerFound && scratch !== '') onPlanDelta(scratch)
+    return rawDraft
+  }
+
+  /** 计算 text 尾部与标记前缀重叠的最大长度（不含完整标记本身）。 */
+  private trailingMarkerPrefixLength(text: string): number {
+    let best = 0
+    for (let k = 1; k < RAW_DRAFT_MARKER.length; k++) {
+      if (text.endsWith(RAW_DRAFT_MARKER.slice(0, k))) best = k
+    }
+    return best
   }
 
   private buildEvidence(accountId: string, persona: Persona): DraftEvidence {
@@ -219,7 +280,7 @@ export class StudioService {
     const history = this.store.listStudioMessages(accountId, persona.id)
     const messages = this.buildMessages(history, input)
     const system = this.buildSystemPrompt(built.context)
-    const rawDraft = (await this.llm.complete({ system, messages, maxTokens: 4000 })).text
+    const { rawDraft } = splitPlanDraft((await this.llm.complete({ system, messages, maxTokens: 4000 })).text)
     const finalCopy = await this.quality.naturalizeStream(rawDraft, persona, () => {})
     const { report, allowed } = this.quality.check(finalCopy, persona)
     if (!allowed) {
@@ -277,9 +338,9 @@ export class StudioService {
       const messages = this.buildMessages(history, input)
       const system = this.buildSystemPrompt(built.context)
 
-      // 阶段一：流式计划，并在服务端缓冲原始初稿（原始初稿不写入会话）。
+      // 阶段一：流式产生可审计创作计划，并在服务端缓冲原始初稿（原始初稿不写入会话、不转发为 plan_delta）。
       onEvent({ type: 'phase', phase: 'drafting' })
-      const rawDraft = await this.llm.stream({ system, messages, maxTokens: 4000 }, delta => {
+      const rawDraft = await this.streamPhase1({ system, messages, maxTokens: 4000 }, delta => {
         onEvent({ type: 'plan_delta', delta })
       })
 

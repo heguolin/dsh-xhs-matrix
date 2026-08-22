@@ -4,7 +4,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { ContentBlock } from '@deepseek-ai/dsh-llm'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { composeBrief } from './composer.ts'
-import { scanForbiddenWords } from './content-quality.ts'
+import { scanForbiddenWords, splitLegacyForbidden } from './content-quality.ts'
 import { emitFeedback } from './events.ts'
 import { PersonaAssetService } from './persona-assets.ts'
 import { MatrixStore } from './store.ts'
@@ -110,7 +110,7 @@ export function makeTools(deps: ToolsDeps) {
           skipped.push(`${account.name}（今日已生成）`)
           continue
         }
-        const viralItems = store.listViralItems(account.personaId).filter(item => item.status === 'pending' || item.status === 'accepted')
+        const viralItems = store.listViralItems(account.personaId, 'accepted')
         if (viralItems.length === 0) {
           skipped.push(`${account.name}（爆款池为空，请先在「矩阵」面板采集爆款）`)
           continue
@@ -165,7 +165,9 @@ export function makeTools(deps: ToolsDeps) {
       // 质量门：扫当前账号人设违禁词；命中则禁止保存（与创作台路由保存门一致）。
       const persona = personaOf(account.personaId)
       if (persona !== undefined) {
-        const hits = scanForbiddenWords(args.copy, persona.forbiddenWords ?? [])
+        // 与创作台保存门一致：v4 forbiddenWords 为准，缺失时回退 legacy forbiddenExpressions。
+        const forbiddenWords = persona.forbiddenWords ?? splitLegacyForbidden(persona.forbiddenExpressions) ?? []
+        const hits = scanForbiddenWords(args.copy, forbiddenWords)
         if (hits.length > 0) {
           const words = hits.map(h => h.word).join('、')
           const positions = hits.map(h => h.position).join(',')

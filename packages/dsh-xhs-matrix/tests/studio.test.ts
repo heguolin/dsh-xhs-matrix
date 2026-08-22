@@ -161,4 +161,17 @@ describe('StudioService 两阶段流式发送', () => {
     expect(assistant?.personaIdSnapshot).toBe(PERSONA_ID)
     expect(assistant?.requestId).toBe('req-cover')
   })
+
+  it('plan_delta 只含可审计计划，不包含原始初稿（原始初稿服务端缓冲）', async () => {
+    const events: StudioSseEvent[] = []
+    const plan = '【创作说明】\n- 受众：新手用户\n- 角度：避开常见误区\n- 结构：痛点切入 → 步骤 → 清单\n- 结尾：邀请一起学习'
+    const draftBody = '原始初稿正文内容'
+    const { llm } = makeLlm({ plan: `${plan}\n【草稿】\n${draftBody}`, final: '最终审校稿' })
+    const studio = new StudioService(store, llm, createQualityService(llm))
+    await studio.sendStream(accountId, '写一篇', 'creative', event => events.push(event), { requestId: 'req-plan' })
+    const planText = joinDeltas(events, 'plan_delta')
+    expect(planText).toContain('创作说明')
+    expect(planText).not.toContain(draftBody)
+    expect(joinDeltas(events, 'content_delta')).toBe('最终审校稿')
+  })
 })
