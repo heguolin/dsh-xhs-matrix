@@ -33,21 +33,24 @@ interface StreamHarness {
   emit: (event: StudioSseEvent) => void
   release: () => void
   saveCount: number
+  sendCount: number
 }
-function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
+function makeHarness(initial: StudioSseEvent[] = [], messages: Array<{ id: string; role: string; content: string; receivedAt: string }> = []): StreamHarness {
   let onEvent: ((e: StudioSseEvent) => void) | null = null
   let releaseFn: (() => void) | null = null
   let didError = false
   let errMsg = ''
   let didDone = false
   let saveCount = 0
+  let sendCount = 0
   const hold = new Promise<void>(resolve => { releaseFn = resolve })
   const api = {
-    listStudioMessages: async () => [],
+    listStudioMessages: async () => messages,
     listPersonas: async () => [PERSONA],
     listNotes: async () => [],
     listViralItems: async () => [],
     studioSendStream: async (_a: string, _b: string, _c: string, cb: (e: StudioSseEvent) => void) => {
+      sendCount += 1
       onEvent = cb
       for (const e of initial) cb(e)
       await hold
@@ -68,6 +71,7 @@ function makeHarness(initial: StudioSseEvent[] = []): StreamHarness {
     },
     release: () => { releaseFn?.() },
     get saveCount() { return saveCount },
+    get sendCount() { return sendCount },
   }
 }
 
@@ -294,6 +298,46 @@ describe('StudioTab 结构化流式创作与智能跟随底部', () => {
     saveBtn!.click()
     await settle()
     expect(harness.saveCount).toBe(0)
+
+    unmount(root, host)
+  })
+
+  it('模型 finish error（SSE error 事件后流抛错）清理 live、恢复输入并重新启用保存', async () => {
+    // 先前已完成的助手消息：作为可再次保存的目标（保存按钮依据其内容启用）。
+    const prior = { id: 'm0', role: 'assistant', content: '之前已完成的最终稿正文。', receivedAt: ISO }
+    const harness = makeHarness([], [prior])
+    const { host, root } = await mount(harness.api)
+    typeInto(textarea(host), '帮我写一篇')
+    clickSend(host)
+    await settle()
+
+    // 模拟模型 finish error：发出 error SSE 事件，随后流结束抛错。
+    harness.emit({ type: 'error', stage: 'stream', retryable: true, message: '模型调用失败' })
+    harness.release()
+    await settle()
+
+    // live 已清除：最终卡片不再显示「生成中…」。
+    expect(host.textContent).not.toContain('生成中…')
+    expect(host.querySelector('[data-testid="studio-final"]')).toBeNull()
+
+    // 输入恢复到最后一条 prompt，发送按钮可用。
+    expect(textarea(host).value).toBe('帮我写一篇')
+    const sendBtn = findButton(host, '发送 ↑')
+    expect(sendBtn).toBeDefined()
+    expect(sendBtn!.disabled).toBe(false)
+
+    // 存在先前已完成的助手消息：保存按钮恢复可用。
+    const saveBtn = findButton(host, '保存为草稿')
+    expect(saveBtn).toBeDefined()
+    expect(saveBtn!.disabled).toBe(false)
+
+    // 重试触发一次新的客户端请求（live 已清除，不被误判为进行中）。
+    const before = harness.sendCount
+    const retryBtn = findButton(host, '重试')
+    expect(retryBtn).toBeDefined()
+    retryBtn!.click()
+    await settle()
+    expect(harness.sendCount).toBe(before + 1)
 
     unmount(root, host)
   })

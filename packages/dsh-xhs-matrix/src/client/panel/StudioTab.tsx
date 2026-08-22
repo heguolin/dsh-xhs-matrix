@@ -144,7 +144,7 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
           case 'quality': setLive(prev => prev === null ? prev : { ...prev, quality: event.report, qualityAllowed: event.allowed }); setQualityAllowed(event.allowed); break
           case 'evidence': setEvidence(event.evidence); break
           case 'done': setLive(prev => prev === null ? prev : { ...prev, hasDone: true }); setCoverPrompt(event.coverPrompt ?? ''); setEvidence(event.evidence); break
-          case 'error': setError(event.message); setRetryable(event.retryable); break
+          case 'error': setError(event.message); setRetryable(event.retryable); setLive(null); break
         }
       })
       setCoverPrompt(summary.coverPrompt ?? '')
@@ -153,9 +153,17 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
       await refresh()
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)
-      // 违禁词命中时服务端不落消息、客户端因无 done 抛「流式响应未正常结束」，
-      // 该通用信息无意义，保留质量门给出的命中详情即可。
-      if (message !== '流式响应未正常结束') setError(message)
+      // 失败时恢复输入与封面，便于用户就地重试；live 结束本次流式态。
+      // 用本次提交的 prompt 而非 lastPrompt：同一 send 闭包里 lastPrompt 仍是旧值（首次为 ''）。
+      setCoverPrompt('')
+      setInput(prompt)
+      // 「流式响应未正常结束」是违禁词命中路径（无 done 且无 error）：服务端本就不落消息，
+      // 保留最终稿与质检提示（保存仍由 qualityAllowed/currentRunIncomplete 门控），不覆盖为通用错误。
+      // 其余失败（含模型 finish error）视为本次 run 失败：清除 live 结束流式态。
+      if (message !== '流式响应未正常结束') {
+        setLive(null)
+        setError(message)
+      }
     } finally {
       setSending(false)
     }
@@ -170,7 +178,7 @@ export function StudioTab({ api, accountId, personaId, onOpenDraft }: { api: Xhs
   // saveCopy 取已落库的最近助手消息，而不是流式中的半截 final，避免把不完整内容入库。
   const currentRunIncomplete = live !== null && !live.hasDone
   const saveCopy = lastAssistant?.content ?? ''
-  const saveDisabled = sending || error !== '' || !qualityAllowed || currentRunIncomplete || saveCopy === ''
+  const saveDisabled = sending || !qualityAllowed || currentRunIncomplete || saveCopy === ''
 
   const saveLastAsDraft = async (): Promise<void> => {
     if (saveCopy === '') { setError('还没有生成结果可保存'); return }
