@@ -45,6 +45,7 @@ interface MockApi {
   addManualViral: ReturnType<typeof vi.fn>
   deleteViralBatch: ReturnType<typeof vi.fn>
   reviewViralItem: ReturnType<typeof vi.fn>
+  setViralWeight: ReturnType<typeof vi.fn>
   transferVirals: ReturnType<typeof vi.fn>
   collectViral: ReturnType<typeof vi.fn>
   getApifyConfig: ReturnType<typeof vi.fn>
@@ -71,6 +72,11 @@ function makeApi(overrides: Partial<MockApi> = {}): MockApi {
     }),
     deleteViralBatch: vi.fn(async () => 2),
     reviewViralItem: vi.fn(async (_scope: string, itemId: string, status: string) => ({ ...pendingItem, id: itemId, status })),
+    setViralWeight: vi.fn(async (_personaId: string, itemId: string, weight: number) => {
+      const target = items.find(i => i.id === itemId)
+      if (target !== undefined) target.weight = weight as ViralItem['weight']
+      return target ?? acceptedItem
+    }),
     transferVirals: vi.fn(async () => [acceptedItem]),
     collectViral: vi.fn(async () => []),
     getApifyConfig: vi.fn(async () => ({ actorId: '', apiToken: '', maxItems: 10, requestTimeoutMs: 120000, maxPolls: 60 })),
@@ -188,6 +194,22 @@ describe('ViralTab 爆款池', () => {
     expect(host.querySelector('button[title="权重 5"]')).not.toBeNull()
     expect(host.textContent).toContain('权重 5 / 5')
     expect(host.textContent).toContain('权重 1 / 5')
+
+    root.unmount()
+    host.remove()
+  })
+
+  it('点击权重持久化：调用 setViralWeight(personaId, itemId, weight) 并刷新', async () => {
+    const apiMock = makeApi()
+    const { host, root } = await renderTab(apiMock)
+
+    // 首个条目 v1（待审核、权重 1）的「权重 4」按钮被点击。
+    const weightBtn = host.querySelector<HTMLButtonElement>('button[title="权重 4"]')
+    expect(weightBtn).not.toBeNull()
+    weightBtn!.click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(apiMock.setViralWeight).toHaveBeenCalledWith('p1', 'v1', 4)
+    expect(apiMock.listViralBatches).toHaveBeenCalledTimes(2)
 
     root.unmount()
     host.remove()

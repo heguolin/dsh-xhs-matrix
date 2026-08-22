@@ -199,6 +199,14 @@ export class XhsApi {
     }))
     return body.item
   }
+  /** 调整爆款人工权重（0-5），以 personaId 为主参数。 */
+  async setViralWeight(personaId: string, itemId: string, weight: NoteWeight): Promise<ViralItem> {
+    const body = await readJson<{ item: ViralItem }>(await fetch(XHS_API.viral + query({ persona: personaId, item: itemId }), {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight }),
+    }))
+    return body.item
+  }
   /** 手动新增爆款（personaId 为主参数）。 */
   async addManualViral(personaId: string, payload: { title: string; body: string; sourceUrl?: string; publishedAt?: string; reasons?: string[] }): Promise<ViralItem> {
     const body = await readJson<{ item: ViralItem }>(await fetch(XHS_API.viralManual, {

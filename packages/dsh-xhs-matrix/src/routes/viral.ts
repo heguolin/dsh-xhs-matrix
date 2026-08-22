@@ -123,33 +123,49 @@ export function makeViralRoutes(store: MatrixStore, provider?: ViralProvider): W
         const body = await readJsonBody(req)
         if (body === undefined) { writeJson(res, 400, { error: 'invalid JSON body' }); return }
         const status = body.status
-        if (status !== 'accepted' && status !== 'ignored') { writeJson(res, 400, { error: 'status 必须是 accepted 或 ignored' }); return }
+        const weight = body.weight
+        const hasStatus = status === 'accepted' || status === 'ignored'
+        const hasWeight = typeof weight === 'number'
+        if (!hasStatus && !hasWeight) { writeJson(res, 400, { error: 'status 必须是 accepted 或 ignored，或 weight 必须是 0-5 的整数' }); return }
         try {
           const resolved = resolvePersonaScope(store, accountId, personaId)
           if (resolved === '') { writeJson(res, 400, { error: '该账号尚未分配人设' }); return }
-          const item = service.reviewViral(resolved, itemId, status as 'accepted' | 'ignored')
-          // 采纳时若搜索接口未带回正文（常见），用笔记链接抓详情补全，
-          // 并按补全后的完整内容重算相关性评分——创作参考用真实全文而非标题。
-          if (status === 'accepted' && provider?.fetchNoteDetail !== undefined && item.body === '' && item.sourceUrl !== undefined) {
-            const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => undefined)
-            if (detail !== undefined) {
-              const persona = store.listPersonas().find(entry => entry.id === resolved)
-              if (persona !== undefined) {
-                const notes = store.listPublishedNotes(resolved)
-                const ranked = rankViralItems(persona, notes, [detail])
-                const best = ranked[0]
-                store.updateViralItem(resolved, itemId, {
-                  title: detail.title,
-                  body: detail.body ?? '',
-                  score: best !== undefined ? best.score : item.score,
-                  reasons: best !== undefined ? best.reasons : item.reasons,
-                })
-              } else {
-                store.updateViralItem(resolved, itemId, { title: detail.title, body: detail.body ?? '' })
+          if (hasStatus) {
+            const item = service.reviewViral(resolved, itemId, status as 'accepted' | 'ignored')
+            // 采纳时若搜索接口未带回正文（常见），用笔记链接抓详情补全，
+            // 并按补全后的完整内容重算相关性评分——创作参考用真实全文而非标题。
+            if (status === 'accepted' && provider?.fetchNoteDetail !== undefined && item.body === '' && item.sourceUrl !== undefined) {
+              const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => undefined)
+              if (detail !== undefined) {
+                const persona = store.listPersonas().find(entry => entry.id === resolved)
+                if (persona !== undefined) {
+                  const notes = store.listPublishedNotes(resolved)
+                  const ranked = rankViralItems(persona, notes, [detail])
+                  const best = ranked[0]
+                  store.updateViralItem(resolved, itemId, {
+                    title: detail.title,
+                    body: detail.body ?? '',
+                    score: best !== undefined ? best.score : item.score,
+                    reasons: best !== undefined ? best.reasons : item.reasons,
+                  })
+                } else {
+                  store.updateViralItem(resolved, itemId, { title: detail.title, body: detail.body ?? '' })
+                }
               }
             }
+            writeJson(res, 200, { item: service.listVirals(resolved).find(entry => entry.id === itemId) ?? item })
+            return
           }
-          writeJson(res, 200, { item: service.listVirals(resolved).find(entry => entry.id === itemId) ?? item })
+          // 调权：校验 0-5 整数，条目缺失或不属于该人设返回 404，否则委托 PersonaAssetService。
+          const normalizedWeight = weight as number
+          if (!Number.isInteger(normalizedWeight) || normalizedWeight < 0 || normalizedWeight > 5) {
+            writeJson(res, 400, { error: 'weight 必须是 0-5 的整数' }); return
+          }
+          if (!service.listVirals(resolved).some(entry => entry.id === itemId)) {
+            writeJson(res, 404, { error: '爆款条目不存在或不属于该人设：' + itemId }); return
+          }
+          const weighted = service.setViralWeight(resolved, itemId, normalizedWeight)
+          writeJson(res, 200, { item: weighted })
         } catch (error) { fail(res, error) }
         return
       }

@@ -283,6 +283,43 @@ describe('/api/dsh-xhs-matrix 路由', () => {
     expect(store.listViralItems(personaIdOf(accountId), 'accepted')).toHaveLength(1)
   })
 
+  it('PATCH /viral 调权：weight 0-5 持久化并随 GET 返回，越界 400、缺失 404', async () => {
+    const accountId = await seedAccount()
+    const created = await json('/api/dsh-xhs-matrix/viral', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId, query: 'AI 工具', maxItems: 5 }),
+    })
+    const item = (created.body as { items: Array<{ id: string; weight: number }> }).items[0]
+    expect(item.weight).toBe(1) // 采集默认权重 1
+
+    const patched = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=${item.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 4 }),
+    })
+    expect(patched.status).toBe(200)
+    expect((patched.body as { item: { weight: number } }).item.weight).toBe(4)
+
+    const list = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}`)
+    const batches = (list.body as { batches: Array<{ items: Array<{ weight: number }> }> }).batches
+    expect(batches[0].items[0].weight).toBe(4)
+    // store 里也确实更新了
+    expect(store.listViralItems(personaIdOf(accountId))[0].weight).toBe(4)
+
+    // 越界权重拒绝
+    const bad = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=${item.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 6 }),
+    })
+    expect(bad.status).toBe(400)
+
+    // 不存在的 item / 不属于该人设 → 404
+    const missing = await json(`/api/dsh-xhs-matrix/viral?account=${accountId}&item=nope`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weight: 3 }),
+    })
+    expect(missing.status).toBe(404)
+  })
+
   it('删除采集批次只删除该批，不影响其他批次', async () => {
     const accountId = await seedAccount()
     const first = await json('/api/dsh-xhs-matrix/viral', {

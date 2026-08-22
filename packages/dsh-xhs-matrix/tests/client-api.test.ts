@@ -186,6 +186,19 @@ describe('XhsApi', () => {
     expect(body.reasons).toEqual(['人工确认'])
   })
 
+  it('setViralWeight 发送 PATCH /viral 并携带 persona/item 与 weight body', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ item: { ...viralFixture, weight: 4 } }))
+    const api = new XhsApi()
+    const item = await api.setViralWeight('p1', 'v1', 4)
+    expect(item.weight).toBe(4)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toContain('/api/dsh-xhs-matrix/viral')
+    expect(url).toContain('persona=p1')
+    expect(url).toContain('item=v1')
+    expect(init!.method).toBe('PATCH')
+    expect(initBody(init).weight).toBe(4)
+  })
+
   it('transferNotes 发送 POST /notes/transfer', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ notes: [noteFixture] }))
     const api = new XhsApi()

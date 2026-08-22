@@ -128,6 +128,17 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
     }
   }
 
+  /** 调整爆款人工权重（0-5），以 personaId 为主参数。 */
+  const setWeight = async (itemId: string, weight: NoteWeight): Promise<void> => {
+    try {
+      await api.setViralWeight(personaId, itemId, weight)
+      setError('')
+      await refresh()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   const addManual = async (): Promise<void> => {
     if (manualTitle.trim() === '' || manualBody.trim() === '') { setError('标题与正文必填'); return }
     const payload: { title: string; body: string; sourceUrl?: string; publishedAt?: string } = {
@@ -335,7 +346,7 @@ export function ViralTab({ api, accountId, personaId, onPersonaChange }: { api: 
                             <span className={css.muted}>人工权重</span>
                             <div className={css.weight}>
                               {WEIGHTS.map(weight => (
-                                <button key={weight} className={item.weight === weight ? css.on : undefined} title={'权重 ' + weight} disabled={reviewingId === item.id}>{weight}</button>
+                                <button key={weight} className={item.weight === weight ? css.on : undefined} title={'权重 ' + weight} disabled={reviewingId === item.id} onClick={() => void setWeight(item.id, weight)}>{weight}</button>
                               ))}
                             </div>
                             <span className={css.muted}>权重 {item.weight} / 5</span>

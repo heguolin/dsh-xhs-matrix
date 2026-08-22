@@ -1855,8 +1855,10 @@ function makeViralRoutes(store, provider) {
 					return;
 				}
 				const status = body.status;
-				if (status !== "accepted" && status !== "ignored") {
-					writeJson(res, 400, { error: "status 必须是 accepted 或 ignored" });
+				const weight = body.weight;
+				const hasStatus = status === "accepted" || status === "ignored";
+				if (!hasStatus && !(typeof weight === "number")) {
+					writeJson(res, 400, { error: "status 必须是 accepted 或 ignored，或 weight 必须是 0-5 的整数" });
 					return;
 				}
 				try {
@@ -1865,26 +1867,39 @@ function makeViralRoutes(store, provider) {
 						writeJson(res, 400, { error: "该账号尚未分配人设" });
 						return;
 					}
-					const item = service.reviewViral(resolved, itemId, status);
-					if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
-						const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
-						if (detail !== void 0) {
-							const persona = store.listPersonas().find((entry) => entry.id === resolved);
-							if (persona !== void 0) {
-								const best = rankViralItems(persona, store.listPublishedNotes(resolved), [detail])[0];
-								store.updateViralItem(resolved, itemId, {
+					if (hasStatus) {
+						const item = service.reviewViral(resolved, itemId, status);
+						if (status === "accepted" && provider?.fetchNoteDetail !== void 0 && item.body === "" && item.sourceUrl !== void 0) {
+							const detail = await provider.fetchNoteDetail(item.sourceUrl).catch(() => void 0);
+							if (detail !== void 0) {
+								const persona = store.listPersonas().find((entry) => entry.id === resolved);
+								if (persona !== void 0) {
+									const best = rankViralItems(persona, store.listPublishedNotes(resolved), [detail])[0];
+									store.updateViralItem(resolved, itemId, {
+										title: detail.title,
+										body: detail.body ?? "",
+										score: best !== void 0 ? best.score : item.score,
+										reasons: best !== void 0 ? best.reasons : item.reasons
+									});
+								} else store.updateViralItem(resolved, itemId, {
 									title: detail.title,
-									body: detail.body ?? "",
-									score: best !== void 0 ? best.score : item.score,
-									reasons: best !== void 0 ? best.reasons : item.reasons
+									body: detail.body ?? ""
 								});
-							} else store.updateViralItem(resolved, itemId, {
-								title: detail.title,
-								body: detail.body ?? ""
-							});
+							}
 						}
+						writeJson(res, 200, { item: service.listVirals(resolved).find((entry) => entry.id === itemId) ?? item });
+						return;
 					}
-					writeJson(res, 200, { item: service.listVirals(resolved).find((entry) => entry.id === itemId) ?? item });
+					const normalizedWeight = weight;
+					if (!Number.isInteger(normalizedWeight) || normalizedWeight < 0 || normalizedWeight > 5) {
+						writeJson(res, 400, { error: "weight 必须是 0-5 的整数" });
+						return;
+					}
+					if (!service.listVirals(resolved).some((entry) => entry.id === itemId)) {
+						writeJson(res, 404, { error: "爆款条目不存在或不属于该人设：" + itemId });
+						return;
+					}
+					writeJson(res, 200, { item: service.setViralWeight(resolved, itemId, normalizedWeight) });
 				} catch (error) {
 					fail(res, error);
 				}

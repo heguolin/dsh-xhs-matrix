@@ -97,6 +97,8 @@ export declare class XhsApi {
     collectViral(accountId: string, query?: string, maxItems?: number): Promise<ViralItem[]>;
     /** 审核爆款条目为 accepted / ignored。 */
     reviewViralItem(scope: AssetScope, itemId: string, status: 'accepted' | 'ignored'): Promise<ViralItem>;
+    /** 调整爆款人工权重（0-5），以 personaId 为主参数。 */
+    setViralWeight(personaId: string, itemId: string, weight: NoteWeight): Promise<ViralItem>;
     /** 手动新增爆款（personaId 为主参数）。 */
     addManualViral(personaId: string, payload: {
         title: string;
